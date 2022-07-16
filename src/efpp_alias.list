@@ -1,0 +1,4 @@
+# macros
+     "__EFPPVER__" => "180831"
+
+     "type(state_t)" => "integer, dimension(0:NXPP1,0:NYPP1,0:NZPP1)"

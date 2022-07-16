@@ -1,0 +1,18 @@
+program main
+  use constants_m
+  use automaton_m
+  implicit none
+
+  integer :: update
+  integer <const> :: UPDATE_MAX = 10000
+  type(automaton_t) :: automaton
+
+  call automaton.initialize
+  call automaton.diagnosis
+
+  do update = 1, UPDATE_MAX
+    call automaton.update
+    call automaton.diagnosis
+  end do
+
+end program main

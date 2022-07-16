@@ -1,0 +1,393 @@
+module automaton_m
+  use constants_m
+  implicit none
+  private
+
+  integer <const> :: NON_ALIVE = 0
+  integer <const> :: JUST_BORN = 1
+
+  type :: rule_t
+    logical, dimension(0:26) :: to_be_born
+    logical, dimension(0:26) :: to_survive
+    integer :: num_states
+            !!  state=0            ==> NON_ALIVE
+            !!  state=1            ==> ALIVE (=JUST_BORN)
+            !!  state=2            ==> ALIVE
+            !!  ...                ==> ALIVE
+            !!  state=NUM_STATES-1 ==> ALIVE
+  end type rule_t
+
+  type :: cell_t
+    integer, dimension(0:NXPP1) :: x
+    integer, dimension(0:NYPP1) :: y
+    integer, dimension(0:NZPP1) :: z
+  end type cell_t
+
+  type, public :: automaton_t
+    integer :: time_counter
+    type(cell_t) :: cell
+    type(state_t) :: state
+    type(rule_t) :: rule
+  contains
+    procedure :: initialize => automaton__initialize
+    procedure :: update => automaton__update
+    procedure :: diagnosis => automaton__diagnosis
+  end type automaton_t
+
+
+contains
+
+
+  subroutine boundary_condition( state )
+    type(state_t) <io> :: state
+
+    integer :: i, j, k
+
+    do k = 0, NZPP1
+      do j = 0, NYPP1
+        state(    0,j,k) = state(NXPP,j,k)
+        state(NXPP1,j,k) = state(   1,j,k)
+      end do
+    end do
+
+    do k = 0, NZPP1
+      do i = 0, NXPP1
+        state(i,    0,k) = state(i,NYPP,k)
+        state(i,NYPP1,k) = state(i,   1,k)
+      end do
+    end do
+
+    do j = 0, NYPP1
+      do i = 0, NXPP1
+        state(i,j,    0) = state(i,j,NZPP)
+        state(i,j,NZPP1) = state(i,j,   1)
+      end do
+    end do
+
+  end subroutine boundary_condition
+
+
+  function count_alive_neighbors( i, j, k, state ) result(num)
+    integer <in> :: i, j, k
+    type(state_t) <in> :: state
+    integer :: num
+    
+    integer :: ii, jj, kk
+
+    num = 0
+    do kk = -1, +1
+      do jj = -1, +1
+        do ii = -1, +1
+          if ( ii==0 .and. jj==0 .and. kk==0 ) then
+            !! Skip myself. Do nothing.
+          else
+            if ( state(i+ii,j+jj,k+kk) > NON_ALIVE ) num += 1
+            !! if ( state(i+ii,j+jj,k+kk) == JUST_BORN ) num += 1
+          end if
+        end do
+      end do
+    end do
+
+  end function count_alive_neighbors
+
+
+  subroutine random_states_only_at_center( automaton )
+    type( automaton_t ) <io> :: automaton
+
+    integer :: i, j, k, ig, jg, kg
+    real :: random_real
+
+    integer :: iwidth, imin, imax
+    integer :: jwidth, jmin, jmax
+    integer :: kwidth, kmin, kmax
+    
+    iwidth = NX_GLOBAL / 8
+    jwidth = NY_GLOBAL / 8
+    kwidth = NZ_GLOBAL / 8
+
+    imin = NX_GLOBAL/2 - iwidth/2
+    imax = NX_GLOBAL/2 + iwidth/2
+    jmin = NY_GLOBAL/2 - jwidth/2
+    jmax = NY_GLOBAL/2 + jwidth/2
+    kmin = NZ_GLOBAL/2 - kwidth/2
+    kmax = NZ_GLOBAL/2 + kwidth/2
+
+    do k = 1, NZPP
+      kg = automaton.cell.z(k)
+      do j = 1, NYPP
+        jg = automaton.cell.y(j)
+        do i = 1, NXPP
+          ig = automaton.cell.x(i)
+          if ( kmin <= kg .and. kg <= kmax  &
+                          .and.             &
+               jmin <= jg .and. jg <= jmax  &
+                          .and.             &
+               imin <= ig .and. ig <= imax ) then
+            call random_number( random_real ) ! between 0.0 and 1.0
+            if ( mod( nint( random_real*400 ), 4 ) == 0 ) then
+              automaton.state(i,j,k) = JUST_BORN
+            end if
+          end if
+        end do
+      end do
+    end do
+
+    call boundary_condition( automaton.state )
+
+  end subroutine random_states_only_at_center
+ 
+
+  subroutine reset_state( state )
+    type(state_t) <out> :: state
+
+    state(:,:,:) = NON_ALIVE
+  end subroutine reset_state
+
+
+  subroutine set_cell( cell )
+    type(cell_t) <out> :: cell
+
+    integer :: i, j, k
+    integer :: rk_x, rk_y, rk_z ! rk = rank position
+
+  !!>
+
+    The cell overlap on the boarders between neighbor ranks.
+
+       left rank: ... NXPP NXPP1
+                        |   |
+         my rank:       0   1   2   3  . . .  NXPP-1 NXPP  NXPP1
+                                                       |    |
+      right rank:                                      0    1  ...
+
+
+    The cell position integer is numbered globally,
+
+
+    global cell num  1   2   3 ...   ... NXPP+1 NXPP+2 ...
+                     |<---------- rank 0 -------->|
+    local cell num   0   1   2 ...  NXPP-1 NXPP NXPP1 
+                                             0    1    2    3 ... 
+                                             |<---------- rank 1 -
+                                
+    The above figure indicates that 
+      global_cell_number - 2 = NXPP*rank_num
+
+  !!<
+
+    rk_x = 0 ! just for test
+    rk_y = 0
+    rk_z = 0
+
+    do i = 0, NXPP1
+      cell.x(i) = NXPP*rk_x + i + 1
+    end do
+
+    do j = 0, NYPP1
+      cell.y(j) = NYPP*rk_y + j + 1
+    end do
+
+    do k = 0, NZPP1
+      cell.z(k) = NZPP*rk_z + k + 1
+    end do
+
+  end subroutine set_cell
+
+
+  subroutine set_rule( rule )
+    type(rule_t) <out> :: rule
+
+    rule.num_states = 5
+    call set_rule_to_be_born( rule.to_be_born )
+    call set_rule_to_survive( rule.to_survive )
+
+  end subroutine set_rule
+
+
+  subroutine set_rule_to_be_born( cond )
+    logical, dimension(0:26) <out> :: cond
+
+    cond( 0) = .false.
+    cond( 1) = .false.
+    cond( 2) = .false.
+    cond( 3) = .false.
+    cond( 4) =  .true.
+    cond( 5) = .false.
+    cond( 6) = .false.
+    cond( 7) = .false.
+    cond( 8) = .false.
+    cond( 9) = .false.
+    cond(10) = .false.
+    cond(11) = .false.
+    cond(12) = .false.
+    cond(13) = .false.
+    cond(14) = .false.
+    cond(15) = .false.
+    cond(16) = .false.
+    cond(17) = .false.
+    cond(18) = .false.
+    cond(19) = .false.
+    cond(20) = .false.
+    cond(21) = .false.
+    cond(22) = .false.
+    cond(23) = .false.
+    cond(24) = .false.
+    cond(25) = .false.
+    cond(26) = .false.
+  end subroutine set_rule_to_be_born
+
+
+  subroutine set_rule_to_survive( cond ) 
+    logical, dimension(0:26) <out> :: cond
+
+    cond( 0) = .false.
+    cond( 1) = .false.
+    cond( 2) = .false.
+    cond( 3) = .false.
+    cond( 4) =  .true.
+    cond( 5) = .false.
+    cond( 6) = .false.
+    cond( 7) = .false.
+    cond( 8) = .false.
+    cond( 9) = .false.
+    cond(10) = .false.
+    cond(11) = .false.
+    cond(12) = .false.
+    cond(13) = .false.
+    cond(14) = .false.
+    cond(15) = .false.
+    cond(16) = .false.
+    cond(17) = .false.
+    cond(18) = .false.
+    cond(19) = .false.
+    cond(20) = .false.
+    cond(21) = .false.
+    cond(22) = .false.
+    cond(23) = .false.
+    cond(24) = .false.
+    cond(25) = .false.
+    cond(26) = .false.
+  end subroutine set_rule_to_survive
+
+
+  subroutine automaton__initialize( self )
+    class( automaton_t ) <out> :: self
+
+    call set_rule( self.rule )
+    call set_cell( self.cell )
+    call reset_state( self.state )
+    call random_states_only_at_center( self )
+    self.time_counter = 0
+
+  end subroutine automaton__initialize
+
+
+  subroutine automaton__diagnosis( self )
+    class( automaton_t ) <in> :: self
+
+    integer, dimension(0:self.rule.num_states-1) :: ncell_in_state
+
+    ! ncell_in_state(0) = sum( self.state, mask=(self.state==NON_ALIVE) )
+    ! ncell_in_state(1) = sum( self.state, mask=(self.state==JUST_BORN) )
+    ! ncell_in_state(2) = sum( self.state, mask=(self.state==2        ) )
+    ! ncell_in_state(3) = sum( self.state, mask=(self.state==3        ) )
+    ! ncell_in_state(4) = sum( self.state, mask=(self.state==3        ) )
+
+    ncell_in_state(0) = iCount( NON_ALIVE )
+    ncell_in_state(1) = iCount( JUST_BORN )
+    ncell_in_state(2) = iCount( 2 )
+    ncell_in_state(3) = iCount( 3 )
+    ncell_in_state(4) = iCount( 4 )
+
+    print *, "time: ", self.time_counter, " states: ", ncell_in_state 
+               
+  contains
+
+    function iCount( state_level )
+      integer <in> :: state_level
+      integer :: iCount
+
+      integer :: i, j, k
+
+      iCount = 0
+      
+      do k = 1, NZPP
+        do j = 1, NYPP
+          do i = 1, NXPP
+            if ( self.state(i,j,k) == state_level ) then
+              iCount += 1
+            end if
+          end do
+        end do
+      end do
+
+    end function iCount
+            
+  end subroutine automaton__diagnosis
+               
+               
+  subroutine automaton__update( self )
+    class( automaton_t ) <io> :: self
+    
+    !!>
+
+      In https://softologyblog.wordpress.com/2019/12/28/3d-cellular-automata-3/
+      softologyblog says as follows:
+
+      February 18, 2021 at 4:20 am
+      Moore neighborhood is the surrounding 26 cells.
+      
+      The 4/4/5 rule logic is;
+      If cell is empty (state 0) and has 4 neighbors 
+      then a new cell is born (change to state 1)
+      If a cell is state 1 and has 4 neighbors it 
+      survives and remains state 1, else it goes to state 2
+      State 2 cells go to state 3
+      State 3 cells go to state 4
+      State 4 cells go to state 0
+      
+      State 0 are empty/dead cells. 
+      State 1 are newly born cells. 
+      States 2 to 4 are the dying/refractory cells.
+      
+      Initialize the grid with a central small random 
+      cluster of state 1 cells.
+      
+      Hope that helps.
+      
+      Jason.
+
+    !!<
+
+    type(state_t) :: temp
+    integer :: num ! number of alive cells in the neibhor.
+    integer :: mystate
+    integer :: i, j, k
+
+    do k = 1, NZPP
+      do j = 1, NYPP
+        do i = 1, NXPP
+          num = count_alive_neighbors( i, j, k, self.state );
+          mystate = self.state(i,j,k)
+          if ( mystate==NON_ALIVE .and. self.rule.to_be_born( num ) ) then
+            temp(i,j,k) = JUST_BORN !! JUST_BORM=1 
+          else if ( mystate == JUST_BORN .and. self.rule.to_survive( num ) ) then
+              temp(i,j,k) = JUST_BORN
+          else if ( mystate >= JUST_BORN ) then
+              temp(i,j,k) = mod( ( mystate+1 ), self.rule.num_states )
+          else if ( mystate == NON_ALIVE ) then
+            temp(i,j,k) = NON_ALIVE
+          else 
+            print *, " ??? Something is strange... ???"
+          end if
+        end do
+      end do
+    end do
+
+    call boundary_condition( temp )
+    self.state(:,:,:) = temp(:,:,:)
+    self.time_counter += 1
+
+  end subroutine automaton__update
+
+end module automaton_m

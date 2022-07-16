@@ -1,0 +1,49 @@
+module constants_m
+  implicit none
+  private
+  public :: NPROC_X, NXPP, NXPP1, NX_GLOBAL
+  public :: NPROC_Y, NYPP, NYPP1, NY_GLOBAL
+  public :: NPROC_Z, NZPP, NZPP1, NZ_GLOBAL
+
+  !!>
+
+    The grid overlap on the boarders between neighbor ranks.
+
+       left rank: ... NXPP NXPP1
+                        |   |
+         my rank:       0   1   2   3  . . .  NXPP-1 NXPP  NXPP1
+                                                       |    |
+      right rank:                                      0    1  ...
+
+
+    The grid position integer is numbered globally,
+
+
+    global grid num  1   2   3 ...   ... NXPP+1 NXPP+2 ...
+                     |<---------- rank 0 -------->|
+    local grid num   0   1   2 ...  NXPP-1 NXPP NXPP1 
+                                             0    1    2    3 ... 
+                                             |<---------- rank 1 -
+                                
+    The above figure indicates that 
+      global_grid_number - 2 = NXPP*rank_num
+
+  !!<
+
+  integer <const> :: NPROC_X = 1
+  integer <const> :: NPROC_Y = 1
+  integer <const> :: NPROC_Z = 1
+
+  integer <const> :: NXPP = 50
+  integer <const> :: NYPP = 50
+  integer <const> :: NZPP = 50
+
+  integer <const> :: NXPP1 = NXPP + 1
+  integer <const> :: NYPP1 = NYPP + 1
+  integer <const> :: NZPP1 = NZPP + 1
+
+  integer <const> :: NX_GLOBAL = NPROC_X * NXPP + 2
+  integer <const> :: NY_GLOBAL = NPROC_Y * NYPP + 2
+  integer <const> :: NZ_GLOBAL = NPROC_Z * NZPP + 2
+
+end module constants_m
