@@ -2,7 +2,7 @@ module constants_m
   use iso_fortran_env
   implicit none
   private
-  public :: SI, DI, SR, DR, PI, TWOPI
+  public :: SI, DI, SR, DR, PI, TWOPI, NIL
   public :: NPROC_X, NXPP, NXPP1, NX_GLOBAL
   public :: NPROC_Y, NYPP, NYPP1, NY_GLOBAL
   public :: NPROC_Z, NZPP, NZPP1, NZ_GLOBAL
@@ -37,6 +37,7 @@ module constants_m
   integer <const> :: DI = int64
   integer <const> :: SR = real32
   integer <const> :: DR = real64
+  integer <const> :: NIL = -huge(1)
 
   !<< Mathematical constants >>!
   real(DR) <const> :: PI = atan(1.0_DR)*4
