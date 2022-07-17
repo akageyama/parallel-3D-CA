@@ -1,4 +1,3 @@
-
 !!>
 
   parallel-3D-CA: Parallel Three-dimensional Celluar Automaton
@@ -67,13 +66,15 @@
     2022.07.17: Copied from cg-mhd project.  -kage
     2022.07.17: Type size check in bcast0d_i.
     2022.07.17: Rename int, intd, flaot, double --> is, id, rs, rd.
+    2022.07.17: Remove comments on the old bug in exchange.
+    2022.07.17: Rename exchange_3d_ -> exchange_3d_rd_
 
 !!<
 
 
 module mpiut_m
   use mpi
-  use constant_m
+  use constants_m
   use ut_m
   implicit none
   private
@@ -185,12 +186,12 @@ module mpiut_m
   end interface mpiut__copy_p2p
 
   interface mpiut__exchange
-     module procedure exchange3d_1,     &
-                      exchange3d_2,     &
-                      exchange3d_3,     &
-                      exchange3d_4,     &
-                      exchange3d_5,     &
-                      exchange3d_8
+     module procedure exchange3d_rd_1,     &
+                      exchange3d_rd_2,     &
+                      exchange3d_rd_3,     &
+                      exchange3d_rd_4,     &
+                      exchange3d_rd_5,     &
+                      exchange3d_rd_8
   end interface
 
   interface mpiut__message
@@ -1184,11 +1185,11 @@ contains
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine exchange3d_1( comm, rank_next,   &
-                           f01 )
-    integer(SI)       <in> :: comm
-    type(rank_next_t) <in> :: rank_next
-    type(sfield_t)    <io> :: f01
+  subroutine exchange3d_rd_1( comm, rank_next,   &
+                              f01 )
+    integer(SI)        <in> :: comm
+    type(rank_next_t)  <in> :: rank_next
+    type(array3d_rd_t) <io> :: f01
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     real(DR), dimension(0:NYPP1,0:NZPP1,1) :: send_buff_ip1, send_buff_im1, &
@@ -1218,24 +1219,24 @@ contains
 
       ncount = (NYPP1+1)*(NZPP1+1)*1
 
-      call MPI_IRECV(recv_buff_ip1, ncount,       &
-                     MPI_DOUBLE_PRECISION,        &
-                     rank_next.ip1,               &
-                     0, comm, requests(1), ierr)
-      call MPI_IRECV(recv_buff_im1, ncount,       &
-                     MPI_DOUBLE_PRECISION,        &
-                     rank_next.im1,               &
-                     0, comm, requests(2), ierr)
+      call MPI_IRECV( recv_buff_ip1, ncount,       &
+                      MPI_DOUBLE_PRECISION,        &
+                      rank_next.ip1,               &
+                      0, comm, requests(1), ierr )
+      call MPI_IRECV( recv_buff_im1, ncount,       &
+                      MPI_DOUBLE_PRECISION,        &
+                      rank_next.im1,               &
+                      0, comm, requests(2), ierr )
       call MPI_BARRIER(comm, ierr)
 
-      call MPI_SEND(send_buff_ip1, ncount,        &
-                    MPI_DOUBLE_PRECISION,         &
-                    rank_next.ip1,                &
-                    0, comm, ierr)
-      call MPI_SEND(send_buff_im1, ncount,        &
-                    MPI_DOUBLE_PRECISION,         &
-                    rank_next.im1,                &
-                    0, comm, ierr)
+      call MPI_SEND( send_buff_ip1, ncount,        &
+                     MPI_DOUBLE_PRECISION,         &
+                     rank_next.ip1,                &
+                     0, comm, ierr )
+      call MPI_SEND( send_buff_im1, ncount,        &
+                     MPI_DOUBLE_PRECISION,         &
+                     rank_next.im1,                &
+                     0, comm, ierr )
       call MPI_WAITALL(2, requests, status, ierr)
 
       if ( rank_next.ip1 /= MPI_PROC_NULL ) then
@@ -1269,24 +1270,24 @@ contains
 
       ncount = (NXPP1+1)*(NZPP1+1)*1
 
-      call MPI_IRECV(recv_buff_jp1, ncount,       &
-                     MPI_DOUBLE_PRECISION,        &
-                     rank_next.jp1,               &
-                     0, comm, requests(1), ierr)
-      call MPI_IRECV(recv_buff_jm1, ncount,       &
-                     MPI_DOUBLE_PRECISION,        &
-                     rank_next.jm1,               &
-                     0, comm, requests(2), ierr)
+      call MPI_IRECV( recv_buff_jp1, ncount,       &
+                      MPI_DOUBLE_PRECISION,        &
+                      rank_next.jp1,               &
+                      0, comm, requests(1), ierr )
+      call MPI_IRECV( recv_buff_jm1, ncount,       &
+                      MPI_DOUBLE_PRECISION,        &
+                      rank_next.jm1,               &
+                      0, comm, requests(2), ierr )
       call MPI_BARRIER(comm, ierr)
 
-      call MPI_SEND(send_buff_jp1, ncount,        &
-                    MPI_DOUBLE_PRECISION,         &
-                    rank_next.jp1,                &
-                    0, comm, ierr)
-      call MPI_SEND(send_buff_jm1, ncount,        &
-                    MPI_DOUBLE_PRECISION,         &
-                    rank_next.jm1,                &
-                    0, comm, ierr)
+      call MPI_SEND( send_buff_jp1, ncount,        &
+                     MPI_DOUBLE_PRECISION,         &
+                     rank_next.jp1,                &
+                     0, comm, ierr )
+      call MPI_SEND( send_buff_jm1, ncount,        &
+                     MPI_DOUBLE_PRECISION,         &
+                     rank_next.jm1,                &
+                     0, comm, ierr )
       call MPI_WAITALL(2, requests, status, ierr)
 
       if ( rank_next.jp1 /= MPI_PROC_NULL ) then
@@ -1320,24 +1321,24 @@ contains
 
       ncount = (NXPP1+1)*(NYPP1+1)*1
 
-      call MPI_IRECV(recv_buff_kp1, ncount,       &
-                     MPI_DOUBLE_PRECISION,        &
-                     rank_next.kp1,               &
-                     0, comm, requests(1), ierr)
-      call MPI_IRECV(recv_buff_km1, ncount,       &
-                     MPI_DOUBLE_PRECISION,        &
-                     rank_next.km1,               &
-                     0, comm, requests(2), ierr)
+      call MPI_IRECV( recv_buff_kp1, ncount,       &
+                      MPI_DOUBLE_PRECISION,        &
+                      rank_next.kp1,               &
+                      0, comm, requests(1), ierr )
+      call MPI_IRECV( recv_buff_km1, ncount,       &
+                      MPI_DOUBLE_PRECISION,        &
+                      rank_next.km1,               &
+                      0, comm, requests(2), ierr )
       call MPI_BARRIER(comm, ierr)
 
-      call MPI_SEND(send_buff_kp1, ncount,        &
-                    MPI_DOUBLE_PRECISION,         &
-                    rank_next.kp1,                &
-                    0, comm, ierr)
-      call MPI_SEND(send_buff_km1, ncount,        &
-                    MPI_DOUBLE_PRECISION,         &
-                    rank_next.km1,                &
-                    0, comm, ierr)
+      call MPI_SEND( send_buff_kp1, ncount,        &
+                     MPI_DOUBLE_PRECISION,         &
+                     rank_next.kp1,                &
+                     0, comm, ierr )
+      call MPI_SEND( send_buff_km1, ncount,        &
+                     MPI_DOUBLE_PRECISION,         &
+                     rank_next.km1,                &
+                     0, comm, ierr )
       call MPI_WAITALL(2, requests, status, ierr)
 
       if ( rank_next.kp1 /= MPI_PROC_NULL ) then
@@ -1356,16 +1357,16 @@ contains
       end if
     end subroutine iN_k_direction
 
-  end subroutine exchange3d_1
+  end subroutine exchange3d_rd_1
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine exchange3d_2(comm,rank_next,                       &
-                          f01,f02)
-    integer(SI)          <in> :: comm
-    type(rank_next_t) <in> :: rank_next
-    type(sfield_t)    <io> :: f01,f02
+  subroutine exchange3d_rd_2( comm, rank_next,                       &
+                              f01, f02 )
+    integer(SI)        <in> :: comm
+    type(rank_next_t)  <in> :: rank_next
+    type(array3d_rd_t) <io> :: f01,f02
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     real(DR), dimension(0:NYPP1,0:NZPP1,2) :: send_buff_ip1, send_buff_im1, &
@@ -1397,24 +1398,24 @@ contains
 
       ncount = (NYPP1+1)*(NZPP1+1)*2
 
-      call MPI_IRECV(recv_buff_ip1, ncount,       &
-                     MPI_DOUBLE_PRECISION,        &
-                     rank_next.ip1,               &
-                     0, comm, requests(1), ierr)
-      call MPI_IRECV(recv_buff_im1, ncount,       &
-                     MPI_DOUBLE_PRECISION,        &
-                     rank_next.im1,               &
-                     0, comm, requests(2), ierr)
+      call MPI_IRECV( recv_buff_ip1, ncount,       &
+                      MPI_DOUBLE_PRECISION,        &
+                      rank_next.ip1,               &
+                      0, comm, requests(1), ierr )
+      call MPI_IRECV( recv_buff_im1, ncount,       &
+                      MPI_DOUBLE_PRECISION,        &
+                      rank_next.im1,               &
+                      0, comm, requests(2), ierr )
       call MPI_BARRIER(comm, ierr)
 
-      call MPI_SEND(send_buff_ip1, ncount,        &
-                    MPI_DOUBLE_PRECISION,         &
-                    rank_next.ip1,                &
-                    0, comm, ierr)
-      call MPI_SEND(send_buff_im1, ncount,        &
-                    MPI_DOUBLE_PRECISION,         &
-                    rank_next.im1,                &
-                    0, comm, ierr)
+      call MPI_SEND( send_buff_ip1, ncount,        &
+                     MPI_DOUBLE_PRECISION,         &
+                     rank_next.ip1,                &
+                     0, comm, ierr )
+      call MPI_SEND( send_buff_im1, ncount,        &
+                     MPI_DOUBLE_PRECISION,         &
+                     rank_next.im1,                &
+                     0, comm, ierr )
       call MPI_WAITALL(2, requests, status, ierr)
 
       if ( rank_next.ip1 /= MPI_PROC_NULL ) then
@@ -1452,24 +1453,24 @@ contains
 
       ncount = (NXPP1+1)*(NZPP1+1)*2
 
-      call MPI_IRECV(recv_buff_jp1, ncount,       &
-                     MPI_DOUBLE_PRECISION,        &
-                     rank_next.jp1,               &
-                     0, comm, requests(1), ierr)
-      call MPI_IRECV(recv_buff_jm1, ncount,       &
-                     MPI_DOUBLE_PRECISION,        &
-                     rank_next.jm1,               &
-                     0, comm, requests(2), ierr)
+      call MPI_IRECV( recv_buff_jp1, ncount,       &
+                      MPI_DOUBLE_PRECISION,        &
+                      rank_next.jp1,               &
+                      0, comm, requests(1), ierr )
+      call MPI_IRECV( recv_buff_jm1, ncount,       &
+                      MPI_DOUBLE_PRECISION,        &
+                      rank_next.jm1,               &
+                      0, comm, requests(2), ierr )
       call MPI_BARRIER(comm, ierr)
 
-      call MPI_SEND(send_buff_jp1, ncount,        &
-                    MPI_DOUBLE_PRECISION,         &
-                    rank_next.jp1,                &
-                    0, comm, ierr)
-      call MPI_SEND(send_buff_jm1, ncount,        &
-                    MPI_DOUBLE_PRECISION,         &
-                    rank_next.jm1,                &
-                    0, comm, ierr)
+      call MPI_SEND( send_buff_jp1, ncount,        &
+                     MPI_DOUBLE_PRECISION,         &
+                     rank_next.jp1,                &
+                     0, comm, ierr )
+      call MPI_SEND( send_buff_jm1, ncount,        &
+                     MPI_DOUBLE_PRECISION,         &
+                     rank_next.jm1,                &
+                     0, comm, ierr )
       call MPI_WAITALL(2, requests, status, ierr)
 
       if ( rank_next.jp1 /= MPI_PROC_NULL ) then
@@ -1507,24 +1508,24 @@ contains
 
       ncount = (NXPP1+1)*(NYPP1+1)*2
 
-      call MPI_IRECV(recv_buff_kp1, ncount,       &
-                     MPI_DOUBLE_PRECISION,        &
-                     rank_next.kp1,               &
-                     0, comm, requests(1), ierr)
-      call MPI_IRECV(recv_buff_km1, ncount,       &
-                     MPI_DOUBLE_PRECISION,        &
-                     rank_next.km1,               &
-                     0, comm, requests(2), ierr)
+      call MPI_IRECV( recv_buff_kp1, ncount,       &
+                      MPI_DOUBLE_PRECISION,        &
+                      rank_next.kp1,               &
+                      0, comm, requests(1), ierr )
+      call MPI_IRECV( recv_buff_km1, ncount,       &
+                      MPI_DOUBLE_PRECISION,        &
+                      rank_next.km1,               &
+                      0, comm, requests(2), ierr )
       call MPI_BARRIER(comm, ierr)
 
-      call MPI_SEND(send_buff_kp1, ncount,        &
-                    MPI_DOUBLE_PRECISION,         &
-                    rank_next.kp1,                &
-                    0, comm, ierr)
-      call MPI_SEND(send_buff_km1, ncount,        &
-                    MPI_DOUBLE_PRECISION,         &
-                    rank_next.km1,                &
-                    0, comm, ierr)
+      call MPI_SEND( send_buff_kp1, ncount,        &
+                     MPI_DOUBLE_PRECISION,         &
+                     rank_next.kp1,                &
+                     0, comm, ierr )
+      call MPI_SEND( send_buff_km1, ncount,        &
+                     MPI_DOUBLE_PRECISION,         &
+                     rank_next.km1,                &
+                     0, comm, ierr )
       call MPI_WAITALL(2, requests, status, ierr)
 
       if ( rank_next.kp1 /= MPI_PROC_NULL ) then
@@ -1545,16 +1546,16 @@ contains
       end if
     end subroutine iN_k_direction
 
-  end subroutine exchange3d_2
+  end subroutine exchange3d_rd_2
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine exchange3d_3(comm,rank_next,                       &
-                          f01,f02,f03)
-    integer(SI)          <in> :: comm
-    type(rank_next_t) <in> :: rank_next
-    type(sfield_t)    <io> :: f01,f02,f03
+  subroutine exchange3d_rd_3( comm, rank_next,    &
+                              f01, f02, f03)
+    integer(SI)        <in> :: comm
+    type(rank_next_t)  <in> :: rank_next
+    type(array3d_rd_t) <io> :: f01,f02,f03
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     real(DR), dimension(0:NYPP1,0:NZPP1,3) :: send_buff_ip1, send_buff_im1, &
@@ -1588,24 +1589,24 @@ contains
 
       ncount = (NYPP1+1)*(NZPP1+1)*3
 
-      call MPI_IRECV(recv_buff_ip1, ncount,       &
-                     MPI_DOUBLE_PRECISION,        &
-                     rank_next.ip1,               &
-                     0, comm, requests(1), ierr)
-      call MPI_IRECV(recv_buff_im1, ncount,       &
-                     MPI_DOUBLE_PRECISION,        &
-                     rank_next.im1,               &
-                     0, comm, requests(2), ierr)
+      call MPI_IRECV( recv_buff_ip1, ncount,       &
+                      MPI_DOUBLE_PRECISION,        &
+                      rank_next.ip1,               &
+                      0, comm, requests(1), ierr )
+      call MPI_IRECV( recv_buff_im1, ncount,       &
+                      MPI_DOUBLE_PRECISION,        &
+                      rank_next.im1,               &
+                      0, comm, requests(2), ierr )
       call MPI_BARRIER(comm, ierr)
 
-      call MPI_SEND(send_buff_ip1, ncount,        &
-                    MPI_DOUBLE_PRECISION,         &
-                    rank_next.ip1,                &
-                    0, comm, ierr)
-      call MPI_SEND(send_buff_im1, ncount,        &
-                    MPI_DOUBLE_PRECISION,         &
-                    rank_next.im1,                &
-                    0, comm, ierr)
+      call MPI_SEND( send_buff_ip1, ncount,        &
+                     MPI_DOUBLE_PRECISION,         &
+                     rank_next.ip1,                &
+                     0, comm, ierr )
+      call MPI_SEND( send_buff_im1, ncount,        &
+                     MPI_DOUBLE_PRECISION,         &
+                     rank_next.im1,                &
+                     0, comm, ierr )
       call MPI_WAITALL(2, requests, status, ierr)
 
       if ( rank_next.ip1 /= MPI_PROC_NULL ) then
@@ -1647,24 +1648,24 @@ contains
 
       ncount = (NXPP1+1)*(NZPP1+1)*3
 
-      call MPI_IRECV(recv_buff_jp1, ncount,       &
-                     MPI_DOUBLE_PRECISION,        &
-                     rank_next.jp1,               &
-                     0, comm, requests(1), ierr)
-      call MPI_IRECV(recv_buff_jm1, ncount,       &
-                     MPI_DOUBLE_PRECISION,        &
-                     rank_next.jm1,               &
-                     0, comm, requests(2), ierr)
+      call MPI_IRECV( recv_buff_jp1, ncount,       &
+                      MPI_DOUBLE_PRECISION,        &
+                      rank_next.jp1,               &
+                      0, comm, requests(1), ierr )
+      call MPI_IRECV( recv_buff_jm1, ncount,       &
+                      MPI_DOUBLE_PRECISION,        &
+                      rank_next.jm1,               &
+                      0, comm, requests(2), ierr )
       call MPI_BARRIER(comm, ierr)
 
-      call MPI_SEND(send_buff_jp1, ncount,        &
-                    MPI_DOUBLE_PRECISION,         &
-                    rank_next.jp1,                &
-                    0, comm, ierr)
-      call MPI_SEND(send_buff_jm1, ncount,        &
-                    MPI_DOUBLE_PRECISION,         &
-                    rank_next.jm1,                &
-                    0, comm, ierr)
+      call MPI_SEND( send_buff_jp1, ncount,        &
+                     MPI_DOUBLE_PRECISION,         &
+                     rank_next.jp1,                &
+                     0, comm, ierr )
+      call MPI_SEND( send_buff_jm1, ncount,        &
+                     MPI_DOUBLE_PRECISION,         &
+                     rank_next.jm1,                &
+                     0, comm, ierr )
       call MPI_WAITALL(2, requests, status, ierr)
 
       if ( rank_next.jp1 /= MPI_PROC_NULL ) then
@@ -1706,24 +1707,24 @@ contains
 
       ncount = (NXPP1+1)*(NYPP1+1)*3
 
-      call MPI_IRECV(recv_buff_kp1, ncount,       &
-                     MPI_DOUBLE_PRECISION,        &
-                     rank_next.kp1,               &
-                     0, comm, requests(1), ierr)
-      call MPI_IRECV(recv_buff_km1, ncount,       &
-                     MPI_DOUBLE_PRECISION,        &
-                     rank_next.km1,               &
-                     0, comm, requests(2), ierr)
+      call MPI_IRECV( recv_buff_kp1, ncount,       &
+                      MPI_DOUBLE_PRECISION,        &
+                      rank_next.kp1,               &
+                      0, comm, requests(1), ierr )
+      call MPI_IRECV( recv_buff_km1, ncount,       &
+                      MPI_DOUBLE_PRECISION,        &
+                      rank_next.km1,               &
+                      0, comm, requests(2), ierr )
       call MPI_BARRIER(comm, ierr)
 
-      call MPI_SEND(send_buff_kp1, ncount,        &
-                    MPI_DOUBLE_PRECISION,         &
-                    rank_next.kp1,                &
-                    0, comm, ierr)
-      call MPI_SEND(send_buff_km1, ncount,        &
-                    MPI_DOUBLE_PRECISION,         &
-                    rank_next.km1,                &
-                    0, comm, ierr)
+      call MPI_SEND( send_buff_kp1, ncount,        &
+                     MPI_DOUBLE_PRECISION,         &
+                     rank_next.kp1,                &
+                     0, comm, ierr )
+      call MPI_SEND( send_buff_km1, ncount,        &
+                     MPI_DOUBLE_PRECISION,         &
+                     rank_next.km1,                &
+                     0, comm, ierr )
       call MPI_WAITALL(2, requests, status, ierr)
 
       if ( rank_next.kp1 /= MPI_PROC_NULL ) then
@@ -1746,16 +1747,16 @@ contains
       end if
     end subroutine iN_k_direction
 
-  end subroutine exchange3d_3
+  end subroutine exchange3d_rd_3
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine exchange3d_4(comm,rank_next,                       &
-                          f01,f02,f03,f04)
-    integer(SI)          <in> :: comm
-    type(rank_next_t) <in> :: rank_next
-    type(sfield_t)    <io> :: f01,f02,f03,f04
+  subroutine exchange3d_rd_4( comm, rank_next,                       &
+                              f01, f02, f03, f04 )
+    integer(SI)        <in> :: comm
+    type(rank_next_t)  <in> :: rank_next
+    type(array3d_rd_t) <io> :: f01,f02,f03,f04
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     real(DR), dimension(0:NYPP1,0:NZPP1,4) :: send_buff_ip1, send_buff_im1, &
@@ -1791,24 +1792,24 @@ contains
 
       ncount = (NYPP1+1)*(NZPP1+1)*4
 
-      call MPI_IRECV(recv_buff_ip1, ncount,       &
-                     MPI_DOUBLE_PRECISION,        &
-                     rank_next.ip1,               &
-                     0, comm, requests(1), ierr)
-      call MPI_IRECV(recv_buff_im1, ncount,       &
-                     MPI_DOUBLE_PRECISION,        &
-                     rank_next.im1,               &
-                     0, comm, requests(2), ierr)
+      call MPI_IRECV( recv_buff_ip1, ncount,       &
+                      MPI_DOUBLE_PRECISION,        &
+                      rank_next.ip1,               &
+                      0, comm, requests(1), ierr )
+      call MPI_IRECV( recv_buff_im1, ncount,       &
+                      MPI_DOUBLE_PRECISION,        &
+                      rank_next.im1,               &
+                      0, comm, requests(2), ierr )
       call MPI_BARRIER(comm, ierr)
 
-      call MPI_SEND(send_buff_ip1, ncount,        &
-                    MPI_DOUBLE_PRECISION,         &
-                    rank_next.ip1,                &
-                    0, comm, ierr)
-      call MPI_SEND(send_buff_im1, ncount,        &
-                    MPI_DOUBLE_PRECISION,         &
-                    rank_next.im1,                &
-                    0, comm, ierr)
+      call MPI_SEND( send_buff_ip1, ncount,        &
+                     MPI_DOUBLE_PRECISION,         &
+                     rank_next.ip1,                &
+                     0, comm, ierr )
+      call MPI_SEND( send_buff_im1, ncount,        &
+                     MPI_DOUBLE_PRECISION,         &
+                     rank_next.im1,                &
+                     0, comm, ierr )
       call MPI_WAITALL(2, requests, status, ierr)
 
       if ( rank_next.ip1 /= MPI_PROC_NULL ) then
@@ -1854,24 +1855,24 @@ contains
 
       ncount = (NXPP1+1)*(NZPP1+1)*4
 
-      call MPI_IRECV(recv_buff_jp1, ncount,       &
-                     MPI_DOUBLE_PRECISION,        &
-                     rank_next.jp1,               &
-                     0, comm, requests(1), ierr)
-      call MPI_IRECV(recv_buff_jm1, ncount,       &
-                     MPI_DOUBLE_PRECISION,        &
-                     rank_next.jm1,               &
-                     0, comm, requests(2), ierr)
+      call MPI_IRECV( recv_buff_jp1, ncount,       &
+                      MPI_DOUBLE_PRECISION,        &
+                      rank_next.jp1,               &
+                      0, comm, requests(1), ierr )
+      call MPI_IRECV( recv_buff_jm1, ncount,       &
+                      MPI_DOUBLE_PRECISION,        &
+                      rank_next.jm1,               &
+                      0, comm, requests(2), ierr )
       call MPI_BARRIER(comm, ierr)
 
-      call MPI_SEND(send_buff_jp1, ncount,        &
-                    MPI_DOUBLE_PRECISION,         &
-                    rank_next.jp1,                &
-                    0, comm, ierr)
-      call MPI_SEND(send_buff_jm1, ncount,        &
-                    MPI_DOUBLE_PRECISION,         &
-                    rank_next.jm1,                &
-                    0, comm, ierr)
+      call MPI_SEND( send_buff_jp1, ncount,        &
+                     MPI_DOUBLE_PRECISION,         &
+                     rank_next.jp1,                &
+                     0, comm, ierr )
+      call MPI_SEND( send_buff_jm1, ncount,        &
+                     MPI_DOUBLE_PRECISION,         &
+                     rank_next.jm1,                &
+                     0, comm, ierr )
       call MPI_WAITALL(2, requests, status, ierr)
 
       if ( rank_next.jp1 /= MPI_PROC_NULL ) then
@@ -1917,24 +1918,24 @@ contains
 
       ncount = (NXPP1+1)*(NYPP1+1)*4
 
-      call MPI_IRECV(recv_buff_kp1, ncount,       &
-                     MPI_DOUBLE_PRECISION,        &
-                     rank_next.kp1,               &
-                     0, comm, requests(1), ierr)
-      call MPI_IRECV(recv_buff_km1, ncount,       &
-                     MPI_DOUBLE_PRECISION,        &
-                     rank_next.km1,               &
-                     0, comm, requests(2), ierr)
+      call MPI_IRECV( recv_buff_kp1, ncount,       &
+                      MPI_DOUBLE_PRECISION,        &
+                      rank_next.kp1,               &
+                      0, comm, requests(1), ierr )
+      call MPI_IRECV( recv_buff_km1, ncount,       &
+                      MPI_DOUBLE_PRECISION,        &
+                      rank_next.km1,               &
+                      0, comm, requests(2), ierr )
       call MPI_BARRIER(comm, ierr)
 
-      call MPI_SEND(send_buff_kp1, ncount,        &
-                    MPI_DOUBLE_PRECISION,         &
-                    rank_next.kp1,                &
-                    0, comm, ierr)
-      call MPI_SEND(send_buff_km1, ncount,        &
-                    MPI_DOUBLE_PRECISION,         &
-                    rank_next.km1,                &
-                    0, comm, ierr)
+      call MPI_SEND( send_buff_kp1, ncount,        &
+                     MPI_DOUBLE_PRECISION,         &
+                     rank_next.kp1,                &
+                     0, comm, ierr )
+      call MPI_SEND( send_buff_km1, ncount,        &
+                     MPI_DOUBLE_PRECISION,         &
+                     rank_next.km1,                &
+                     0, comm, ierr )
       call MPI_WAITALL(2, requests, status, ierr)
 
       if ( rank_next.kp1 /= MPI_PROC_NULL ) then
@@ -1959,16 +1960,16 @@ contains
       end if
     end subroutine iN_k_direction
 
-  end subroutine exchange3d_4
+  end subroutine exchange3d_rd_4
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine exchange3d_5(comm,rank_next,                       &
-                          f01,f02,f03,f04,f05)
-    integer(SI)          <in> :: comm
-    type(rank_next_t) <in> :: rank_next
-    type(sfield_t)    <io> :: f01,f02,f03,f04,f05
+  subroutine exchange3d_rd_5( comm, rank_next,            &
+                              f01, f02, f03, f04, f05)
+    integer(SI)        <in> :: comm
+    type(rank_next_t)  <in> :: rank_next
+    type(array3d_rd_t) <io> :: f01,f02,f03,f04,f05
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     real(DR), dimension(0:NYPP1,0:NZPP1,5) :: send_buff_ip1, send_buff_im1, &
@@ -2006,24 +2007,24 @@ contains
 
       ncount = (NYPP1+1)*(NZPP1+1)*5
 
-      call MPI_IRECV(recv_buff_ip1, ncount,       &
-                     MPI_DOUBLE_PRECISION,        &
-                     rank_next.ip1,               &
-                     0, comm, requests(1), ierr)
-      call MPI_IRECV(recv_buff_im1, ncount,       &
-                     MPI_DOUBLE_PRECISION,        &
-                     rank_next.im1,               &
-                     0, comm, requests(2), ierr)
+      call MPI_IRECV( recv_buff_ip1, ncount,       &
+                      MPI_DOUBLE_PRECISION,        &
+                      rank_next.ip1,               &
+                      0, comm, requests(1), ierr )
+      call MPI_IRECV( recv_buff_im1, ncount,       &
+                      MPI_DOUBLE_PRECISION,        &
+                      rank_next.im1,               &
+                      0, comm, requests(2), ierr )
       call MPI_BARRIER(comm, ierr)
 
-      call MPI_SEND(send_buff_ip1, ncount,        &
-                    MPI_DOUBLE_PRECISION,         &
-                    rank_next.ip1,                &
-                    0, comm, ierr)
-      call MPI_SEND(send_buff_im1, ncount,        &
-                    MPI_DOUBLE_PRECISION,         &
-                    rank_next.im1,                &
-                    0, comm, ierr)
+      call MPI_SEND( send_buff_ip1, ncount,        &
+                     MPI_DOUBLE_PRECISION,         &
+                     rank_next.ip1,                &
+                     0, comm, ierr )
+      call MPI_SEND( send_buff_im1, ncount,        &
+                     MPI_DOUBLE_PRECISION,         &
+                     rank_next.im1,                &
+                     0, comm, ierr )
       call MPI_WAITALL(2, requests, status, ierr)
 
       if ( rank_next.ip1 /= MPI_PROC_NULL ) then
@@ -2073,24 +2074,24 @@ contains
 
       ncount = (NXPP1+1)*(NZPP1+1)*5
 
-      call MPI_IRECV(recv_buff_jp1, ncount,       &
-                     MPI_DOUBLE_PRECISION,        &
-                     rank_next.jp1,               &
-                     0, comm, requests(1), ierr)
-      call MPI_IRECV(recv_buff_jm1, ncount,       &
-                     MPI_DOUBLE_PRECISION,        &
-                     rank_next.jm1,               &
-                     0, comm, requests(2), ierr)
+      call MPI_IRECV( recv_buff_jp1, ncount,       &
+                      MPI_DOUBLE_PRECISION,        &
+                      rank_next.jp1,               &
+                      0, comm, requests(1), ierr )
+      call MPI_IRECV( recv_buff_jm1, ncount,       &
+                      MPI_DOUBLE_PRECISION,        &
+                      rank_next.jm1,               &
+                      0, comm, requests(2), ierr )
       call MPI_BARRIER(comm, ierr)
 
-      call MPI_SEND(send_buff_jp1, ncount,        &
-                    MPI_DOUBLE_PRECISION,         &
-                    rank_next.jp1,                &
-                    0, comm, ierr)
-      call MPI_SEND(send_buff_jm1, ncount,        &
-                    MPI_DOUBLE_PRECISION,         &
-                    rank_next.jm1,                &
-                    0, comm, ierr)
+      call MPI_SEND( send_buff_jp1, ncount,        &
+                     MPI_DOUBLE_PRECISION,         &
+                     rank_next.jp1,                &
+                     0, comm, ierr )
+      call MPI_SEND( send_buff_jm1, ncount,        &
+                     MPI_DOUBLE_PRECISION,         &
+                     rank_next.jm1,                &
+                     0, comm, ierr )
       call MPI_WAITALL(2, requests, status, ierr)
 
       if ( rank_next.jp1 /= MPI_PROC_NULL ) then
@@ -2140,24 +2141,24 @@ contains
 
       ncount = (NXPP1+1)*(NYPP1+1)*5
 
-      call MPI_IRECV(recv_buff_kp1, ncount,       &
-                     MPI_DOUBLE_PRECISION,        &
-                     rank_next.kp1,               &
-                     0, comm, requests(1), ierr)
-      call MPI_IRECV(recv_buff_km1, ncount,       &
-                     MPI_DOUBLE_PRECISION,        &
-                     rank_next.km1,               &
-                     0, comm, requests(2), ierr)
+      call MPI_IRECV( recv_buff_kp1, ncount,       &
+                      MPI_DOUBLE_PRECISION,        &
+                      rank_next.kp1,               &
+                      0, comm, requests(1), ierr )
+      call MPI_IRECV( recv_buff_km1, ncount,       &
+                      MPI_DOUBLE_PRECISION,        &
+                      rank_next.km1,               &
+                      0, comm, requests(2), ierr )
       call MPI_BARRIER(comm, ierr)
 
-      call MPI_SEND(send_buff_kp1, ncount,        &
-                    MPI_DOUBLE_PRECISION,         &
-                    rank_next.kp1,                &
-                    0, comm, ierr)
-      call MPI_SEND(send_buff_km1, ncount,        &
-                    MPI_DOUBLE_PRECISION,         &
-                    rank_next.km1,                &
-                    0, comm, ierr)
+      call MPI_SEND( send_buff_kp1, ncount,        &
+                     MPI_DOUBLE_PRECISION,         &
+                     rank_next.kp1,                &
+                     0, comm, ierr )
+      call MPI_SEND( send_buff_km1, ncount,        &
+                     MPI_DOUBLE_PRECISION,         &
+                     rank_next.km1,                &
+                     0, comm, ierr )
       call MPI_WAITALL(2, requests, status, ierr)
 
       if ( rank_next.kp1 /= MPI_PROC_NULL ) then
@@ -2184,16 +2185,16 @@ contains
       end if
     end subroutine iN_k_direction
 
-  end subroutine exchange3d_5
+  end subroutine exchange3d_rd_5
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine exchange3d_8(comm,rank_next,                       &
-                          f01,f02,f03,f04,f05,f06,f07,f08)
-    integer(SI)          <in> :: comm
-    type(rank_next_t) <in> :: rank_next
-    type(sfield_t)    <io> :: f01,f02,f03,f04,f05,f06,f07,f08
+  subroutine exchange3d_rd_8( comm, rank_next,                       &
+                              f01, f02, f03, f04, f05, f06, f07, f08)
+    integer(SI)        <in> :: comm
+    type(rank_next_t)  <in> :: rank_next
+    type(array3d_rd_t) <io> :: f01,f02,f03,f04,f05,f06,f07,f08
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     real(DR), dimension(0:NYPP1,0:NZPP1,8) :: send_buff_ip1, send_buff_im1, &
@@ -2237,24 +2238,24 @@ contains
 
       ncount = (NYPP1+1)*(NZPP1+1)*8
 
-      call MPI_IRECV(recv_buff_ip1, ncount,       &
-                     MPI_DOUBLE_PRECISION,        &
-                     rank_next.ip1,               &
-                     0, comm, requests(1), ierr)
-      call MPI_IRECV(recv_buff_im1, ncount,       &
-                     MPI_DOUBLE_PRECISION,        &
-                     rank_next.im1,               &
-                     0, comm, requests(2), ierr)
+      call MPI_IRECV( recv_buff_ip1, ncount,       &
+                      MPI_DOUBLE_PRECISION,        &
+                      rank_next.ip1,               &
+                      0, comm, requests(1), ierr )
+      call MPI_IRECV( recv_buff_im1, ncount,       &
+                      MPI_DOUBLE_PRECISION,        &
+                      rank_next.im1,               &
+                      0, comm, requests(2), ierr )
       call MPI_BARRIER(comm, ierr)
 
-      call MPI_SEND(send_buff_ip1, ncount,        &
-                    MPI_DOUBLE_PRECISION,         &
-                    rank_next.ip1,                &
-                    0, comm, ierr)
-      call MPI_SEND(send_buff_im1, ncount,        &
-                    MPI_DOUBLE_PRECISION,         &
-                    rank_next.im1,                &
-                    0, comm, ierr)
+      call MPI_SEND( send_buff_ip1, ncount,        &
+                     MPI_DOUBLE_PRECISION,         &
+                     rank_next.ip1,                &
+                     0, comm, ierr )
+      call MPI_SEND( send_buff_im1, ncount,        &
+                     MPI_DOUBLE_PRECISION,         &
+                     rank_next.im1,                &
+                     0, comm, ierr )
       call MPI_WAITALL(2, requests, status, ierr)
 
       if ( rank_next.ip1 /= MPI_PROC_NULL ) then
@@ -2316,24 +2317,24 @@ contains
 
       ncount = (NXPP1+1)*(NZPP1+1)*8
 
-      call MPI_IRECV(recv_buff_jp1, ncount,       &
-                     MPI_DOUBLE_PRECISION,        &
-                     rank_next.jp1,               &
-                     0, comm, requests(1), ierr)
-      call MPI_IRECV(recv_buff_jm1, ncount,       &
-                     MPI_DOUBLE_PRECISION,        &
-                     rank_next.jm1,               &
-                     0, comm, requests(2), ierr)
+      call MPI_IRECV( recv_buff_jp1, ncount,       &
+                      MPI_DOUBLE_PRECISION,        &
+                      rank_next.jp1,               &
+                      0, comm, requests(1), ierr )
+      call MPI_IRECV( recv_buff_jm1, ncount,       &
+                      MPI_DOUBLE_PRECISION,        &
+                      rank_next.jm1,               &
+                      0, comm, requests(2), ierr )
       call MPI_BARRIER(comm, ierr)
 
-      call MPI_SEND(send_buff_jp1, ncount,        &
-                    MPI_DOUBLE_PRECISION,         &
-                    rank_next.jp1,                &
-                    0, comm, ierr)
-      call MPI_SEND(send_buff_jm1, ncount,        &
-                    MPI_DOUBLE_PRECISION,         &
-                    rank_next.jm1,                &
-                    0, comm, ierr)
+      call MPI_SEND( send_buff_jp1, ncount,        &
+                     MPI_DOUBLE_PRECISION,         &
+                     rank_next.jp1,                &
+                     0, comm, ierr )
+      call MPI_SEND( send_buff_jm1, ncount,        &
+                     MPI_DOUBLE_PRECISION,         &
+                     rank_next.jm1,                &
+                     0, comm, ierr )
       call MPI_WAITALL(2, requests, status, ierr)
 
       if ( rank_next.jp1 /= MPI_PROC_NULL ) then
@@ -2395,24 +2396,24 @@ contains
 
       ncount = (NXPP1+1)*(NYPP1+1)*8
 
-      call MPI_IRECV(recv_buff_kp1, ncount,       &
-                     MPI_DOUBLE_PRECISION,        &
-                     rank_next.kp1,               &
-                     0, comm, requests(1), ierr)
-      call MPI_IRECV(recv_buff_km1, ncount,       &
-                     MPI_DOUBLE_PRECISION,        &
-                     rank_next.km1,               &
-                     0, comm, requests(2), ierr)
+      call MPI_IRECV( recv_buff_kp1, ncount,       &
+                      MPI_DOUBLE_PRECISION,        &
+                      rank_next.kp1,               &
+                      0, comm, requests(1), ierr )
+      call MPI_IRECV( recv_buff_km1, ncount,       &
+                      MPI_DOUBLE_PRECISION,        &
+                      rank_next.km1,               &
+                      0, comm, requests(2), ierr )
       call MPI_BARRIER(comm, ierr)
 
-      call MPI_SEND(send_buff_kp1, ncount,        &
-                    MPI_DOUBLE_PRECISION,         &
-                    rank_next.kp1,                &
-                    0, comm, ierr)
-      call MPI_SEND(send_buff_km1, ncount,        &
-                    MPI_DOUBLE_PRECISION,         &
-                    rank_next.km1,                &
-                    0, comm, ierr)
+      call MPI_SEND( send_buff_kp1, ncount,        &
+                     MPI_DOUBLE_PRECISION,         &
+                     rank_next.kp1,                &
+                     0, comm, ierr )
+      call MPI_SEND( send_buff_km1, ncount,        &
+                     MPI_DOUBLE_PRECISION,         &
+                     rank_next.km1,                &
+                     0, comm, ierr )
       call MPI_WAITALL(2, requests, status, ierr)
 
       if ( rank_next.kp1 /= MPI_PROC_NULL ) then
@@ -2445,7 +2446,7 @@ contains
       end if
     end subroutine iN_k_direction
 
-  end subroutine exchange3d_8
+  end subroutine exchange3d_rd_8
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
@@ -2461,7 +2462,7 @@ contains
 
     allocate(sgks_array(mpiut__comm_size(comm)))
 
-    call MPI_ALLGATHER( i,1,MPI_INTEGER,              &
+    call MPI_ALLGATHER( i, 1, MPI_INTEGER,              &
                         sgks_array, 1, MPI_INTEGER,   &
                         comm, ierr )
 
@@ -2484,7 +2485,7 @@ contains
 
     allocate(sgks_array(mpiut__comm_size(comm)))
 
-    call MPI_ALLGATHER(i,1,MPI_INTEGER8,              &
+    call MPI_ALLGATHER(i, 1, MPI_INTEGER8,            &
                        sgks_array, 1, MPI_INTEGER8,   &
                        comm, ierr)
 
@@ -2507,7 +2508,7 @@ contains
 
     allocate(sgks_array(mpiut__comm_size(comm)))
 
-    call MPI_ALLGATHER(r,1,MPI_DOUBLE_PRECISION,              &
+    call MPI_ALLGATHER(r, 1, MPI_DOUBLE_PRECISION,            &
                        sgks_array, 1, MPI_DOUBLE_PRECISION,   &
                        comm, ierr)
 
@@ -2519,8 +2520,8 @@ contains
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine message_decorated_str(comm,mark,string)
-    integer(SI)    <in> :: comm
+  subroutine message_decorated_str( comm, mark, string )
+    integer(SI) <in> :: comm
     char(len=1) <in> :: mark
     char(len=*) <in> :: string
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
@@ -2534,9 +2535,9 @@ contains
     !!<
 
     ! << only the root process speaks >>
-    if ( mpiut__comm_rank(comm) /= 0 ) return
+    if ( mpiut__comm_rank( comm ) /= 0 ) return
 
-    call ut__deco_message(mark,string)
+    call ut__deco_message( mark, string )
 
   end subroutine message_decorated_str
 
@@ -2565,11 +2566,11 @@ contains
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine message_decorated_str_id(comm,mark,string,int)
-    integer(SI)    <in> :: comm
+  subroutine message_decorated_str_id( comm, mark, string, int )
+    integer(SI) <in> :: comm
     char(len=1) <in> :: mark
     char(len=*) <in> :: string
-    integer(DI)    <in> :: int
+    integer(DI) <in> :: int
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     !!>
@@ -2578,9 +2579,9 @@ contains
     !!<
 
     ! << only the root process speaks >>
-    if ( mpiut__comm_rank(comm) /= 0 ) return
+    if ( mpiut__comm_rank( comm ) /= 0 ) return
 
-    call ut__deco_message(mark,string,int)
+    call ut__deco_message( mark, string, int )
 
   end subroutine message_decorated_str_id
 
@@ -2619,16 +2620,16 @@ contains
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine message_leader_str(comm,string01,string02)
-    integer(SI)    <in> :: comm
+  subroutine message_leader_str( comm, string01, string02 )
+    integer(SI) <in> :: comm
     char(len=*) <in> :: string01
     char(len=*) <in> :: string02
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     ! << only the root process speaks >>
-    if ( mpiut__comm_rank(comm) /= 0 ) return
+    if ( mpiut__comm_rank( comm ) /= 0 ) return
 
-    call ut__message_leader(string01,string02)
+    call ut__message_leader( string01, string02 )
 
   end subroutine message_leader_str
 
@@ -2668,23 +2669,23 @@ contains
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine message_str(comm,string)
-    integer(SI)    <in> :: comm
+  subroutine message_str( comm, string )
+    integer(SI) <in> :: comm
     char(len=*) <in> :: string
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     ! << only the root process speaks >>
     if ( mpiut__comm_rank(comm) /= 0 ) return
 
-    call ut__message(string)
+    call ut__message( string )
 
   end subroutine message_str
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine message_str_rd(comm,string,double)
-    integer(SI)    <in> :: comm
+  subroutine message_str_rd( comm, string, double )
+    integer(SI) <in> :: comm
     char(len=*) <in> :: string
     real(DR)    <in> :: double
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
@@ -2692,69 +2693,69 @@ contains
     ! << only the root process speaks >>
     if ( mpiut__comm_rank(comm) /= 0 ) return
 
-    call ut__message(string,double)
+    call ut__message( string, double )
 
   end subroutine message_str_rd
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine message_str_rd_str(comm,str1,double,str2)
-    integer(SI)    <in> :: comm
+  subroutine message_str_rd_str( comm, str1, double, str2 )
+    integer(SI) <in> :: comm
     char(len=*) <in> :: str1, str2
     real(DR)    <in> :: double
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     ! << only the root process speaks >>
-    if ( mpiut__comm_rank(comm) /= 0 ) return
+    if ( mpiut__comm_rank( comm ) /= 0 ) return
 
-    call ut__message(str1,double,str2)
+    call ut__message( str1, double, str2 )
 
   end subroutine message_str_rd_str
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine message_str_logical(comm,str1,logical)
-    integer(SI)    <in> :: comm
+  subroutine message_str_logical( comm, str1, logical )
+    integer(SI) <in> :: comm
     char(len=*) <in> :: str1
     logical     <in> :: logical
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     ! << only the root process speaks >>
-    if ( mpiut__comm_rank(comm) /= 0 ) return
+    if ( mpiut__comm_rank( comm ) /= 0 ) return
 
-    call ut__message(str1,logical)
+    call ut__message( str1, logical )
 
   end subroutine message_str_logical
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine message_str_logical_str(comm,str1,logical,str2)
-    integer(SI)    <in> :: comm
+  subroutine message_str_logical_str( comm, str1, logical, str2 )
+    integer(SI) <in> :: comm
     char(len=*) <in> :: str1, str2
     logical     <in> :: logical
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     ! << only the root process speaks >>
-    if ( mpiut__comm_rank(comm) /= 0 ) return
+    if ( mpiut__comm_rank( comm ) /= 0 ) return
 
-    call ut__message(str1,logical,str2)
+    call ut__message( str1, logical, str2 )
 
   end subroutine message_str_logical_str
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine message_str_str(comm,string01,string02)
-    integer(SI)    <in> :: comm
+  subroutine message_str_str( comm, string01, string02 )
+    integer(SI) <in> :: comm
     char(len=*) <in> :: string01
     char(len=*) <in> :: string02
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     ! << only the root process speaks >>
-    if ( mpiut__comm_rank(comm) /= 0 ) return
+    if ( mpiut__comm_rank( comm ) /= 0 ) return
 
     call ut__message(string01,string02)
 
@@ -2786,7 +2787,7 @@ contains
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     ! << only the root process speaks >>
-    if ( mpiut__comm_rank(comm) /= 0 ) return
+    if ( mpiut__comm_rank( comm ) /= 0 ) return
 
     call ut__message( string, int )
 
@@ -3109,7 +3110,7 @@ contains
 
     allocate(sgks_array(mpiut__comm_size(comm)))
 
-    call MPI_ALLGATHER( i,1,MPI_INTEGER,              &
+    call MPI_ALLGATHER( i, 1, MPI_INTEGER,            &
                         sgks_array, 1, MPI_INTEGER,   &
                         comm, ierr )
 
@@ -3134,9 +3135,9 @@ contains
 
     allocate(sgks_array(mpiut__comm_size(comm)))
 
-    call MPI_ALLGATHER(i,1,MPI_INTEGER8,             &
-                       sgks_array, 1, MPI_INTEGER8,   &
-                       comm, ierr)
+    call MPI_ALLGATHER( i, 1, MPI_INTEGER8,            &
+                        sgks_array, 1, MPI_INTEGER8,   &
+                        comm, ierr )
 
     ! You can use allreduce_min, too. I don't know which is faster.
 
@@ -3159,9 +3160,9 @@ contains
 
     allocate(sgks_array(mpiut__comm_size(comm)))
 
-    call MPI_ALLGATHER(r,1,MPI_DOUBLE_PRECISION,              &
-                       sgks_array, 1, MPI_DOUBLE_PRECISION,   &
-                       comm, ierr)
+    call MPI_ALLGATHER( r, 1, MPI_DOUBLE_PRECISION,            &
+                        sgks_array, 1, MPI_DOUBLE_PRECISION,   &
+                        comm, ierr )
 
     ! You can use allreduce_min, too. I don't know which is faster.
 
@@ -3173,7 +3174,7 @@ contains
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine recv_0d_id(comm,source,i,tag_)
+  subroutine recv_0d_id( comm, source, i, tag_ )
     integer(SI) <in>    :: comm
     integer(SI) <in>    :: source
     integer(DI) <out>   :: i
@@ -3188,19 +3189,19 @@ contains
        tag = MPI_ANY_TAG
     end if
 
-    call MPI_RECV(i,  &
-                  1,  &
-                  MPI_INTEGER8,  &
-                  source,  &
-                  tag,  &
-                  comm,  &
-                  status,  &
-                  ierr)
+    call MPI_RECV( i,             &
+                   1,             &
+                   MPI_INTEGER8,  &
+                   source,        &
+                   tag,           &
+                   comm,          &
+                   status,        &
+                   ierr )
   end subroutine
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine recv_0d_is(comm,source,i,tag_)
+  subroutine recv_0d_is( comm, source, i, tag_ )
     integer(SI) <in>    :: comm
     integer(SI) <in>    :: source
     integer(SI) <out>   :: i
@@ -3215,51 +3216,22 @@ contains
        tag = MPI_ANY_TAG
     end if
 
-    call MPI_RECV(i,  &
-                  1,  &
-                  MPI_INTEGER,  &
-                  source,  &
-                  tag,  &
-                  comm,  &
-                  status,  &
-                  ierr)
+    call MPI_RECV( i,             &
+                   1,             &
+                   MPI_INTEGER,   &
+                   source,        &
+                   tag,           &
+                   comm,          &
+                   status,        &
+                   ierr )
   end subroutine
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine recv_0d_rd(comm,source,r,tag_)
-    integer(SI) <in> :: comm
-    integer(SI) <in> :: source
-    real(DR) <out> :: r
-    integer(SI) <optin> :: tag_
-
-    integer(SI) :: tag, ierr
-    integer(SI), dimension(MPI_STATUS_SIZE) :: status
-
-    if ( present(tag_) ) then
-       tag = tag_
-    else
-       tag = MPI_ANY_TAG
-    end if
-
-    call MPI_RECV(r,  &
-                  1,  &
-                  MPI_DOUBLE_PRECISION,  &
-                  source,  &
-                  tag,  &
-                  comm,  &
-                  status,  &
-                  ierr)
-  end subroutine
-
-
-
-!__________  _________  ________ _______ ______ _____ ____ ___ __ _
-!
-  subroutine recv_1d_rd(comm,source,buff,tag_)
+  subroutine recv_0d_rd( comm, source, r, tag_ )
     integer(SI) <in>    :: comm
     integer(SI) <in>    :: source
-    real(DR) <out>   :: buff(:)
+    real(DR)    <out>   :: r
     integer(SI) <optin> :: tag_
 
     integer(SI) :: tag, ierr
@@ -3271,22 +3243,24 @@ contains
        tag = MPI_ANY_TAG
     end if
 
-    call MPI_RECV(buff,                  &
-                  size(buff,1),          &
-                  MPI_DOUBLE_PRECISION,  &
-                  source,                &
-                  tag,                   &
-                  comm,                  &
-                  status,                &
-                  ierr)
+    call MPI_RECV( r,                     &
+                   1,                     &
+                   MPI_DOUBLE_PRECISION,  &
+                   source,                &
+                   tag,                   &
+                   comm,                  &
+                   status,                &
+                   ierr )
   end subroutine
+
+
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine recv_1d_rs(comm,source,buff,tag_)
+  subroutine recv_1d_rd( comm, source, buff, tag_ )
     integer(SI) <in>    :: comm
     integer(SI) <in>    :: source
-    real(SR) <out>   :: buff(:)
+    real(DR)    <out>   :: buff(:)
     integer(SI) <optin> :: tag_
 
     integer(SI) :: tag, ierr
@@ -3298,22 +3272,22 @@ contains
        tag = MPI_ANY_TAG
     end if
 
-    call MPI_RECV(buff,                  &
-                  size(buff,1),          &
-                  MPI_REAL,              &
-                  source,                &
-                  tag,                   &
-                  comm,                  &
-                  status,                &
-                  ierr)
+    call MPI_RECV( buff,                  &
+                   size(buff,1),          &
+                   MPI_DOUBLE_PRECISION,  &
+                   source,                &
+                   tag,                   &
+                   comm,                  &
+                   status,                &
+                   ierr )
   end subroutine
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine recv_3d_rd(comm,source,buff,tag_)
+  subroutine recv_1d_rs( comm, source, buff, tag_ )
     integer(SI) <in>    :: comm
     integer(SI) <in>    :: source
-    real(DR) <out>   :: buff(:,:,:)
+    real(SR)    <out>   :: buff(:)
     integer(SI) <optin> :: tag_
 
     integer(SI) :: tag, ierr
@@ -3325,22 +3299,22 @@ contains
        tag = MPI_ANY_TAG
     end if
 
-    call MPI_RECV(buff,                                     &
-                  size(buff,1)*size(buff,2)*size(buff,3),   &
-                  MPI_DOUBLE_PRECISION,                     &
-                  source,                                   &
-                  tag,                                      &
-                  comm,                                     &
-                  status,                                   &
-                  ierr)
+    call MPI_RECV( buff,                  &
+                   size(buff,1),          &
+                   MPI_REAL,              &
+                   source,                &
+                   tag,                   &
+                   comm,                  &
+                   status,                &
+                   ierr )
   end subroutine
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine recv_3d_rs(comm,source,buff,tag_)
+  subroutine recv_3d_rd( comm, source, buff, tag_ )
     integer(SI) <in>    :: comm
     integer(SI) <in>    :: source
-    real(SR) <out>   :: buff(:,:,:)
+    real(DR)    <out>   :: buff(:,:,:)
     integer(SI) <optin> :: tag_
 
     integer(SI) :: tag, ierr
@@ -3352,23 +3326,22 @@ contains
        tag = MPI_ANY_TAG
     end if
 
-    call MPI_RECV(buff,                                     &
-                  size(buff,1)*size(buff,2)*size(buff,3),   &
-                  MPI_REAL,                                 &
-                  source,                                   &
-                  tag,                                      &
-                  comm,                                     &
-                  status,                                   &
-                  ierr)
+    call MPI_RECV( buff,                                     &
+                   size(buff,1)*size(buff,2)*size(buff,3),   &
+                   MPI_DOUBLE_PRECISION,                     &
+                   source,                                   &
+                   tag,                                      &
+                   comm,                                     &
+                   status,                                   &
+                   ierr )
   end subroutine
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine recv_str(comm,source,l,str,tag_)
-    integer(SI) <in> :: comm
-    integer(SI) <in> :: source
-    integer(SI) <in> :: l
-    char(len=l) <out> :: str
+  subroutine recv_3d_rs( comm, source, buff, tag_ )
+    integer(SI) <in>    :: comm
+    integer(SI) <in>    :: source
+    real(SR)    <out>   :: buff(:,:,:)
     integer(SI) <optin> :: tag_
 
     integer(SI) :: tag, ierr
@@ -3380,14 +3353,42 @@ contains
        tag = MPI_ANY_TAG
     end if
 
-    call MPI_RECV(str,  &
-                  l,  &
-                  MPI_CHARACTER,  &
-                  source,  &
-                  tag,  &
-                  comm,  &
-                  status,  &
-                  ierr)
+    call MPI_RECV( buff,                                     &
+                   size(buff,1)*size(buff,2)*size(buff,3),   &
+                   MPI_REAL,                                 &
+                   source,                                   &
+                   tag,                                      &
+                   comm,                                     &
+                   status,                                   &
+                   ierr )
+  end subroutine
+
+!__________  _________  ________ _______ ______ _____ ____ ___ __ _
+!
+  subroutine recv_str( comm, source, l, str, tag_ )
+    integer(SI) <in>    :: comm
+    integer(SI) <in>    :: source
+    integer(SI) <in>    :: l
+    char(len=l) <out>   :: str
+    integer(SI) <optin> :: tag_
+
+    integer(SI) :: tag, ierr
+    integer(SI), dimension(MPI_STATUS_SIZE) :: status
+
+    if ( present(tag_) ) then
+       tag = tag_
+    else
+       tag = MPI_ANY_TAG
+    end if
+
+    call MPI_RECV( str,             &
+                   l,               &
+                   MPI_CHARACTER,   &
+                   source,          &
+                   tag,             &
+                   comm,            &
+                   status,          &
+                   ierr )
   end subroutine
 
 
@@ -3399,7 +3400,7 @@ contains
 !
     integer(SI) :: ierr
 
-    call MPI_INITIALIZED(mpi_init_already_called, ierr)
+    call MPI_INITIALIZED( mpi_init_already_called, ierr )
 
   end function mpi_init_already_called
 
@@ -3424,6 +3425,7 @@ contains
                      root,                  &
                      comm,                  &
                      ierr )
+
   end subroutine reduce_sum0d_rd
 
 
@@ -3453,7 +3455,7 @@ contains
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine send_0d_id(comm,target,i,tag_)
+  subroutine send_0d_id( comm, target, i, tag_ )
     integer(SI) <in>    :: comm
     integer(SI) <in>    :: target
     integer(DI) <in>    :: i
@@ -3467,18 +3469,18 @@ contains
        tag = 1   ! any integer
     end if
 
-    call MPI_SEND(i,  &
-                  1,  &
-                  MPI_INTEGER8,  &
-                  target,  &
-                  tag,  &  ! tag
-                  comm,  &
-                  ierr)
+    call MPI_SEND( i,             &
+                   1,             &
+                   MPI_INTEGER8,  &
+                   target,        &
+                   tag,           &
+                   comm,          &
+                   ierr )
   end subroutine
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine send_0d_is(comm,target,i,tag_)
+  subroutine send_0d_is( comm, target, i, tag_ )
     integer(SI) <in>    :: comm
     integer(SI) <in>    :: target
     integer(SI) <in>    :: i
@@ -3492,47 +3494,21 @@ contains
        tag = 1   ! any integer
     end if
 
-    call MPI_SEND(i,  &
-                  1,  &
-                  MPI_INTEGER,  &
-                  target,  &
-                  tag,  &  ! tag
-                  comm,  &
-                  ierr)
+    call MPI_SEND( i,             &
+                   1,             &
+                   MPI_INTEGER,   &
+                   target,        &
+                   tag,           &
+                   comm,          &
+                   ierr )
   end subroutine
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine send_0d_rd(comm,target,r,tag_)
-    integer(SI) <in> :: comm
-    integer(SI) <in> :: target
-    real(DR) <in> :: r
-    integer(SI) <optin> :: tag_
-
-    integer(SI) :: tag, ierr
-
-    if ( present(tag_) ) then
-       tag = tag_
-    else
-       tag = 1   ! any integer
-    end if
-
-    call MPI_SEND(r,  &
-                  1,  &
-                  MPI_DOUBLE_PRECISION,  &
-                  target,  &
-                  tag,  &
-                  comm,  &
-                  ierr)
-  end subroutine
-
-
-!__________  _________  ________ _______ ______ _____ ____ ___ __ _
-!
-  subroutine send_1d_rd(comm,target,buff,tag_)
+  subroutine send_0d_rd( comm, target, r, tag_ )
     integer(SI) <in>    :: comm
     integer(SI) <in>    :: target
-    real(DR) <in>    :: buff(:)
+    real(DR)    <in>    :: r
     integer(SI) <optin> :: tag_
 
     integer(SI) :: tag, ierr
@@ -3543,22 +3519,23 @@ contains
        tag = 1   ! any integer
     end if
 
-    call MPI_SEND(buff,                  &
-                  size(buff,1),          &
-                  MPI_DOUBLE_PRECISION,  &
-                  target,                &
-                  tag,                   &
-                  comm,                  &
-                  ierr)
+    call MPI_SEND( r,                     &
+                   1,                     &
+                   MPI_DOUBLE_PRECISION,  &
+                   target,                &
+                   tag,                   &
+                   comm,                  &
+                   ierr )
+
   end subroutine
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine send_1d_rs(comm,target,buff,tag_)
+  subroutine send_1d_rd( comm, target, buff, tag_ )
     integer(SI) <in>    :: comm
     integer(SI) <in>    :: target
-    real(SR) <in>    :: buff(:)
+    real(DR)    <in>    :: buff(:)
     integer(SI) <optin> :: tag_
 
     integer(SI) :: tag, ierr
@@ -3569,22 +3546,22 @@ contains
        tag = 1   ! any integer
     end if
 
-    call MPI_SEND(buff,                  &
-                  size(buff,1),          &
-                  MPI_REAL,              &
-                  target,                &
-                  tag,                   &
-                  comm,                  &
-                  ierr)
+    call MPI_SEND( buff,                  &
+                   size(buff,1),          &
+                   MPI_DOUBLE_PRECISION,  &
+                   target,                &
+                   tag,                   &
+                   comm,                  &
+                   ierr )
   end subroutine
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine send_3d_rd(comm,target,buff,tag_)
+  subroutine send_1d_rs( comm, target, buff, tag_ )
     integer(SI) <in>    :: comm
     integer(SI) <in>    :: target
-    real(DR) <in>    :: buff(:,:,:)
+    real(SR)    <in>    :: buff(:)
     integer(SI) <optin> :: tag_
 
     integer(SI) :: tag, ierr
@@ -3595,22 +3572,22 @@ contains
        tag = 1   ! any integer
     end if
 
-    call MPI_SEND(buff,                                     &
-                  size(buff,1)*size(buff,2)*size(buff,3),   &
-                  MPI_DOUBLE_PRECISION,                     &
-                  target,                                   &
-                  tag,                                      &  ! tag
-                  comm,                                     &
-                  ierr)
+    call MPI_SEND( buff,                  &
+                   size(buff,1),          &
+                   MPI_REAL,              &
+                   target,                &
+                   tag,                   &
+                   comm,                  &
+                   ierr )
   end subroutine
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine send_3d_rs(comm,target,buff,tag_)
+  subroutine send_3d_rd( comm, target, buff, tag_ )
     integer(SI) <in>    :: comm
     integer(SI) <in>    :: target
-    real(SR) <in>    :: buff(:,:,:)
+    real(DR)    <in>    :: buff(:,:,:)
     integer(SI) <optin> :: tag_
 
     integer(SI) :: tag, ierr
@@ -3621,22 +3598,22 @@ contains
        tag = 1   ! any integer
     end if
 
-    call MPI_SEND(buff,                                     &
-                  size(buff,1)*size(buff,2)*size(buff,3),   &
-                  MPI_REAL,                                 &
-                  target,                                   &
-                  tag,                                      &  ! tag
-                  comm,                                     &
-                  ierr)
+    call MPI_SEND( buff,                                     &
+                   size(buff,1)*size(buff,2)*size(buff,3),   &
+                   MPI_DOUBLE_PRECISION,                     &
+                   target,                                   &
+                   tag,                                      &
+                   comm,                                     &
+                   ierr )
   end subroutine
+
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine send_str(comm,target,l,str,tag_)
-    integer(SI) <in> :: comm
-    integer(SI) <in> :: target
-    integer(SI) <in> :: l
-    char(len=l) <in> :: str
+  subroutine send_3d_rs( comm, target, buff, tag_ )
+    integer(SI) <in>    :: comm
+    integer(SI) <in>    :: target
+    real(SR)    <in>    :: buff(:,:,:)
     integer(SI) <optin> :: tag_
 
     integer(SI) :: tag, ierr
@@ -3647,26 +3624,53 @@ contains
        tag = 1   ! any integer
     end if
 
-    call MPI_SEND(str,  &
-                  l,  &
-                  MPI_CHARACTER,  &
-                  target,  &
-                  tag,  &  ! tag
-                  comm,  &
-                  ierr)
+    call MPI_SEND( buff,                                     &
+                   size(buff,1)*size(buff,2)*size(buff,3),   &
+                   MPI_REAL,                                 &
+                   target,                                   &
+                   tag,                                      &
+                   comm,                                     &
+                   ierr )
+  end subroutine
+
+!__________  _________  ________ _______ ______ _____ ____ ___ __ _
+!
+  subroutine send_str( comm, target, l, str, tag_ )
+    integer(SI) <in>    :: comm
+    integer(SI) <in>    :: target
+    integer(SI) <in>    :: l
+    char(len=l) <in>    :: str
+    integer(SI) <optin> :: tag_
+
+    integer(SI) :: tag, ierr
+
+    if ( present(tag_) ) then
+       tag = tag_
+    else
+       tag = 1   ! any integer
+    end if
+
+    call MPI_SEND( str,             &
+                   l,               &
+                   MPI_CHARACTER,   &
+                   target,          &
+                   tag,             &
+                   comm,            &
+                   ierr )
   end subroutine
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine tag_match__send_set(self,i)
+  subroutine tag_match__send_set( self, i )
     class(mpiut__tag_match_t) :: self
     integer(SI) <in> :: i
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     self.tag_send = i
     if ( .not. self.tag_recv_unset ) then
-      call mpiut__assert(self.tag_recv==i, '<__FUNC__> tag unmatch.')
+      call mpiut__assert( self.tag_recv==i,  &
+                          '<__FUNC__> tag unmatch.' )
       self.tag_send_unset = .true.
       self.tag_recv_unset = .true.
     else
@@ -3678,14 +3682,15 @@ contains
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine tag_match__recv_set(self,i)
+  subroutine tag_match__recv_set( self, i )
     class(mpiut__tag_match_t) :: self
-    integer(SI) <in> :: i
+    integer(SI)          <in> :: i
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     self.tag_recv = i
     if ( .not. self.tag_send_unset ) then
-      call mpiut__assert(self.tag_send==i, '<__FUNC__> tag unmatch.')
+      call mpiut__assert( self.tag_send==i,  &
+                          '<__FUNC__> tag unmatch.' )
       self.tag_send_unset = .true.
       self.tag_recv_unset = .true.
     else
@@ -3696,9 +3701,9 @@ contains
 
 
 
-!!!>
-!    Public
-!!!<
+!!>
+    Public
+!!<
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
@@ -3745,14 +3750,14 @@ contains
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine mpiut__assert(must_be_true,message)
+  subroutine mpiut__assert( must_be_true, message )
     logical     <in> :: must_be_true
     char(len=*) <in> :: message
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
 
     if ( .not. must_be_true ) then
-      call mpiut__fatal(message)
+      call mpiut__fatal( message )
     end if
 
   end subroutine mpiut__assert
@@ -3760,8 +3765,8 @@ contains
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine mpiut__barrier(comm,tag)
-    integer(SI) <in> :: comm
+  subroutine mpiut__barrier( comm, tag )
+    integer(SI) <in>    :: comm
     integer(SI) <optin> :: tag ! for debug. careful but slow.
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
@@ -3772,28 +3777,28 @@ contains
     integer(SI) :: tag_min, tag_max
     if (present(tag)) then
       tag_min = tag; tag_max = tag
-      call mpiut__allreduce_min(comm,tag_min)
-      call mpiut__allreduce_max(comm,tag_max)
-      if ( tag_min/=tag_max ) then
-        call mpiut__message_leader(comm,'tag lowest', tag_min)
-        call mpiut__message_leader(comm,'tag highest',tag_max)
+      call mpiut__allreduce_min( comm, tag_min )
+      call mpiut__allreduce_max( comm, tag_max )
+      if ( tag_min /= tag_max ) then
+        call mpiut__message_leader( comm, 'tag lowest',  tag_min )
+        call mpiut__message_leader( comm, 'tag highest', tag_max )
         call mpiut__fatal('<__FUNC__> different tag.')
       end if
-      call mpiut__message_leader(comm,'__FUNC__: tag',tag)
+      call mpiut__message_leader( comm, '__FUNC__: tag', tag )
     end if
     !!<
 
-    call MPI_BARRIER(comm, ierr)
+    call MPI_BARRIER( comm, ierr )
 
   end subroutine mpiut__barrier
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine mpiut__comm_divide(comm_org, nprocs_one,  &
-                                comm_one,comm_two)
-    integer(SI) <in>    :: comm_org, nprocs_one
-    integer(SI) <out>   :: comm_one, comm_two
+  subroutine mpiut__comm_divide( comm_org, nprocs_one,  &
+                                 comm_one, comm_two )
+    integer(SI) <in>  :: comm_org, nprocs_one
+    integer(SI) <out> :: comm_one, comm_two
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     !!>
@@ -3807,14 +3812,14 @@ contains
     integer(SI) :: group_org, ierr, i, nprocs_two
     integer(SI) :: group_one, group_two, nprocs_org
 
-    call mpiut__assert(nprocs_one>0,  &
-                       '<__FUNC__> nprocs_one negative?')
+    call mpiut__assert( nprocs_one>0,  &
+                        '<__FUNC__> nprocs_one negative?' )
 
-    nprocs_org = mpiut__comm_size(comm_org)
+    nprocs_org = mpiut__comm_size( comm_org )
 
     nprocs_two = nprocs_org - nprocs_one
-    call mpiut__assert(nprocs_two>0,  &
-                       '<__FUNC__> nprocs_two negative?')
+    call mpiut__assert( nprocs_two>0,  &
+                        '<__FUNC__> nprocs_two negative?' )
 
     allocate(rank_list_one(nprocs_one))
     allocate(rank_list_two(nprocs_two))
@@ -3827,17 +3832,17 @@ contains
       rank_list_two(i) = nprocs_one + i - 1
     end do
 
-    call MPI_COMM_GROUP(comm_org,group_org,ierr)
-    call MPI_GROUP_INCL(group_org,nprocs_one,                       &
-                        rank_list_one,group_one,ierr)
-    call MPI_GROUP_INCL(group_org,nprocs_two,                       &
-                        rank_list_two,group_two,ierr)
-    call MPI_Comm_create(comm_org,group_one,comm_one,ierr)
-    call MPI_Comm_create(comm_org,group_two,comm_two,ierr)
+    call MPI_COMM_GROUP( comm_org, group_org, ierr) 
+    call MPI_GROUP_INCL( group_org, nprocs_one,                       &
+                         rank_list_one, group_one, ierr )
+    call MPI_GROUP_INCL( group_org, nprocs_two,                       &
+                         rank_list_two, group_two, ierr )
+    call MPI_Comm_create( comm_org, group_one, comm_one, ierr )
+    call MPI_Comm_create( comm_org, group_two, comm_two, ierr )
 
-    call MPI_GROUP_FREE(group_org,ierr)
-    call MPI_GROUP_FREE(group_one,ierr)
-    call MPI_GROUP_FREE(group_two,ierr)
+    call MPI_GROUP_FREE( group_org, ierr )
+    call MPI_GROUP_FREE( group_one, ierr )
+    call MPI_GROUP_FREE( group_two, ierr )
 
     deallocate(rank_list_one)
     deallocate(rank_list_two)
@@ -3847,14 +3852,14 @@ contains
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  function mpiut__comm_rank(comm)
+  function mpiut__comm_rank( comm )
     integer(SI) <in> :: comm
-    integer(SI) :: mpiut__comm_rank
+    integer(SI)      :: mpiut__comm_rank
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     integer(SI) :: myrank, ierr
 
-    call MPI_COMM_RANK(comm, myrank, ierr)
+    call MPI_COMM_RANK( comm, myrank, ierr )
 
     mpiut__comm_rank = myrank
 
@@ -3863,14 +3868,14 @@ contains
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  function mpiut__comm_size(comm)
+  function mpiut__comm_size( comm )
     integer(SI) <in> :: comm
-    integer(SI) :: mpiut__comm_size
+    integer(SI)      :: mpiut__comm_size
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     integer(SI) :: numprocs, ierr
 
-    call MPI_COMM_SIZE(comm, numprocs, ierr)
+    call MPI_COMM_SIZE( comm, numprocs, ierr )
 
     mpiut__comm_size = numprocs
 
@@ -3879,35 +3884,35 @@ contains
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine mpiut__comm_split(comm, color, key, new_comm)
-    integer(SI) <in> :: comm, color, key
+  subroutine mpiut__comm_split( comm, color, key, new_comm )
+    integer(SI) <in>  :: comm, color, key
     integer(SI) <out> :: new_comm
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     integer(SI) :: ierr
 
-    call MPI_COMM_SPLIT(comm, color, key, new_comm, ierr)
+    call MPI_COMM_SPLIT( comm, color, key, new_comm, ierr )
 
   end subroutine mpiut__comm_split
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  function mpiut__comm_remote_size(inter_comm)
+  function mpiut__comm_remote_size( inter_comm )
     integer(SI) <in> :: inter_comm
-    integer(SI) :: mpiut__comm_remote_size
+    integer(SI)      :: mpiut__comm_remote_size
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     integer(SI) :: numprocs, ierr
     logical :: is_inter
 
-    is_inter = mpiut__comm_test_inter(inter_comm)
+    is_inter = mpiut__comm_test_inter( inter_comm )
 
-    call mpiut__assert(is_inter,  &
-                       '<__FUNC__> Not'  &
-                     //' an inter-communicator.')
+    call mpiut__assert( is_inter,  &
+                        '<__FUNC__> Not'  &
+                      //' an inter-communicator.' )
 
-    call MPI_COMM_REMOTE_SIZE(inter_comm, numprocs, ierr)
+    call MPI_COMM_REMOTE_SIZE( inter_comm, numprocs, ierr )
 
     mpiut__comm_remote_size = numprocs
 
@@ -3916,23 +3921,23 @@ contains
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  function mpiut__comm_test_inter(comm)
+  function mpiut__comm_test_inter( comm )
     integer(SI) <in> :: comm
     logical :: mpiut__comm_test_inter
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     integer(SI) :: ierr
 
-    call MPI_COMM_TEST_INTER(comm,  &
-                             mpiut__comm_test_inter,  &
-                             ierr)
+    call MPI_COMM_TEST_INTER( comm,  &
+                              mpiut__comm_test_inter,  &
+                              ierr )
 
   end function mpiut__comm_test_inter
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine mpiut__decomp1d(n, numprocs, myid, stt, end)
+  subroutine mpiut__decomp1d( n, numprocs, myid, stt, end )
     integer(SI) <in>  :: n         ! total mesh points
     integer(SI) <in>  :: numprocs  ! number of process
     integer(SI) <in>  :: myid      ! rank of the process
@@ -3950,21 +3955,21 @@ contains
     stt     = myid * nlocal + 1
     deficit = mod(n,numprocs)
     stt     = stt + min(myid,deficit)
-    if (myid < deficit) then
+    if ( myid < deficit ) then
        nlocal = nlocal + 1
     endif
     end = stt + nlocal - 1
-    if (end > n .or. myid == numprocs-1) end = n
+    if ( end > n .or. myid == numprocs-1 ) end = n
 
   end subroutine mpiut__decomp1d
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine mpiut__comm_extract(comm_parent,nprocs_child,  &
-                                 list_child,comm_child)
-    integer(SI) <in> :: comm_parent, nprocs_child
-    integer(SI) <in> :: list_child(:)
+  subroutine mpiut__comm_extract( comm_parent, nprocs_child,  &
+                                  list_child, comm_child )
+    integer(SI) <in>  :: comm_parent, nprocs_child
+    integer(SI) <in>  :: list_child(:)
     integer(SI) <out> :: comm_child
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
@@ -3975,31 +3980,31 @@ contains
 
     integer(SI) :: group_parent, group_child, ierr
 
-    call mpiut__assert(nprocs_child>0,  &
-                       '<mpiut__comm_extract> no nprocs_child?')
+    call mpiut__assert( nprocs_child>0,  &
+                        '<mpiut__comm_extract> no nprocs_child?' )
 
-    call MPI_COMM_GROUP(comm_parent,group_parent,ierr)
-    call MPI_GROUP_INCL(group_parent,nprocs_child,  &
-                        list_child,group_child,ierr)
-    call MPI_Comm_create(comm_parent,group_child,comm_child,ierr)
+    call MPI_COMM_GROUP( comm_parent, group_parent, ierr )
+    call MPI_GROUP_INCL( group_parent, nprocs_child,    &
+                         list_child, group_child, ierr)
+    call MPI_Comm_create( comm_parent, group_child, comm_child, ierr )
 
-    call MPI_GROUP_FREE(group_parent,ierr)
-    call MPI_GROUP_FREE(group_child,ierr)
+    call MPI_GROUP_FREE( group_parent, ierr )
+    call MPI_GROUP_FREE( group_child,  ierr )
 
   end subroutine mpiut__comm_extract
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  function mpiut__comm_find_rank(comm,condition) result(ans)
+  function mpiut__comm_find_rank( comm, condition ) result(ans)
     integer(SI) <in> :: comm
-    logical <in> :: condition
-    integer(SI) :: ans
+    logical     <in> :: condition
+    integer(SI)      :: ans
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     integer(SI) :: smyrank, count
 
-    smyrank = mpiut__comm_rank(comm)
+    smyrank = mpiut__comm_rank( comm )
 
     if ( condition ) then
       ans = smyrank
@@ -4008,19 +4013,19 @@ contains
       ans = 0
       count = 0
     end if
-    call mpiut__allreduce_sum(comm,count)
-    call mpiut__assert(count==1,'<__FUNC__> condition not uniq.')
+    call mpiut__allreduce_sum( comm, count )
+    call mpiut__assert( count==1, '<__FUNC__> condition not uniq.' )
 
-    call mpiut__allreduce_max(comm,ans)
+    call mpiut__allreduce_max( comm, ans )
 
   end function mpiut__comm_find_rank
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine mpiut__comm_extract_friend(comm,mystate,comm_friend)
-    integer(SI) <in>  :: comm          ! parent communicator
-    logical  <in>  :: mystate       ! if I am in the friend comm, or not.
+  subroutine mpiut__comm_extract_friend( comm, mystate, comm_friend )
+    integer(SI) <in>  :: comm         ! parent communicator
+    logical     <in>  :: mystate      ! if I am in the friend comm, or not.
     integer(SI) <out> :: comm_friend  ! the friend communicator
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
@@ -4033,16 +4038,16 @@ contains
     integer(SI) :: i, nprocs, counter, ierr
     integer(SI), allocatable :: friend_rank_list(:)
 
-    nprocs = mpiut__comm_size(comm)
+    nprocs = mpiut__comm_size( comm )
     allocate(mystate_array(nprocs))
     allocate(friend_rank_list(nprocs)) ! A part of them is used.
 
     mystate_array(:) = .false.
     friend_rank_list(:) = MPI_PROC_NULL
 
-    call MPI_ALLGATHER(mystate, 1, MPI_LOGICAL,  &
-                       mystate_array, 1, MPI_LOGICAL,  &
-                       comm, ierr)
+    call MPI_ALLGATHER( mystate, 1, MPI_LOGICAL,        &
+                        mystate_array, 1, MPI_LOGICAL,  &
+                        comm, ierr )
     counter = 0
     do i = 1 , nprocs
       if ( mystate_array(i) ) then
@@ -4051,9 +4056,9 @@ contains
       end if
     end do
 
-    call mpiut__comm_extract(comm,counter,  &
-                             friend_rank_list,  &
-                             comm_friend)
+    call mpiut__comm_extract( comm,counter,      &
+                              friend_rank_list,  &
+                              comm_friend )
 
     deallocate(mystate_array)
     deallocate(friend_rank_list)
@@ -4063,7 +4068,7 @@ contains
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine mpiut__fatal(last_will)
+  subroutine mpiut__fatal( last_will )
     char(len=*) <in> :: last_will
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
@@ -4073,11 +4078,11 @@ contains
 
     integer(SI) :: ierr, myrank
 
-    call ut__deco_message('!',last_will)
+    call ut__deco_message( '!', last_will )
 
     if ( mpi_init_already_called() ) then
-       myrank = mpiut__comm_rank(MPI_COMM_WORLD)
-       call MPI_ABORT(MPI_COMM_WORLD,myrank,ierr)
+       myrank = mpiut__comm_rank( MPI_COMM_WORLD )
+       call MPI_ABORT( MPI_COMM_WORLD, myrank, ierr )
     end if
 
     stop
@@ -4088,19 +4093,19 @@ contains
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  function mpiut__tag_check(comm,tag)
+  function mpiut__tag_check( comm, tag )
     integer(SI) <in> :: comm, tag
     logical :: mpiut__tag_check
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-    mpiut__tag_check = mpiut__const_check(comm,tag)
+    mpiut__tag_check = mpiut__const_check( comm, tag )
 
   end function
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  function const_check_di(comm,i)
+  function const_check_di( comm, i )
     integer(SI) <in> :: comm
     integer(DI) <in> :: i
     logical :: const_check_di
@@ -4109,8 +4114,8 @@ contains
     integer(DI) :: max, min
 
     max = i; min = i
-    call mpiut__allreduce_max(comm,max)
-    call mpiut__allreduce_min(comm,min)
+    call mpiut__allreduce_max( comm, max )
+    call mpiut__allreduce_min( comm, min )
 
     const_check_di = max==min
 
@@ -4119,7 +4124,7 @@ contains
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  function const_check_si(comm,i)
+  function const_check_si( comm, i )
     integer(SI) <in> :: comm, i
     logical :: const_check_si
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
@@ -4127,8 +4132,8 @@ contains
     integer(SI) :: max, min
 
     max = i; min = i
-    call mpiut__allreduce_max(comm,max)
-    call mpiut__allreduce_min(comm,min)
+    call mpiut__allreduce_max( comm, max )
+    call mpiut__allreduce_min( comm, min )
 
     const_check_si = max==min
 
@@ -4142,16 +4147,16 @@ contains
 !
     integer(SI) :: ierr
 
-    call MPI_FINALIZE(ierr)
+    call MPI_FINALIZE( ierr )
 
-    call mpiut__assert(ierr==0,'<__FUNC__> failed.')
+    call mpiut__assert( ierr==0, '<__FUNC__> failed.' )
 
   end subroutine mpiut__finalize
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine mpiut__init(omp_required)
+  subroutine mpiut__init( omp_required )
     integer(SI) <optin> :: omp_required
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
@@ -4165,15 +4170,15 @@ contains
     if ( .not. present(omp_required) ) then
       call MPI_INIT(ierr)
     else
-      call MPI_INIT_THREAD(omp_required,provided,ierr)
-      call mpiut__message_leader(MPI_COMM_WORLD,  &
-                                'MPI_INIT_THREAD with requred',  &
-                                iTable(omp_required))
-      call mpiut__message_leader(MPI_COMM_WORLD,  &
-                                '                    provided',  &
-                                iTable(provided))
+      call MPI_INIT_THREAD( omp_required, provided, ierr )
+      call mpiut__message_leader( MPI_COMM_WORLD,                 &
+                                  'MPI_INIT_THREAD with requred', &
+                                  iTable(omp_required) )
+      call mpiut__message_leader( MPI_COMM_WORLD,                 &
+                                  '                    provided', &
+                                  iTable(provided))
     end if
-    call mpiut__assert(ierr==0,'<__FUNC__> failed.')
+    call mpiut__assert( ierr==0, '<__FUNC__> failed.' )
 
   contains
 
@@ -4201,18 +4206,18 @@ contains
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine mpiut__zeroset3d_bcast(comm, buff)
+  subroutine mpiut__zeroset3d_bcast( comm, buff )
     integer(SI) <in>  :: comm
-    real(DR) <out> :: buff(:,:,:)
+    real(DR)    <out> :: buff(:,:,:)
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     integer(SI) :: root=0, me
 
-    me = mpiut__comm_rank(comm)
+    me = mpiut__comm_rank( comm )
 
-    if (me==root)  buff(:,:,:) = 0.0_DR
+    if (me==root) buff(:,:,:) = 0.0_DR
 
-    call mpiut__bcast(comm, root, buff)
+    call mpiut__bcast( comm, root, buff )
 
   end subroutine mpiut__zeroset3d_bcast
 
