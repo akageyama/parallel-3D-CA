@@ -1,13 +1,12 @@
-
 !!>
 
-  cg-mhd: Cubic Grid MHD Solver
-                                           Akira Kageyama
-                                   kage@port.kobe-u.ac.jp
-                                               Kobe Univ.
+  parallel-3D-CA: Parallel 3-D Celluar Automaton
+                                  Akira Kageyama
+                          kage@port.kobe-u.ac.jp
+                                 Kobe University
 
   Note:
-   * Written in "E-language". Apply "efpp.sh" for Fortran 2003.
+   * Written in "E-language". Apply "efpp.py" for Modern Fortran.
    * We take the ``Keep it simple'' approach:
        + The grid spacings in three (x,y, and z) directions
          are all the same, i.e., dx=dy=dz.
@@ -19,6 +18,33 @@
        + We also disregard the interprocess communication
          redundancy. Simplicity surpasses communication stinginess.
 
+  ut.f90
+    2003.04.23: Developed by Akira Kageyama
+    2003.05.21: Added ut__i2c3.
+    2003.06.06: Converted ut__zeroset3d into procedure with optional arg.
+    2003.09.05: Added ut__step.
+    2003.09.09: Went back to generic interface for ut__zeroset3d.
+    2003.12.13: Revised ut__message (copied from 1st mpi version.)
+    2003.12.13: Added message_str_si_sr_sr.
+    2004.03.30: Added ut__hash_i (copied from yymm-mpi)
+    2004.03.30: Added zeroset3d1.
+    2004.03.31: Removed ut__hash_i (mv to boundary.f90/register).
+    2004.04.05: Changed ut__atan
+    2004.04.06: Done MPI conversion.
+    2006.01.16: Changed the decoration style for the subroutine.
+    2006.01.18: Made ut__i2c3 a function, not a subroutine.
+    2006.01.23: zeroset3d --> zeroset.
+    2006.01.31: Added new function ut__i2c7.
+    2006.02.01: Added ut__gets & UT__STRLEN_MAX.
+    2006.08.18: Added ut__plusplus.
+    2007.04.24: Added ut__assert.
+    2007.05.01: Added ut__make_queue (modified register).
+    2007.05.11: This is yysc-dynamo.
+    2007.05.17: Divided ut__message and ut__deco_message.
+    2007.05.17: Added message_str_str.
+    2007.05.17: Added ut__i2c1.
+    2007.06.04: Added ut__i2c4.
+
   ut.e95
     2013.04.06: Added zeroset4d1_r, zeroset4d2_r, zeroset4d1_f, zeroset4d2_f.
     2013.04.11: Added ut__smooth_step.
@@ -26,16 +52,14 @@
     2013.05.18: Removed old zeroset routiens. Instead, we use elemental.
     2013.06.05: Done. This comes from old "ut.f90"
     2013.06.05: See the comment below for its (long) history.
-    2013.06.06: Added message_str_double_str.
+    2013.06.06: Added message_str_dr_str.
     2013.06.13: Added message_leader.
+
+  ut.e03
     2014.12.06: DP-->DR. integer-->intg(SI)
-                added the following functions that relates to ingr(DI)
-                  +message_decorated_str_intd    [intd stands for integer(DI)]
-                  +message_str_int_intd, etc.
     2016.06.16: Changed ut__gets private-->public by Y. Ueda.
     2017.05.15: Added comment at ut__make_queue by S. Hosoyamada.
-    2017.06.16: Deleted elemental at zeroset because it is too late
-                in ES3(JAMSTEC) by Y. Ueda.
+    2017.06.16: Deleted elemental at zeroset for it is too late in ES3.
     2017.07.04: Took off fancy lines around routines.  -kage
     2017.07.04: Use <in> etc. -kage
     2017.07.05: Added ut__real_to_str10 ut__int_to_str10.  -kage
@@ -45,48 +69,15 @@
     2017.07.25: Added new members of ut__message.  -kage
     2017.08.04: Added ut__sleep.  -kage
 
-!!<
-
-
-!!>
-
-!-------------------------------------------------------------------
-! ut.f90
-!     2007.06.04: Added ut__i2c4.
-!     2007.05.17: Added ut__i2c1.
-!     2007.05.17: Added message_str_str.
-!     2007.05.17: Divided ut__message and ut__deco_message.
-!     2007.05.11: This is yysc-dynamo.
-!     2007.05.01: Added ut__make_queue (modified register).
-!     2007.04.24: Added ut__assert.
-!     2006.08.18: Added ut__plusplus.
-!     2006.02.01: Added ut__gets & UT__STRLEN_MAX.
-!     2006.01.31: Added new function ut__i2c7.
-!     2006.01.23: zeroset3d --> zeroset.
-!     2006.01.18: Made ut__i2c3 a function, not a subroutine.
-!     2006.01.16: Changed the decoration style for the subroutine.
-!     2004.04.06: Done MPI conversion.
-!     2004.04.05: Changed ut__atan
-!     2004.03.31: Removed ut__hash_i (mv to boundary.f90/register).
-!     2004.03.30: Added zeroset3d1.
-!     2004.03.30: Added ut__hash_i (copied from yymm-mpi: size should
-!                 be called from a module routine.)
-!     2003.12.13: Added message_str_int_float_float.
-!     2003.12.13: Revised ut__message (copied from 1st mpi version.)
-!     2003.09.09: Went back to generic interface for ut__zeroset3d.
-!     2003.09.05: Added ut__step.
-!     2003.06.06: Converted ut__zeroset3d into procedure with optinal
-!                 argument; suggested by Hiromitsu Fuchigami.
-!     2003.05.21: Added ut__i2c3.
-!     2003.04.23: Developed by Akira Kageyama
-!-------------------------------------------------------------------
+  ut.ef
+    2022.07.17: This was ut.e03.  -kage
+    2022.07.17: Remove ut__plusplus.
+    2022.07.17: write(FILE_NUM.standard_out,*)  --> print *
 
 !!<
 
-!!!>
-module ut_m                                      ! Utility Routines
-!!!<
-  use const_m
+module ut_m                                    ! Utility Routines
+  use constants_m
   implicit none
   private
   public :: & !< routines >
@@ -110,7 +101,6 @@ module ut_m                                      ! Utility Routines
             ut__message,                  &
             ut__message_leader,           &
             ut__make_queue,               &
-            ut__plusplus,                 &
             ut__positive_int_to_str9,     &
             ut__positive_real_to_str9,    &
             ut__real_to_str10,            &
@@ -120,110 +110,110 @@ module ut_m                                      ! Utility Routines
             ut__zeroset
 
   interface ut__message
-     module procedure message_str,                    &
-                      message_str_double,             &
-                      message_str_double_str,         &
-                      message_str_int,                &
-                      message_str_intd,               &
-                      message_str_int_int,            &
-                      message_str_int_intd,           &
-                      message_str_intd_int,           &
-                      message_str_intd_intd,          &
-                      message_str_int_int_int,        &
-                      message_str_int_int_double,     &
-                      message_str_intd_int_double,    &
-                      message_str_int_double,         &
-                      message_str_intd_double,        &
-                      message_str_int_double_double,  &
-                      message_str_intd_double_double, &
-                      message_str_int_float_float,    &
-                      message_str_intd_float_float,   &
-                      message_str_int_str,            &
-                      message_str_int_str_int,        &
-                      message_str_intd_str_int,       &
-                      message_str_int_str_double,     &
-                      message_str_intd_str_double,    &
-                      message_str_logical,            &
-                      message_str_logical_str,        &
+     module procedure message_str,                &
+                      message_str_dr,             &
+                      message_str_dr_str,         &
+                      message_str_si,             &
+                      message_str_di,             &
+                      message_str_si_si,          &
+                      message_str_si_di,          &
+                      message_str_di_si,          &
+                      message_str_di_di,          &
+                      message_str_si_si_si,       &
+                      message_str_si_si_dr,       &
+                      message_str_di_si_dr,       &
+                      message_str_si_dr,          &
+                      message_str_di_dr,          &
+                      message_str_si_dr_dr,       &
+                      message_str_di_dr_dr,       &
+                      message_str_si_sr_sr,       &
+                      message_str_di_sr_sr,       &
+                      message_str_si_str,         &
+                      message_str_si_str_si,      &
+                      message_str_di_str_si,      &
+                      message_str_si_str_dr,      &
+                      message_str_di_str_dr,      &
+                      message_str_logical,        &
+                      message_str_logical_str,    &
                       message_str_str
   end interface
 
   interface ut__message_leader
-     module procedure message_leader_int,             &
-                      message_leader_intd,            &
-                      message_leader_double,          &
-                      message_leader_float,           &
-                      message_leader_string
+     module procedure message_leader_si,          &
+                      message_leader_di,          &
+                      message_leader_dr,          &
+                      message_leader_sr,          &
+                      message_leader_str
   end interface
 
   interface ut__deco_message
-     module procedure message_decorated_str,          &
-                      message_decorated_str_int,      &
-                      message_decorated_str_intd
+     module procedure message_decorated_str,      &
+                      message_decorated_str_si,   &
+                      message_decorated_str_di
   end interface
 
   interface ut__real_to_str10
-    module procedure real_to_str10_double,  &
-                     real_to_str10_single
+    module procedure real_to_str10_dr,  &
+                     real_to_str10_sr
   end interface
 
   interface ut__positive_real_to_str9
-    module procedure positive_real_to_str9_double,  &
-                     positive_real_to_str9_single
+    module procedure positive_dr_to_str9,   &
+                     positive_sr_to_str9
   end interface
 
   interface ut__int_to_str3
-    module procedure int_to_str3_with_sign_double,  &
-                     int_to_str3_with_sign_single
+    module procedure di_to_str3_with_sign,  &
+                     si_to_str3_with_sign
   end interface
 
   interface ut__int_to_str4
-    module procedure int_to_str4_with_sign_double,  &
-                     int_to_str4_with_sign_single
+    module procedure di_to_str4_with_sign,  &
+                     si_to_str4_with_sign
   end interface
 
   interface ut__int_to_str5
-    module procedure int_to_str5_with_sign_double,  &
-                     int_to_str5_with_sign_single
+    module procedure di_to_str5_with_sign,  &
+                     si_to_str5_with_sign
   end interface
 
   interface ut__int_to_str6
-    module procedure int_to_str6_with_sign_double,  &
-                     int_to_str6_with_sign_single
+    module procedure di_to_str6_with_sign,  &
+                     si_to_str6_with_sign
   end interface
 
   interface ut__int_to_str8
-    module procedure int_to_str8_with_sign_double,  &
-                     int_to_str8_with_sign_single
+    module procedure di_to_str8_with_sign,  &
+                     si_to_str8_with_sign
   end interface
 
   interface ut__int_to_str10
-    module procedure int_to_str10_with_sign_double,  &
-                     int_to_str10_with_sign_single
+    module procedure di_to_str10_with_sign,  &
+                     si_to_str10_with_sign
   end interface
 
   interface ut__positive_int_to_str9
-    module procedure positive_int_to_str9_double,  &
-                     positive_int_to_str9_single
+    module procedure positive_di_to_str9,  &
+                     positive_si_to_str9
   end interface
 
   interface ut__zeroset
-     module procedure zeroset_double01,       &
-                      zeroset_double02,       &
-                      zeroset_double03,       &
-                      zeroset_double04,       &
-                      zeroset_double_array01, &
-                      zeroset_double_array02, &
-                      zeroset_double_array03, &
-                      zeroset_double_array04, &
-                      zeroset_float01,        &
-                      zeroset_float02,        &
-                      zeroset_float03,        &
-                      zeroset_float04,        &
-                      zeroset_float_array01,  &
-                      zeroset_float_array02,  &
-                      zeroset_float_array03,  &
-                      zeroset_float_array04
+     module procedure zeroset_dr01,        &
+                      zeroset_dr02,        &
+                      zeroset_dr03,        &
+                      zeroset_dr04,        &
+                      zeroset_dr_array01,  &
+                      zeroset_dr_array02,  &
+                      zeroset_dr_array03,  &
+                      zeroset_dr_array04,  &
+                      zeroset_sr01,        &
+                      zeroset_sr02,        &
+                      zeroset_sr03,        &
+                      zeroset_sr04,        &
+                      zeroset_sr_array01,  &
+                      zeroset_sr_array02,  &
+                      zeroset_sr_array03,  &
+                      zeroset_sr_array04
   end interface
 
   integer(SI) <const> :: UT__STRLEN_MAX = 5000   ! any long enough int.
@@ -236,9 +226,9 @@ contains
 !!!<
 
 
-  function int_to_str3_with_sign_double(i) result(str)
+  function di_to_str3_with_sign( i ) result(str)
     integer(DI) <in> :: i
-    char(len=3) :: str
+    char(len=3)      :: str
     !!>
       Convert an integer into 3 characters with sign.
               i =   10 --> str="+10"
@@ -254,12 +244,12 @@ contains
     else
       write(str(2:3),'(i2.2)') abs(i)
     end if
-  end function int_to_str3_with_sign_double
+  end function di_to_str3_with_sign
 
 
-  function int_to_str3_with_sign_single(i) result(str)
+  function si_to_str3_with_sign( i ) result(str)
     integer(SI) <in> :: i
-    char(len=3) :: str
+    char(len=3)      :: str
     !!>
       Convert an integer into 3 characters with sign.
               i =   10 --> str="+00"
@@ -275,10 +265,10 @@ contains
     else
       write(str(2:3),'(i2.2)') abs(i)
     end if
-  end function int_to_str3_with_sign_single
+  end function si_to_str3_with_sign
 
 
-  function int_to_str4_with_sign_double(i) result(str)
+  function di_to_str4_with_sign( i ) result(str)
     integer(DI) <in> :: i
     char(len=4) :: str
     !!>
@@ -296,12 +286,12 @@ contains
     else
       write(str(2:4),'(i3.3)') abs(i)
     end if
-  end function int_to_str4_with_sign_double
+  end function di_to_str4_with_sign
 
 
-  function int_to_str4_with_sign_single(i) result(str)
+  function si_to_str4_with_sign( i ) result(str)
     integer(SI) <in> :: i
-    char(len=4) :: str
+    char(len=4)      :: str
     !!>
       Convert an integer into 4 characters with sign.
               i =   10 --> str="+010"
@@ -317,12 +307,12 @@ contains
     else
       write(str(2:4),'(i3.3)') abs(i)
     end if
-  end function int_to_str4_with_sign_single
+  end function si_to_str4_with_sign
 
 
-  function int_to_str5_with_sign_double(i) result(str)
+  function di_to_str5_with_sign( i ) result(str)
     integer(DI) <in> :: i
-    char(len=5) :: str
+    char(len=5)      :: str
     !!>
       Convert an integer into 5 characters with sign.
               i =   10 --> str="+0010"
@@ -338,12 +328,12 @@ contains
     else
       write(str(2:5),'(i4.4)') abs(i)
     end if
-  end function int_to_str5_with_sign_double
+  end function di_to_str5_with_sign
 
 
-  function int_to_str5_with_sign_single(i) result(str)
+  function si_to_str5_with_sign( i ) result(str)
     integer(SI) <in> :: i
-    char(len=5) :: str
+    char(len=5)      :: str
     !!>
       Convert an integer into 5 characters with sign.
               i =   10 --> str="+0010"
@@ -359,12 +349,12 @@ contains
     else
       write(str(2:5),'(i4.4)') abs(i)
     end if
-  end function int_to_str5_with_sign_single
+  end function si_to_str5_with_sign
 
 
-  function int_to_str6_with_sign_double(i) result(str)
+  function di_to_str6_with_sign( i ) result(str)
     integer(DI) <in> :: i
-    char(len=6) :: str
+    char(len=6)      :: str
     !!>
       Convert an integer into 6 characters with sign.
               i =   10 --> str="+00010"
@@ -380,12 +370,12 @@ contains
     else
       write(str(2:6),'(i5.5)') abs(i)
     end if
-  end function int_to_str6_with_sign_double
+  end function di_to_str6_with_sign
 
 
-  function int_to_str6_with_sign_single(i) result(str)
+  function si_to_str6_with_sign( i ) result(str)
     integer(SI) <in> :: i
-    char(len=6) :: str
+    char(len=6)      :: str
     !!>
       Convert an integer into 6 characters with sign.
               i =   10 --> str="+00010"
@@ -401,12 +391,12 @@ contains
     else
       write(str(2:6),'(i5.5)') abs(i)
     end if
-  end function int_to_str6_with_sign_single
+  end function si_to_str6_with_sign
 
 
-  function int_to_str8_with_sign_double(i) result(str)
+  function di_to_str8_with_sign( i ) result(str)
     integer(DI) <in> :: i
-    char(len=8) :: str
+    char(len=8)      :: str
     !!>
       Convert an integer into 8 characters with sign.
               i =   10 --> str="+0000010"
@@ -422,12 +412,12 @@ contains
     else
       write(str(2:8),'(i7.7)') abs(i)
     end if
-  end function int_to_str8_with_sign_double
+  end function di_to_str8_with_sign
 
 
-  function int_to_str8_with_sign_single(i) result(str)
+  function si_to_str8_with_sign( i ) result(str)
     integer(SI) <in> :: i
-    char(len=8) :: str
+    char(len=8)      :: str
     !!>
       Convert an integer into 8 characters with sign.
               i =   10 --> str="+0000010"
@@ -443,11 +433,32 @@ contains
     else
       write(str(2:8),'(i7.7)') abs(i)
     end if
-  end function int_to_str8_with_sign_single
+  end function si_to_str8_with_sign
 
 
-  function int_to_str10_with_sign_double(i) result(str)
+  function di_to_str10_with_sign( i ) result(str)
     integer(DI) <in> :: i
+    char(len=10)     :: str
+    !!>
+      Convert an integer into 10 characters with sign.
+              i =   10 --> str="+000000010"
+              i = -123 --> str="-000000123"
+    !!<
+    if ( i < 0 ) then
+      str(1:1) = '-'
+    else
+      str(1:1) = '+'
+    end if
+    if ( abs(i) > 999999999 ) then
+      str(2:10) = 'XXXXXXXXX'
+    else
+      write(str(2:10),'(i9.9)') abs(i)
+    end if
+  end function di_to_str10_with_sign
+
+
+  function si_to_str10_with_sign( i ) result(str)
+    integer(SI) <in> :: i
     char(len=10) :: str
     !!>
       Convert an integer into 10 characters with sign.
@@ -464,31 +475,10 @@ contains
     else
       write(str(2:10),'(i9.9)') abs(i)
     end if
-  end function int_to_str10_with_sign_double
+  end function si_to_str10_with_sign
 
 
-  function int_to_str10_with_sign_single(i) result(str)
-    integer(SI) <in> :: i
-    char(len=10) :: str
-    !!>
-      Convert an integer into 10 characters with sign.
-              i =   10 --> str="+000000010"
-              i = -123 --> str="-000000123"
-    !!<
-    if ( i < 0 ) then
-      str(1:1) = '-'
-    else
-      str(1:1) = '+'
-    end if
-    if ( abs(i) > 999999999 ) then
-      str(2:10) = 'XXXXXXXXX'
-    else
-      write(str(2:10),'(i9.9)') abs(i)
-    end if
-  end function int_to_str10_with_sign_single
-
-
-  subroutine message_decorated_str(mark,string)
+  subroutine message_decorated_str( mark, string )
     char(len=1) <in> :: mark
     char(len=*) <in> :: string
       !!>
@@ -502,48 +492,48 @@ contains
 
     len = len_trim(string) + 4
 
-    write(FILE_NUM.standard_out,*) repeat(mark,len)
-    write(FILE_NUM.standard_out,*) mark//' '//trim(string)//' '//mark
-    write(FILE_NUM.standard_out,*) repeat(mark,len)
+    print *,  repeat(mark,len)
+    print *,  mark//' '//trim(string)//' '//mark
+    print *,  repeat(mark,len)
   end subroutine message_decorated_str
 
 
-  subroutine message_decorated_str_int(mark,string,int)
+  subroutine message_decorated_str_si( mark, string, int )
     char(len=1) <in> :: mark
     char(len=*) <in> :: string
-    integer(SI)    <in> :: int
+    integer(SI) <in> :: int
       !!>
         Usage:
-           call mess...('#','This is message at nloop = ', nloop)
+           call mess...( '#', 'This is message at nloop = ', nloop )
       !!<
     char(len=200) :: string_int
 
     write(string_int,'(a,i8)') string, int
-    call message_decorated_str(mark, string_int)
-  end subroutine message_decorated_str_int
+    call message_decorated_str( mark, string_int )
+  end subroutine message_decorated_str_si
 
 
-  subroutine message_decorated_str_intd(mark,string,int)
+  subroutine message_decorated_str_di( mark, string, int )
     char(len=1) <in> :: mark
     char(len=*) <in> :: string
-    integer(DI)    <in> :: int
+    integer(DI) <in> :: int
      !!>
        Usage:
-          call mess...('#','This is message at nloop = ', nloop)
+          call mess...( '#', 'This is message at nloop = ', nloop )
      !!<
     char(len=200) :: string_int
     write(string_int,'(a,i14)') string, int
-    call message_decorated_str(mark, string_int)
-  end subroutine message_decorated_str_intd
+    call message_decorated_str( mark, string_int )
+  end subroutine message_decorated_str_di
 
 
-  subroutine message_leader_int(string,i01)
+  subroutine message_leader_si( string, i01 )
     char(len=*) <in> :: string
-    integer(SI)    <in> :: i01
+    integer(SI) <in> :: i01
 
     integer(SI) <const> :: TOTAL_LENGTH = 60
 
-    char(len=12)           :: string_for_i01
+    char(len=12) :: string_for_i01
     char(len=TOTAL_LENGTH) :: line
 
     line = repeat('.', TOTAL_LENGTH)
@@ -552,16 +542,16 @@ contains
     line(1:len_trim(string)) = trim(string)
     line(TOTAL_LENGTH-len_trim(string_for_i01):TOTAL_LENGTH)    &
        = trim(string_for_i01)
-    write(FILE_NUM.standard_out,*) line
-  end subroutine message_leader_int
+    print *,  line
+  end subroutine message_leader_si
 
 
-  subroutine message_leader_intd(string,i01)
+  subroutine message_leader_di( string, i01 )
     char(len=*) <in> :: string
-    integer(DI)    <in> :: i01
+    integer(DI) <in> :: i01
 
-    integer(SI) <const>    :: TOTAL_LENGTH = 60
-    char(len=20)           :: string_for_i01
+    integer(SI) <const> :: TOTAL_LENGTH = 60
+    char(len=20) :: string_for_i01
     char(len=TOTAL_LENGTH) :: line
 
     line = repeat('.', TOTAL_LENGTH)
@@ -570,16 +560,16 @@ contains
     line(1:len_trim(string)) = trim(string)
     line(TOTAL_LENGTH-len_trim(string_for_i01):TOTAL_LENGTH)    &
        = trim(string_for_i01)
-    write(FILE_NUM.standard_out,*) line
-  end subroutine message_leader_intd
+    print *,  line
+  end subroutine message_leader_di
 
 
-  subroutine message_leader_double(string,d01)
+  subroutine message_leader_dr( string, d01 )
     char(len=*) <in> :: string
     real(DR)    <in> :: d01
 
-    integer(SI) <const>    :: TOTAL_LENGTH = 60
-    char(len=22)           :: string_for_value
+    integer(SI) <const> :: TOTAL_LENGTH = 60
+    char(len=22) :: string_for_value
     char(len=TOTAL_LENGTH) :: line
 
     line = repeat('.',TOTAL_LENGTH)
@@ -587,11 +577,11 @@ contains
     write(string_for_value,'(1pe22.15)') d01
     line(1:len_trim(string)) = trim(string)
     line(TOTAL_LENGTH-22:TOTAL_LENGTH) = string_for_value
-    write(FILE_NUM.standard_out,*) line
-  end subroutine message_leader_double
+    print *,  line
+  end subroutine message_leader_dr
 
 
-  subroutine message_leader_float(string,f01)
+  subroutine message_leader_sr( string, f01 )
     char(len=*) <in> :: string
     real(SR)    <in> :: f01
 
@@ -604,11 +594,11 @@ contains
     write(string_for_value,'(1pe12.5)') f01
     line(1:len_trim(string)) = trim(string)
     line(TOTAL_LENGTH-12:TOTAL_LENGTH) = string_for_value
-    write(FILE_NUM.standard_out,*) line
-  end subroutine message_leader_float
+    print *,  line
+  end subroutine message_leader_sr
 
 
-  subroutine message_leader_string(string,s01)
+  subroutine message_leader_str( string, s01 )
     char(len=*) <in> :: string
     char(len=*) <in> :: s01
 
@@ -620,227 +610,227 @@ contains
 
     line(1:len_trim(string)) = trim(string)
     line(TOTAL_LENGTH-len_trim(s01_):TOTAL_LENGTH) = s01_
-    write(FILE_NUM.standard_out,*) line
-  end subroutine message_leader_string
+    print *,  line
+  end subroutine message_leader_str
 
 
-  subroutine message_str(string)
+  subroutine message_str( string )
     char(len=*) <in> :: string
 
-    write(FILE_NUM.standard_out,*) string
+    print *,  string
   end subroutine message_str
 
 
-  subroutine message_str_double(string,double)
+  subroutine message_str_dr( string, double )
     char(len=*) <in> :: string
     real(DR)    <in> :: double
 
-    write(FILE_NUM.standard_out,*) string, double
-  end subroutine message_str_double
+    print *,  string, double
+  end subroutine message_str_dr
 
 
-  subroutine message_str_double_str(str01,double,str02)
+  subroutine message_str_dr_str( str01, double, str02 )
     char(len=*) <in> :: str01, str02
     real(DR)    <in> :: double
 
-    write(FILE_NUM.standard_out,*) str01, double, str02
-  end subroutine message_str_double_str
+    print *,  str01, double, str02
+  end subroutine message_str_dr_str
 
 
 
-  subroutine message_str_str(string01,string02)
+  subroutine message_str_str( string01, string02 )
     char(len=*) <in> :: string01
     char(len=*) <in> :: string02
 
-    write(FILE_NUM.standard_out,*) string01, string02
+    print *,  string01, string02
   end subroutine message_str_str
 
 
-  subroutine message_str_int(string,int)
+  subroutine message_str_si( string, int )
     char(len=*) <in> :: string
-    integer(SI)    <in> :: int
+    integer(SI) <in> :: int
 
-    write(FILE_NUM.standard_out,*) string, int
-  end subroutine message_str_int
+    print *,  string, int
+  end subroutine message_str_si
 
 
-  subroutine message_str_intd(string,int)
+  subroutine message_str_di( string, int )
     char(len=*) <in> :: string
-    integer(DI)    <in> :: int
+    integer(DI) <in> :: int
 
-    write(FILE_NUM.standard_out,*) string, int
-  end subroutine message_str_intd
+    print *,  string, int
+  end subroutine message_str_di
 
 
-  subroutine message_str_int_int(string,i1,i2)
+  subroutine message_str_si_si( string, i1, i2 )
     char(len=*) <in> :: string
-    integer(SI)    <in> :: i1, i2
+    integer(SI) <in> :: i1, i2
 
-    write(FILE_NUM.standard_out,*) string, i1, i2
-  end subroutine message_str_int_int
+    print *,  string, i1, i2
+  end subroutine message_str_si_si
 
 
-  subroutine message_str_int_intd(string,i1,i2)
+  subroutine message_str_si_di( string, i1, i2 )
     char(len=*) <in> :: string
-    integer(SI)    <in> :: i1
-    integer(DI)    <in> :: i2
+    integer(SI) <in> :: i1
+    integer(DI) <in> :: i2
 
-    write(FILE_NUM.standard_out,*) string, i1, i2
-  end subroutine message_str_int_intd
+    print *,  string, i1, i2
+  end subroutine message_str_si_di
 
 
-  subroutine message_str_intd_int(string,i1,i2)
+  subroutine message_str_di_si( string, i1, i2 )
     char(len=*) <in> :: string
-    integer(DI)    <in> :: i1
-    integer(SI)    <in> :: i2
+    integer(DI) <in> :: i1
+    integer(SI) <in> :: i2
 
-    write(FILE_NUM.standard_out,*) string, i1, i2
-  end subroutine message_str_intd_int
+    print *,  string, i1, i2
+  end subroutine message_str_di_si
 
 
-  subroutine message_str_intd_intd(string,i1,i2)
+  subroutine message_str_di_di( string, i1, i2 )
     char(len=*) <in> :: string
-    integer(DI)    <in> :: i1, i2
+    integer(DI) <in> :: i1, i2
 
-    write(FILE_NUM.standard_out,*) string, i1, i2
-  end subroutine message_str_intd_intd
+    print *,  string, i1, i2
+  end subroutine message_str_di_di
 
 
-  subroutine message_str_int_int_int(string,i1,i2,i3)
+  subroutine message_str_si_si_si( string, i1, i2, i3 )
     char(len=*) <in> :: string
-    integer(SI)    <in> :: i1, i2, i3
+    integer(SI) <in> :: i1, i2, i3
 
-    write(FILE_NUM.standard_out,*) string, i1, i2, i3
-  end subroutine message_str_int_int_int
+    print *,  string, i1, i2, i3
+  end subroutine message_str_si_si_si
 
 
-  subroutine message_str_int_int_double(string,i1,i2,d1)
+  subroutine message_str_si_si_dr( string, i1, i2, d1 )
     char(len=*) <in> :: string
-    integer(SI)    <in> :: i1, i2
+    integer(SI) <in> :: i1, i2
     real(DR)    <in> :: d1
 
-    write(FILE_NUM.standard_out,*) string, i1, i2, d1
-  end subroutine message_str_int_int_double
+    print *,  string, i1, i2, d1
+  end subroutine message_str_si_si_dr
 
 
-  subroutine message_str_intd_int_double(string,i1,i2,d1)
+  subroutine message_str_di_si_dr( string, i1, i2, d1 )
     char(len=*) <in> :: string
-    integer(DI)    <in> :: i1
-    integer(SI)    <in> :: i2
+    integer(DI) <in> :: i1
+    integer(SI) <in> :: i2
     real(DR)    <in> :: d1
 
-    write(FILE_NUM.standard_out,*) string, i1, i2, d1
-  end subroutine message_str_intd_int_double
+    print *,  string, i1, i2, d1
+  end subroutine message_str_di_si_dr
 
 
 
-  subroutine message_str_int_double(string,i1,d1)
+  subroutine message_str_si_dr( string, i1, d1 )
     char(len=*) <in> :: string
-    integer(SI)    <in> :: i1
+    integer(SI) <in> :: i1
     real(DR)    <in> :: d1
 
-    write(FILE_NUM.standard_out,*) string, i1, d1
-  end subroutine message_str_int_double
+    print *,  string, i1, d1
+  end subroutine message_str_si_dr
 
 
-  subroutine message_str_intd_double(string,i1,d1)
+  subroutine message_str_di_dr( string, i1, d1 )
     char(len=*) <in> :: string
-    integer(DI)    <in> :: i1
+    integer(DI) <in> :: i1
     real(DR)    <in> :: d1
 
-    write(FILE_NUM.standard_out,*) string, i1, d1
-  end subroutine message_str_intd_double
+    print *,  string, i1, d1
+  end subroutine message_str_di_dr
 
 
-  subroutine message_str_int_double_double(string,i1,d1,d2)
+  subroutine message_str_si_dr_dr( string, i1, d1, d2 )
     char(len=*) <in> :: string
-    integer(SI)    <in> :: i1
+    integer(SI) <in> :: i1
     real(DR)    <in> :: d1, d2
 
-    write(FILE_NUM.standard_out,*) string, i1, d1, d2
-  end subroutine message_str_int_double_double
+    print *,  string, i1, d1, d2
+  end subroutine message_str_si_dr_dr
 
 
-  subroutine message_str_intd_double_double(string,i1,d1,d2)
+  subroutine message_str_di_dr_dr( string, i1, d1, d2 )
     char(len=*) <in> :: string
-    integer(DI)    <in> :: i1
+    integer(DI) <in> :: i1
     real(DR)    <in> :: d1, d2
 
-    write(FILE_NUM.standard_out,*) string, i1, d1, d2
-  end subroutine message_str_intd_double_double
+    print *,  string, i1, d1, d2
+  end subroutine message_str_di_dr_dr
 
 
-  subroutine message_str_int_float_float(string,i1,f1,f2)
+  subroutine message_str_si_sr_sr( string, i1, f1, f2 )
     char(len=*) <in> :: string
-    integer(SI)    <in> :: i1
+    integer(SI) <in> :: i1
     real(SR)    <in> :: f1, f2
-    write(FILE_NUM.standard_out,*) string, i1, f1, f2
-  end subroutine message_str_int_float_float
+    print *,  string, i1, f1, f2
+  end subroutine message_str_si_sr_sr
 
 
-  subroutine message_str_intd_float_float(string,i1,f1,f2)
+  subroutine message_str_di_sr_sr( string, i1, f1, f2 )
     char(len=*) <in> :: string
-    integer(DI)    <in> :: i1
+    integer(DI) <in> :: i1
     real(SR)    <in> :: f1, f2
-    write(FILE_NUM.standard_out,*) string, i1, f1, f2
-  end subroutine message_str_intd_float_float
+    print *,  string, i1, f1, f2
+  end subroutine message_str_di_sr_sr
 
 
-  subroutine message_str_int_str(str1,i1,str2)
+  subroutine message_str_si_str( str1, i1, str2 )
     char(len=*) <in> :: str1, str2
-    integer(SI)    <in> :: i1
-    write(FILE_NUM.standard_out,*) str1, i1, str2
-  end subroutine message_str_int_str
+    integer(SI) <in> :: i1
+    print *,  str1, i1, str2
+  end subroutine message_str_si_str
 
 
-  subroutine message_str_int_str_int(str1,i1,str2,i2)
+  subroutine message_str_si_str_si( str1, i1, str2, i2 )
     char(len=*) <in> :: str1, str2
-    integer(SI)    <in> :: i1, i2
-    write(FILE_NUM.standard_out,*) str1, i1, str2, i2
-  end subroutine message_str_int_str_int
+    integer(SI) <in> :: i1, i2
+    print *,  str1, i1, str2, i2
+  end subroutine message_str_si_str_si
 
 
-  subroutine message_str_intd_str_int(str1,i1,str2,i2)
+  subroutine message_str_di_str_si( str1, i1, str2, i2 )
     char(len=*) <in> :: str1, str2
-    integer(DI)    <in> :: i1
-    integer(SI)    <in> :: i2
+    integer(DI) <in> :: i1
+    integer(SI) <in> :: i2
 
-    write(FILE_NUM.standard_out,*) str1, i1, str2, i2
-  end subroutine message_str_intd_str_int
+    print *,  str1, i1, str2, i2
+  end subroutine message_str_di_str_si
 
 
-  subroutine message_str_int_str_double(str1,i1,str2,d1)
+  subroutine message_str_si_str_dr( str1, i1, str2, d1 )
     char(len=*) <in> :: str1, str2
-    integer(SI)    <in> :: i1
+    integer(SI) <in> :: i1
     real(DR)    <in> :: d1
-    write(FILE_NUM.standard_out,*) str1, i1, str2, d1
-  end subroutine message_str_int_str_double
+    print *,  str1, i1, str2, d1
+  end subroutine message_str_si_str_dr
 
 
-  subroutine message_str_intd_str_double(str1,i1,str2,d1)
+  subroutine message_str_di_str_dr( str1, i1, str2, d1 )
     char(len=*) <in> :: str1, str2
-    integer(DI)    <in> :: i1
+    integer(DI) <in> :: i1
     real(DR)    <in> :: d1
 
-    write(FILE_NUM.standard_out,*) str1, i1, str2, d1
-  end subroutine message_str_intd_str_double
+    print *,  str1, i1, str2, d1
+  end subroutine message_str_di_str_dr
 
-  subroutine message_str_logical(str1,logical)
+  subroutine message_str_logical( str1, logical )
     char(len=*) <in> :: str1
     logical     <in> :: logical
-    write(FILE_NUM.standard_out,*) str1, logical
+    print *,  str1, logical
   end subroutine message_str_logical
 
-  subroutine message_str_logical_str(str1,logical,str2)
+  subroutine message_str_logical_str( str1, logical, str2 )
     char(len=*) <in> :: str1, str2
     logical     <in> :: logical
-    write(FILE_NUM.standard_out,*) str1, logical, str2
+    print *,  str1, logical, str2
   end subroutine message_str_logical_str
 
 
-  function positive_int_to_str9_double(i) result(str)
+  function positive_di_to_str9( i ) result(str)
     integer(DI) <in> :: i
-    char(len=9) :: str
+    char(len=9)      :: str
 
     !!>
       Convert an integer into 9 characters with sign.
@@ -852,15 +842,15 @@ contains
     else if ( abs(i) > 999999999 ) then
       str = 'XXXXXXXXX'
     else
-      str10 = ut__int_to_str10(i)
+      str10 = ut__int_to_str10( i )
       str = str10(2:10)
     end if
-  end function positive_int_to_str9_double
+  end function positive_di_to_str9
 
 
-  function positive_int_to_str9_single(i) result(str)
+  function positive_si_to_str9( i ) result(str)
     integer(SI) <in> :: i
-    char(len=9) :: str
+    char(len=9)      :: str
 
     !!>
       Convert an integer into 9 characters with sign.
@@ -875,12 +865,12 @@ contains
       str10 = ut__int_to_str10(i)
       str = str10(2:10)
     end if
-  end function positive_int_to_str9_single
+  end function positive_si_to_str9
 
 
-  function positive_real_to_str9_double(d) result(str)
+  function positive_dr_to_str9( d ) result(str)
     real(DR) <in> :: d
-    char(len=9) :: str
+    char(len=9)   :: str
     !!>
       double to character string, e.g., d=0.123456 ==> str="1.234E-01"
     !!<
@@ -888,15 +878,15 @@ contains
     if ( d < 0.0_DR ) then
       str = '---------'
     else
-      str10 = ut__real_to_str10(d)
+      str10 = ut__real_to_str10( d )
       str = str10(2:10)
     end if
-  end function positive_real_to_str9_double
+  end function positive_dr_to_str9
 
 
-  function positive_real_to_str9_single(f) result(str)
+  function positive_sr_to_str9( f ) result(str)
     real(SR) <in> :: f
-    char(len=9) :: str
+    char(len=9)   :: str
     !!>
       double to character string, e.g., f=0.123456 ==> str="1.234E-01"
     !!<
@@ -904,90 +894,90 @@ contains
     if ( f < 0.0_SR ) then
       str = '---------'
     else
-      str10 = ut__real_to_str10(f)
+      str10 = ut__real_to_str10( f )
       str = str10(2:10)
     end if
-  end function positive_real_to_str9_single
+  end function positive_sr_to_str9
 
 
-  function real_to_str10_double(d) result(str)
+  function real_to_str10_dr( d ) result(str)
     real(DR) <in> :: d
-    char(len=10) :: str
+    char(len=10)  :: str
     !!>
       double to character string, e.g., d=0.123456 ==> str="+1.235E1"
     !!<
     write(str,'(1pe10.3)') d
     if(str(1:1)==' ') str(1:1)='+'
-  end function real_to_str10_double
+  end function real_to_str10_dr
 
 
-  function real_to_str10_single(f) result(str)
+  function real_to_str10_sr( f ) result(str)
     real(SR) <in> :: f
-    char(len=10) :: str
+    char(len=10)  :: str
     !!>
       double to character string, e.g., f=0.123456 ==> str="+1.235E1"
     !!<
     write(str,'(1pe10.3)') f
     if(str(1:1)==' ') str(1:1)='+'
-  end function real_to_str10_single
+  end function real_to_str10_sr
 
 
-  subroutine zeroset_double01(d01)
+  subroutine zeroset_dr01( d01 )
     real(DR) <out> :: d01
     d01 = 0.0_DR
-  end subroutine zeroset_double01
+  end subroutine zeroset_dr01
 
 
-  subroutine zeroset_double02(d01,d02)
+  subroutine zeroset_dr02( d01, d02 )
     real(DR) <out> :: d01, d02
     d01 = 0.0_DR
     d02 = 0.0_DR
-  end subroutine zeroset_double02
+  end subroutine zeroset_dr02
 
 
-  subroutine zeroset_double03(d01,d02,d03)
+  subroutine zeroset_dr03( d01, d02, d03 )
     real(DR) <out> :: d01, d02, d03
     d01 = 0.0_DR
     d02 = 0.0_DR
     d03 = 0.0_DR
-  end subroutine zeroset_double03
+  end subroutine zeroset_dr03
 
 
-  subroutine zeroset_double04(d01,d02,d03,d04)
+  subroutine zeroset_dr04( d01, d02, d03, d04 )
     real(DR) <out> :: d01, d02, d03, d04
     d01 = 0.0_DR
     d02 = 0.0_DR
     d03 = 0.0_DR
     d04 = 0.0_DR
-  end subroutine zeroset_double04
+  end subroutine zeroset_dr04
 
 
-  subroutine zeroset_double_array01(d01)
+  subroutine zeroset_dr_array01( d01 )
     real(DR) <out> :: d01(:,:,:)
     d01(:,:,:) = 0.0_DR
-  end subroutine zeroset_double_array01
+  end subroutine zeroset_dr_array01
 
 
-  subroutine zeroset_double_array02(d01,d02)
+  subroutine zeroset_dr_array02( d01, d02 )
     real(DR) <out> :: d01(:,:,:),  &
                       d02(:,:,:)
     d01(:,:,:) = 0.0_DR
     d02(:,:,:) = 0.0_DR
-  end subroutine zeroset_double_array02
+  end subroutine zeroset_dr_array02
 
 
 
-  subroutine zeroset_double_array03(d01,d02,d03)
+  subroutine zeroset_dr_array03( d01, d02, d03 )
     real(DR) <out> :: d01(:,:,:),  &
                       d02(:,:,:),  &
                       d03(:,:,:)
     d01(:,:,:) = 0.0_DR
     d02(:,:,:) = 0.0_DR
     d03(:,:,:) = 0.0_DR
-  end subroutine zeroset_double_array03
+  end subroutine zeroset_dr_array03
 
 
-  subroutine zeroset_double_array04(d01,d02,d03,d04)
+  subroutine zeroset_dr_array04( d01, d02, d03, d04 )
     real(DR) <out> :: d01(:,:,:),  &
                       d02(:,:,:),  &
                       d03(:,:,:),  &
@@ -996,64 +986,64 @@ contains
     d02(:,:,:) = 0.0_DR
     d03(:,:,:) = 0.0_DR
     d04(:,:,:) = 0.0_DR
-  end subroutine zeroset_double_array04
+  end subroutine zeroset_dr_array04
 
 
-  subroutine zeroset_float01(f01)
+  subroutine zeroset_sr01( f01 )
     real(SR) <out> :: f01
     f01 = 0.0_SR
-  end subroutine zeroset_float01
+  end subroutine zeroset_sr01
 
 
-  subroutine zeroset_float02(f01,f02)
+  subroutine zeroset_sr02( f01, f02 )
     real(SR) <out> :: f01, f02
     f01 = 0.0_SR
     f02 = 0.0_SR
-  end subroutine zeroset_float02
+  end subroutine zeroset_sr02
 
 
-  subroutine zeroset_float03(f01,f02,f03)
+  subroutine zeroset_sr03( f01, f02, f03 )
     real(SR) <out> :: f01, f02, f03
     f01 = 0.0_SR
     f02 = 0.0_SR
     f03 = 0.0_SR
-  end subroutine zeroset_float03
+  end subroutine zeroset_sr03
 
 
-  subroutine zeroset_float04(f01,f02,f03,f04)
+  subroutine zeroset_sr04( f01, f02, f03, f04 )
     real(SR) <out> :: f01, f02, f03, f04
     f01 = 0.0_SR
     f02 = 0.0_SR
     f03 = 0.0_SR
     f04 = 0.0_SR
-  end subroutine zeroset_float04
+  end subroutine zeroset_sr04
 
 
-  subroutine zeroset_float_array01(f01)
+  subroutine zeroset_sr_array01( f01 )
     real(SR) <out> :: f01(:,:,:)
     f01(:,:,:) = 0.0_SR
-  end subroutine zeroset_float_array01
+  end subroutine zeroset_sr_array01
 
 
-  subroutine zeroset_float_array02(f01,f02)
+  subroutine zeroset_sr_array02( f01, f02 )
     real(SR) <out> :: f01(:,:,:),  &
                       f02(:,:,:)
     f01(:,:,:) = 0.0_SR
     f02(:,:,:) = 0.0_SR
-  end subroutine zeroset_float_array02
+  end subroutine zeroset_sr_array02
 
 
-  subroutine zeroset_float_array03(f01,f02,f03)
+  subroutine zeroset_sr_array03( f01, f02, f03 )
     real(SR) <out> :: f01(:,:,:),  &
                       f02(:,:,:),  &
                       f03(:,:,:)
     f01(:,:,:) = 0.0_SR
     f02(:,:,:) = 0.0_SR
     f03(:,:,:) = 0.0_SR
-  end subroutine zeroset_float_array03
+  end subroutine zeroset_sr_array03
 
 
-  subroutine zeroset_float_array04(f01,f02,f03,f04)
+  subroutine zeroset_sr_array04( f01, f02, f03, f04 )
     real(SR) <out> :: f01(:,:,:),  &
                       f02(:,:,:),  &
                       f03(:,:,:),  &
@@ -1062,7 +1052,7 @@ contains
     f02(:,:,:) = 0.0_SR
     f03(:,:,:) = 0.0_SR
     f04(:,:,:) = 0.0_SR
-  end subroutine zeroset_float_array04
+  end subroutine zeroset_sr_array04
 
 
 !!!>
@@ -1070,7 +1060,7 @@ contains
 !!!<
 
 
-  function ut__appear_pos(tag,tag_list) result(nth)
+  function ut__appear_pos( tag, tag_list ) result(nth)
     integer(SI) <in> :: tag
     integer(SI) <in> :: tag_list(:)
     integer(SI) :: nth
@@ -1090,12 +1080,12 @@ contains
   end function ut__appear_pos
 
 
-  subroutine ut__assert(must_be_true,message)
+  subroutine ut__assert( must_be_true, message )
     logical     <in> :: must_be_true
     char(len=*) <in> :: message
 
     if ( .not. must_be_true ) then
-       call ut__fatal(message)
+       call ut__fatal( message )
     end if
   end subroutine ut__assert
 
@@ -1118,20 +1108,20 @@ contains
   end function ut__atan
 
 
-  subroutine ut__fatal(last_will)
+  subroutine ut__fatal( last_will )
     char(len=*) <in> :: last_will
       !!>
         Print a fatal message and stop.
       !!<
-    call ut__deco_message('!',last_will)
+    call ut__deco_message( '!', last_will )
     print *, 'Program stopped by ut__fatal.'
     stop
   end subroutine ut__fatal
 
 
-  function ut__gets(file_unit,end_of_file)
+  function ut__gets( file_unit, end_of_file )
     integer(SI) <in> :: file_unit
-    logical <out> :: end_of_file
+    logical    <out> :: end_of_file
     char(len=UT__STRLEN_MAX) :: ut__gets
 
     !!>
@@ -1159,9 +1149,9 @@ contains
   end function ut__gets
 
 
-  function ut__i2c1(i)
+  function ut__i2c1( i )
     integer(SI) <in> :: i
-    char(len=1) :: ut__i2c1
+    char(len=1)      :: ut__i2c1
 
     ! Convert an integer into a character.
 
@@ -1175,9 +1165,9 @@ contains
   end function ut__i2c1
 
 
-  function ut__i2c3(i)
+  function ut__i2c3( i )
     integer(SI) <in> :: i
-    char(len=3) :: ut__i2c3
+    char(len=3)      :: ut__i2c3
 
     ! Convert an integer into 3 characters.
     !             e.g., i=10 --> str3="010"
@@ -1192,9 +1182,9 @@ contains
   end function ut__i2c3
 
 
-  function ut__i2c4(i)
+  function ut__i2c4( i )
     integer(SI) <in> :: i
-    char(len=4) :: ut__i2c4
+    char(len=4)      :: ut__i2c4
 
     ! Convert an integer into 4 characters.
     !             e.g., i=10 --> str4="0010"
@@ -1209,7 +1199,7 @@ contains
   end function ut__i2c4
 
 
-  function ut__i2c7(i)
+  function ut__i2c7( i )
     integer(SI) <in> :: i
     char(len=7) :: ut__i2c7
 
@@ -1226,10 +1216,10 @@ contains
   end function ut__i2c7
 
 
-  subroutine ut__legendren(l,m,x,y)
+  subroutine ut__legendren( l, m, x, y )
     integer(SI) <in>  :: l, m
-    real(DR) <in>  :: x
-    real(DR) <out> :: y
+    real(DR)    <in>  :: x
+    real(DR)    <out> :: y
 
     !!>
       - "legendren" stands for Legendr-normalized.
@@ -1243,7 +1233,7 @@ contains
 
     real(DR) :: pmm, fact, fact1, fact2, pmmp1, somx2
     real(DR) :: pll = -huge(1.0_DR)  ! dummy initialization to shut
-    integer(SI) :: ll, i                ! the compiler warning up.
+    integer(SI) :: ll, i             ! the compiler warning up.
 
     pmm = 1.0_DR
 
@@ -1284,11 +1274,11 @@ contains
   end subroutine ut__legendren
 
 
-  subroutine ut__make_queue(tag,                                &
-                            tag_list,                           &
-                            tag_counts,                         &
-                            ntags,                              &
-                            nth)
+  subroutine ut__make_queue( tag,              &
+                             tag_list,         &
+                             tag_counts,       &
+                             ntags,            &
+                             nth )
     integer(SI) <in>  :: tag
     integer(SI) <io>  :: tag_list(:)
     integer(SI) <io>  :: tag_counts(:)
@@ -1297,7 +1287,7 @@ contains
 
     !!>
 
-      Basic relation:    tag_list(nth) = tag
+      Basic relation:  tag_list(nth) = tag
 
        The initial condition of tag_list and tag_counts are
        supposed to be:
@@ -1355,8 +1345,8 @@ contains
 
     integer(SI) :: i
 
-    call ut__assert(size(tag_list,dim=1)==size(tag_counts,dim=1),  &
-                   '<ut__make_queue> size inconsistent.')
+    call ut__assert( size(tag_list,dim=1)==size(tag_counts,dim=1),  &
+                     '<ut__make_queue> size inconsistent.')
 
     nth = 0
     ntags = 0
@@ -1389,7 +1379,7 @@ contains
   end subroutine ut__make_queue
 
 
-  subroutine ut__sleep(second)
+  subroutine ut__sleep( second )
     real(SR) <in> :: second
     !!>
       Sleeps for roughly "second" seconds. Not very exact.
@@ -1440,7 +1430,7 @@ contains
   end subroutine
 
 
-  function ut__smooth_step(x,width)
+  function ut__smooth_step( x, width )
     real(DR) <in> :: x
     real(DR) <in> :: width
     real(DR) :: ut__smooth_step
@@ -1471,7 +1461,7 @@ contains
   end function ut__smooth_step
 
 
-  function ut__step(x)
+  function ut__step( x )
     real(DR) <in> :: x
     real(DR) :: ut__step
 
@@ -1494,12 +1484,5 @@ contains
        ut__step = 0.5_DR
     end if
   end function ut__step
-
-
-  subroutine ut__plusplus(i)
-    integer(SI) <io> :: i
-    ! Just i++.
-    i = i + 1
-  end subroutine ut__plusplus
 
 end module ut_m
