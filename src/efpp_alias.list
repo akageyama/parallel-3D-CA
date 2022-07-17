@@ -4,6 +4,9 @@
      "type(array3d_si_t)" 
   => "integer(SI), dimension(0:NXPP1,0:NYPP1,0:NZPP1)"
 
+     "type(array3d_dr_t)"  # Only used in mpiut.ef
+  => "real(DR), dimension(0:NXPP1,0:NYPP1,0:NZPP1)"
+
      "do i full" 
   => "do i = 0, NXPP1"
 
