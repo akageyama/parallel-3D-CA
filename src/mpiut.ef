@@ -64,7 +64,9 @@
     2017.08.04: Started using macro π and §.  -kage
     2017.08.04: Added tag check in __bcast. -kage
     2017.08.11: Added __const_check.  -kage
-    2022.07.17: Copied from cg-mhd project. -kage
+    2022.07.17: Copied from cg-mhd project.  -kage
+    2022.07.17: Type size check in bcast0d_i.
+    2022.07.17: Rename int, intd, flaot, double --> is, id, rs, rd.
 
 !!<
 
@@ -130,42 +132,42 @@ module mpiut_m
   end type rank_next_t
 
   interface mpiut__allreduce_max
-     module procedure  allreduce_max0d_i,  &
+     module procedure  allreduce_max0d_is,  &
                        allreduce_max0d_id,  &
-                       allreduce_max0d_r,  &
-                       allreduce_max1d_i,  &
-                       allreduce_max1d_r
+                       allreduce_max0d_rd,  &
+                       allreduce_max1d_is,  &
+                       allreduce_max1d_rd
   end interface
 
   interface mpiut__allreduce_min
-     module procedure  allreduce_min0d_i,  &
+     module procedure  allreduce_min0d_is,  &
                        allreduce_min0d_id,  &
-                       allreduce_min0d_r
+                       allreduce_min0d_rd
   end interface
 
   interface mpiut__allreduce_sum
-     module procedure  allreduce_sum0d_i,    &
-                       allreduce_sum0d_r,    &
-                       allreduce_sum1d_i,    &
-                       allreduce_sum1d_r,    &
-                       allreduce_sum2d_i,    &
-                       allreduce_sum2d_f,    &
-                       allreduce_sum2d_r,    &
-                       allreduce_sum3d_i,    &
-                       allreduce_sum3d_f,    &
-                       allreduce_sum3d_r
+     module procedure  allreduce_sum0d_is,    &
+                       allreduce_sum0d_rd,    &
+                       allreduce_sum1d_is,    &
+                       allreduce_sum1d_rd,    &
+                       allreduce_sum2d_is,    &
+                       allreduce_sum2d_rs,    &
+                       allreduce_sum2d_rd,    &
+                       allreduce_sum3d_is,    &
+                       allreduce_sum3d_rs,    &
+                       allreduce_sum3d_rd
   end interface
 
   interface mpiut__bcast
-     module procedure bcast_str,        &
-                      bcast0d_i,        &
-                      bcast0d_i8,       &
-                      bcast0d_f,        &
-                      bcast0d_r,        &
-                      bcast1d_f,        &
-                      bcast3d_i,        &
-                      bcast3d_f,        &
-                      bcast3d_r
+     module procedure bcast_str,          &
+                      bcast0d_is,         &
+                      bcast0d_id,         &
+                      bcast0d_rs,         &
+                      bcast0d_rd,         &
+                      bcast1d_rs,         &
+                      bcast3d_is,         &
+                      bcast3d_rs,         &
+                      bcast3d_rd
   end interface
 
   interface mpiut__const_check
@@ -174,12 +176,12 @@ module mpiut_m
   end interface
 
   interface mpiut__copy_p_to_p
-     module procedure copy_p_to_p_3d_s
+     module procedure copy_p_to_p_3d_rs
   end interface
 
   interface mpiut__copy_p2p
-     module procedure copy_p2p_3d_r,    &
-                      copy_p2p_3d_s
+     module procedure copy_p2p_3d_rd,    &
+                      copy_p2p_3d_rs
   end interface mpiut__copy_p2p
 
   interface mpiut__exchange
@@ -192,57 +194,57 @@ module mpiut_m
   end interface
 
   interface mpiut__message
-     module procedure message_str,                    &
-                      message_str_double,             &
-                      message_str_double_str,         &
-                      message_str_int,                &
-                      message_str_intd,               &
-                      message_str_int_int,            &
-                      message_str_intd_intd,          &
-                      message_str_intd_int,           &
-                      message_str_int_intd,           &
-                      message_str_int_int_int,        &
-                      message_str_int_int_double,     &
-                      message_str_intd_int_double,    &
-                      message_str_int_double,         &
-                      message_str_intd_double,        &
-                      message_str_int_double_double,  &
-                      message_str_intd_double_double, &
-                      message_str_int_float_float,    &
-                      message_str_intd_float_float,   &
-                      message_str_int_str,            &
-                      message_str_int_str_int,        &
-                      message_str_intd_str_int,       &
-                      message_str_int_str_double,     &
-                      message_str_intd_str_double,    &
-                      message_str_logical_str,        &
+     module procedure message_str,                &
+                      message_str_rd,             &
+                      message_str_rd_str,         &
+                      message_str_is,             &
+                      message_str_id,             &
+                      message_str_is_is,          &
+                      message_str_id_id,          &
+                      message_str_id_is,          &
+                      message_str_is_id,          &
+                      message_str_is_is_is,       &
+                      message_str_is_is_rd,       &
+                      message_str_id_is_rd,       &
+                      message_str_is_rd,          &
+                      message_str_id_rd,          &
+                      message_str_is_rd_rd,       &
+                      message_str_id_rd_rd,       &
+                      message_str_is_rs_rs,       &
+                      message_str_id_rs_rs,       &
+                      message_str_is_str,         &
+                      message_str_is_str_is,      &
+                      message_str_id_str_is,      &
+                      message_str_is_str_rd,      &
+                      message_str_id_str_rd,      &
+                      message_str_logical_str,    &
                       message_str_str
   end interface
 
   interface mpiut__message_leader
-     module procedure message_leader_double,          &
-                      message_leader_float,           &
-                      message_leader_str,             &
-                      message_leader_int,             &
-                      message_leader_intd
+     module procedure message_leader_rd,      &
+                      message_leader_rs,      &
+                      message_leader_str,     &
+                      message_leader_is,      &
+                      message_leader_id
   end interface
 
   interface mpiut__deco_message
-     module procedure message_decorated_str,          &
-                      message_decorated_str_int,      &
-                      message_decorated_str_intd
+     module procedure message_decorated_str,       &
+                      message_decorated_str_is,    &
+                      message_decorated_str_id
   end interface
 
   interface mpiut__maxval
-     module procedure maxval_0d_i,                    &
-                      maxval_0d_id,                   &
-                      maxval_0d_r
+     module procedure maxval_0d_is,      &
+                      maxval_0d_id,      &
+                      maxval_0d_rd
   end interface
 
   interface mpiut__minval
-     module procedure minval_0d_i,                    &
-                      minval_0d_id,                   &
-                      minval_0d_r
+     module procedure minval_0d_is,      &
+                      minval_0d_id,      &
+                      minval_0d_rd
   end interface
 
   interface mpiut__recv
@@ -257,8 +259,8 @@ module mpiut_m
   end interface
 
   interface mpiut__reduce_sum
-     module procedure reduce_sum0d_r,   &
-                      reduce_sum3d_r
+     module procedure reduce_sum0d_rd,   &
+                      reduce_sum3d_rd
   end interface
 
   interface mpiut__send
@@ -283,51 +285,51 @@ contains
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine allreduce_max0d_i(comm, buff)
+  subroutine allreduce_max0d_is( comm, buff )
     integer(SI) <in> :: comm
     integer(SI) <io> :: buff
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     integer(SI) :: ierr
 
-    call MPI_ALLREDUCE(MPI_IN_PLACE,  &
-                       buff,  &
-                       1,  &
-                       MPI_INTEGER,  &
-                       MPI_MAX,  &
-                       comm,  &
-                       ierr)
-    call mpiut__assert(ierr==0,'<__FUNC__> failed.')
+    call MPI_ALLREDUCE( MPI_IN_PLACE,   &
+                        buff,           &
+                        1,              &
+                        MPI_INTEGER,    &
+                        MPI_MAX,        &
+                        comm,           &
+                        ierr )
+    call mpiut__assert( ierr==0, '<__FUNC__> failed.' )
 
-  end subroutine allreduce_max0d_i
+  end subroutine allreduce_max0d_is
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine allreduce_max0d_id(comm, buff)
+  subroutine allreduce_max0d_id( comm, buff )
     integer(SI) <in> :: comm
     integer(DI) <io> :: buff
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     integer(SI) :: ierr
 
-    call MPI_ALLREDUCE(MPI_IN_PLACE,  &
-                       buff,  &
-                       1,  &
-                       MPI_INTEGER8,  &
-                       MPI_MAX,  &
-                       comm,  &
-                       ierr)
-    call mpiut__assert(ierr==0,'<__FUNC__> failed.')
+    call MPI_ALLREDUCE( MPI_IN_PLACE,   &
+                        buff,           &
+                        1,              &
+                        MPI_INTEGER8,   &
+                        MPI_MAX,        &
+                        comm,           &
+                        ierr )
+    call mpiut__assert( ierr==0, '<__FUNC__> failed.' )
 
   end subroutine allreduce_max0d_id
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine allreduce_max0d_r(comm, buff)
+  subroutine allreduce_max0d_rd( comm, buff )
     integer(SI) <in> :: comm
-    real(DR) <io> :: buff
+    real(DR)    <io> :: buff
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     integer(SI) :: ierr
@@ -351,65 +353,65 @@ contains
     !--- In case your MPI doesn't support MPI_IN_PLACE ------------------+
 
     ! You may have to call....  2004.04.16.
-    ! call MPI_BARRIER(comm, ierr)
+    ! call MPI_BARRIER( comm, ierr )
 
-    call MPI_ALLREDUCE(MPI_IN_PLACE,                             &
-                       buff,                                     &
-                       1,                                        &
-                       MPI_DOUBLE_PRECISION,                     &
-                       MPI_MAX,                                  &
-                       comm,                                     &
-                       ierr)
-    call mpiut__assert(ierr==0,'<__FUNC__> failed.')
+    call MPI_ALLREDUCE( MPI_IN_PLACE,               &
+                        buff,                       &
+                        1,                          &
+                        MPI_DOUBLE_PRECISION,       &
+                        MPI_MAX,                    &
+                        comm,                       &
+                        ierr )
+    call mpiut__assert( ierr==0, '<__FUNC__> failed.' )
 
-  end subroutine allreduce_max0d_r
+  end subroutine allreduce_max0d_rd
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine allreduce_max1d_i(comm, buff)
+  subroutine allreduce_max1d_is( comm, buff )
     integer(SI) <in> :: comm
     integer(SI) <io> :: buff(:)
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     integer(SI) :: ierr
 
-    call MPI_ALLREDUCE(MPI_IN_PLACE,  &
-                       buff,  &
-                       size(buff,1),  &
-                       MPI_INTEGER,  &
-                       MPI_MAX,  &
-                       comm,  &
-                       ierr)
-    call mpiut__assert(ierr==0,'<__FUNC__> failed.')
+    call MPI_ALLREDUCE( MPI_IN_PLACE,     &
+                        buff,             &
+                        size(buff,1),     &
+                        MPI_INTEGER,      &
+                        MPI_MAX,          &
+                        comm,             &
+                        ierr )
+    call mpiut__assert( ierr==0, '<__FUNC__> failed.' )
 
-  end subroutine allreduce_max1d_i
+  end subroutine allreduce_max1d_is
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine allreduce_max1d_r(comm, buff)
+  subroutine allreduce_max1d_rd( comm, buff )
     integer(SI) <in> :: comm
-    real(DR) <io> :: buff(:)
+    real(DR)    <io> :: buff(:)
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     integer(SI) :: ierr
 
-    call MPI_ALLREDUCE(MPI_IN_PLACE,  &
-                       buff,  &
-                       size(buff,1),  &
-                       MPI_DOUBLE_PRECISION,  &
-                       MPI_MAX,  &
-                       comm,  &
-                       ierr)
-    call mpiut__assert(ierr==0,'<__FUNC__> failed.')
+    call MPI_ALLREDUCE( MPI_IN_PLACE,           &
+                        buff,                   &
+                        size(buff,1),           &
+                        MPI_DOUBLE_PRECISION,   &
+                        MPI_MAX,                &
+                        comm,                   &
+                        ierr )
+    call mpiut__assert( ierr==0, '<__FUNC__> failed.' )
 
-  end subroutine allreduce_max1d_r
+  end subroutine allreduce_max1d_rd
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine allreduce_min0d_i(comm, buff)
+  subroutine allreduce_min0d_is( comm, buff )
     integer(SI) <in> :: comm
     integer(SI) <io> :: buff
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
@@ -436,42 +438,42 @@ contains
     ! You may have to call....  2004.04.16.
     ! call MPI_BARRIER(comm, ierr)
 
-    call MPI_ALLREDUCE(MPI_IN_PLACE,                             &
-                       buff,                                     &
-                       1,                                        &
-                       MPI_INTEGER,                              &
-                       MPI_MIN,                                  &
-                       comm,                                     &
-                       ierr)
+    call MPI_ALLREDUCE( MPI_IN_PLACE,           &
+                        buff,                   &
+                        1,                      &
+                        MPI_INTEGER,            &
+                        MPI_MIN,                &
+                        comm,                   &
+                        ierr )
 
-  end subroutine allreduce_min0d_i
+  end subroutine allreduce_min0d_is
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine allreduce_min0d_id(comm, buff)
+  subroutine allreduce_min0d_id( comm, buff )
     integer(SI) <in> :: comm
     integer(DI) <io> :: buff
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     integer(SI) :: ierr
 
-    call MPI_ALLREDUCE(MPI_IN_PLACE,  &
-                       buff,  &
-                       1,  &
-                       MPI_INTEGER8,  &
-                       MPI_MIN,  &
-                       comm,  &
-                       ierr)
+    call MPI_ALLREDUCE( MPI_IN_PLACE,   &
+                        buff,           &
+                        1,              &
+                        MPI_INTEGER8,   &
+                        MPI_MIN,        &
+                        comm,           &
+                        ierr )
 
   end subroutine allreduce_min0d_id
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine allreduce_min0d_r(comm, buff)
+  subroutine allreduce_min0d_rd( comm, buff )
     integer(SI) <in> :: comm
-    real(DR) <io> :: buff
+    real(DR)    <io> :: buff
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     integer(SI) :: ierr
@@ -494,22 +496,22 @@ contains
     !--- In case your MPI doesn't support MPI_IN_PLACE ------------------+
 
     ! You may have to call....  2004.04.16.
-    ! call MPI_BARRIER(comm, ierr)
+    ! call MPI_BARRIER( comm, ierr )
 
-    call MPI_ALLREDUCE(MPI_IN_PLACE,                             &
-                       buff,                                     &
-                       1,                                        &
-                       MPI_DOUBLE_PRECISION,                     &
-                       MPI_MIN,                                  &
-                       comm,                                     &
-                       ierr)
+    call MPI_ALLREDUCE( MPI_IN_PLACE,              &
+                        buff,                      &
+                        1,                         &
+                        MPI_DOUBLE_PRECISION,      &
+                        MPI_MIN,                   &
+                        comm,                      &
+                        ierr )
 
-  end subroutine allreduce_min0d_r
+  end subroutine allreduce_min0d_rd
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine allreduce_sum0d_i(comm, buff)
+  subroutine allreduce_sum0d_is( comm, buff )
     integer(SI) <in> :: comm
     integer(SI) <io> :: buff
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
@@ -519,7 +521,7 @@ contains
     !--- In case your MPI doesn't support MPI_IN_PLACE ------------------+
     !                                                                    !
     integer(SI) :: sendbuff                                                 !
-    if (MPI_IN_PLACE==NIL) then                                          !
+    if ( MPI_IN_PLACE==NIL) then                                          !
        sendbuff = buff                                                   !
        call MPI_ALLREDUCE(sendbuff,                                 &    !
                           buff,                                     &    !
@@ -533,22 +535,22 @@ contains
     !                                                                    !
     !--- In case your MPI doesn't support MPI_IN_PLACE ------------------+
 
-    call MPI_ALLREDUCE(MPI_IN_PLACE,                             &
-                       buff,                                     &
-                       1,                                        &
-                       MPI_INTEGER,                              &
-                       MPI_SUM,                                  &
-                       comm,                                     &
-                       ierr)
+    call MPI_ALLREDUCE( MPI_IN_PLACE,     &
+                        buff,             &
+                        1,                &
+                        MPI_INTEGER,      &
+                        MPI_SUM,          &
+                        comm,             &
+                        ierr )
 
-  end subroutine allreduce_sum0d_i
+  end subroutine allreduce_sum0d_is
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine allreduce_sum0d_r(comm, buff)
+  subroutine allreduce_sum0d_rd( comm, buff )
     integer(SI) <in> :: comm
-    real(DR) <io> :: buff
+    real(DR)    <io> :: buff
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     integer(SI) :: ierr
@@ -570,20 +572,20 @@ contains
     !                                                                    !
     !--- In case your MPI doesn't support MPI_IN_PLACE ------------------+
 
-    call MPI_ALLREDUCE(MPI_IN_PLACE,                             &
-                       buff,                                     &
-                       1,                                        &
-                       MPI_DOUBLE_PRECISION,                     &
-                       MPI_SUM,                                  &
-                       comm,                                     &
-                       ierr)
+    call MPI_ALLREDUCE( MPI_IN_PLACE,              &
+                        buff,                      &
+                        1,                         &
+                        MPI_DOUBLE_PRECISION,      &
+                        MPI_SUM,                   &
+                        comm,                      &
+                        ierr)
 
-  end subroutine allreduce_sum0d_r
+  end subroutine allreduce_sum0d_rd
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine allreduce_sum1d_i(comm, buff)
+  subroutine allreduce_sum1d_is( comm, buff )
     integer(SI) <in> :: comm
     integer(SI) <io> :: buff(:)
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
@@ -609,22 +611,22 @@ contains
     !                                                                    !
     !--- In case your MPI doesn't support MPI_IN_PLACE ------------------+
 
-    call MPI_ALLREDUCE(MPI_IN_PLACE,                             &
-                       buff,                                     &
-                       size(buff,1),                             &
-                       MPI_INTEGER,                              &
-                       MPI_SUM,                                  &
-                       comm,                                     &
-                       ierr)
+    call MPI_ALLREDUCE( MPI_IN_PLACE,       &
+                        buff,               &
+                        size(buff,1),       &
+                        MPI_INTEGER,        &
+                        MPI_SUM,            &
+                        comm,               &
+                        ierr )
 
-  end subroutine allreduce_sum1d_i
+  end subroutine allreduce_sum1d_is
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine allreduce_sum1d_r(comm, buff)
+  subroutine allreduce_sum1d_rd( comm, buff )
     integer(SI) <in> :: comm
-    real(DR) <io> :: buff(:)
+    real(DR)    <io> :: buff(:)
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     integer(SI) :: ierr
@@ -649,20 +651,20 @@ contains
     !--- In case your MPI doesn't support MPI_IN_PLACE ------------------+
 
 
-    call MPI_ALLREDUCE(MPI_IN_PLACE,            &
-                       buff,                    &
-                       size(buff,1),            &
-                       MPI_DOUBLE_PRECISION,    &
-                       MPI_SUM,                 &
-                       comm,                    &
-                       ierr)
+    call MPI_ALLREDUCE( MPI_IN_PLACE,            &
+                        buff,                    &
+                        size(buff,1),            &
+                        MPI_DOUBLE_PRECISION,    &
+                        MPI_SUM,                 &
+                        comm,                    &
+                        ierr )
 
-  end subroutine allreduce_sum1d_r
+  end subroutine allreduce_sum1d_rd
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine allreduce_sum2d_i(comm, buff)
+  subroutine allreduce_sum2d_is( comm, buff )
     integer(SI) <in> :: comm
     integer(SI) <io> :: buff(:,:)
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
@@ -689,60 +691,60 @@ contains
     !                                                                    !
     !--- In case your MPI doesn't support MPI_IN_PLACE ------------------+
 
-    call MPI_ALLREDUCE(MPI_IN_PLACE,                             &
-                       buff,                                     &
-                       size(buff,1)*size(buff,2),                &
-                       MPI_INTEGER,                              &
-                       MPI_SUM,                                  &
-                       comm,                                     &
-                       ierr)
+    call MPI_ALLREDUCE( MPI_IN_PLACE,                             &
+                        buff,                                     &
+                        size(buff,1)*size(buff,2),                &
+                        MPI_INTEGER,                              &
+                        MPI_SUM,                                  &
+                        comm,                                     &
+                        ierr )
 
-  end subroutine allreduce_sum2d_i
+  end subroutine allreduce_sum2d_is
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine allreduce_sum2d_f(comm, buff)
+  subroutine allreduce_sum2d_rs( comm, buff )
     integer(SI) <in> :: comm
-    real(SR) <io> :: buff(:,:)
+    real(SR)    <io> :: buff(:,:)
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     integer(SI) :: ierr
 
-    call MPI_ALLREDUCE(MPI_IN_PLACE,               &
-                       buff,                       &
-                       size(buff,1)*size(buff,2),  &
-                       MPI_REAL,                   &
-                       MPI_SUM,                    &
-                       comm,                       &
-                       ierr)
+    call MPI_ALLREDUCE( MPI_IN_PLACE,               &
+                        buff,                       &
+                        size(buff,1)*size(buff,2),  &
+                        MPI_REAL,                   &
+                        MPI_SUM,                    &
+                        comm,                       &
+                        ierr )
 
-  end subroutine allreduce_sum2d_f
+  end subroutine allreduce_sum2d_rs
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine allreduce_sum2d_r(comm, buff)
+  subroutine allreduce_sum2d_rd( comm, buff )
     integer(SI) <in> :: comm
-    real(DR) <io> :: buff(:,:)
+    real(DR)    <io> :: buff(:,:)
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     integer(SI) :: ierr
 
-    call MPI_ALLREDUCE(MPI_IN_PLACE,               &
-                       buff,                       &
-                       size(buff,1)*size(buff,2),  &
-                       MPI_DOUBLE_PRECISION,       &
-                       MPI_SUM,                    &
-                       comm,                       &
-                       ierr)
+    call MPI_ALLREDUCE( MPI_IN_PLACE,               &
+                        buff,                       &
+                        size(buff,1)*size(buff,2),  &
+                        MPI_DOUBLE_PRECISION,       &
+                        MPI_SUM,                    &
+                        comm,                       &
+                        ierr )
 
-  end subroutine allreduce_sum2d_r
+  end subroutine allreduce_sum2d_rd
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine allreduce_sum3d_i(comm, buff)
+  subroutine allreduce_sum3d_is( comm, buff )
     integer(SI) <in> :: comm
     integer(SI) <io> :: buff(:,:,:)
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
@@ -770,22 +772,22 @@ contains
     !                                                                    !
     !--- In case your MPI doesn't support MPI_IN_PLACE ------------------+
 
-    call MPI_ALLREDUCE(MPI_IN_PLACE,                             &
-                       buff,                                     &
-                       size(buff,1)*size(buff,2)*size(buff,3),   &
-                       MPI_INTEGER,                              &
-                       MPI_SUM,                                  &
-                       comm,                                     &
-                       ierr)
+    call MPI_ALLREDUCE( MPI_IN_PLACE,                             &
+                        buff,                                     &
+                        size(buff,1)*size(buff,2)*size(buff,3),   &
+                        MPI_INTEGER,                              &
+                        MPI_SUM,                                  &
+                        comm,                                     &
+                        ierr )
 
-  end subroutine allreduce_sum3d_i
+  end subroutine allreduce_sum3d_is
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine allreduce_sum3d_r(comm, buff)
+  subroutine allreduce_sum3d_rd( comm, buff )
     integer(SI) <in> :: comm
-    real(DR) <io> :: buff(:,:,:)
+    real(DR)    <io> :: buff(:,:,:)
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     integer(SI) :: ierr
@@ -811,21 +813,21 @@ contains
     !                                                                    !
     !--- In case your MPI doesn't support MPI_IN_PLACE ------------------+
 
-    call MPI_ALLREDUCE(MPI_IN_PLACE,                             &
-                       buff,                                     &
-                       size(buff,1)*size(buff,2)*size(buff,3),   &
-                       MPI_DOUBLE_PRECISION,                     &
-                       MPI_SUM,                                  &
-                       comm,                                     &
-                       ierr)
+    call MPI_ALLREDUCE( MPI_IN_PLACE,                             &
+                        buff,                                     &
+                        size(buff,1)*size(buff,2)*size(buff,3),   &
+                        MPI_DOUBLE_PRECISION,                     &
+                        MPI_SUM,                                  &
+                        comm,                                     &
+                        ierr )
 
-  end subroutine allreduce_sum3d_r
+  end subroutine allreduce_sum3d_rd
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine allreduce_sum3d_f(comm, buff)
+  subroutine allreduce_sum3d_rs( comm, buff )
     integer(SI) <in> :: comm
-    real(SR) <io> :: buff(:,:,:)
+    real(SR)    <io> :: buff(:,:,:)
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     integer(SI) :: ierr
@@ -851,20 +853,20 @@ contains
     !                                                                    !
     !--- In case your MPI doesn't support MPI_IN_PLACE ------------------+
 
-    call MPI_ALLREDUCE(MPI_IN_PLACE,                             &
-                       buff,                                     &
-                       size(buff,1)*size(buff,2)*size(buff,3),   &
-                       MPI_REAL,                                 &
-                       MPI_SUM,                                  &
-                       comm,                                     &
-                       ierr)
+    call MPI_ALLREDUCE( MPI_IN_PLACE,                             &
+                        buff,                                     &
+                        size(buff,1)*size(buff,2)*size(buff,3),   &
+                        MPI_REAL,                                 &
+                        MPI_SUM,                                  &
+                        comm,                                     &
+                        ierr )
 
-  end subroutine allreduce_sum3d_f
+  end subroutine allreduce_sum3d_rs
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine bcast_str(comm, source, n, string, tag)
+  subroutine bcast_str( comm, source, n, string, tag )
     integer(SI) <in> :: comm
     integer(SI) <in> :: source   ! rank
     integer(SI) <in> :: n
@@ -875,170 +877,188 @@ contains
     integer(SI) :: ierr
 
     if ( present(tag) ) then
-      call mpiut__assert(mpiut__tag_check(comm,tag),'<__FUNC__> tag unmatch.')
+      call mpiut__assert( mpiut__tag_check( comm, tag ),  &
+                          '<__FUNC__> tag unmatch.' )
     end if
 
-    call MPI_BCAST(string, n, MPI_CHARACTER, source, comm, ierr)
+    call MPI_BCAST( string, n, MPI_CHARACTER, source, comm, ierr )
 
   end subroutine bcast_str
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine bcast0d_i(comm, source, buff, tag)
+  subroutine bcast0d_is( comm, source, buff, tag )
     integer(SI) <in> :: comm
     integer(SI) <in> :: source   ! rank
     integer(SI) <io> :: buff
     integer(SI) <optin> :: tag
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-    integer(SI) :: ierr
+    integer(SI) :: ierr, size_of_int, size_of_buff
 
     if ( present(tag) ) then
-      call mpiut__assert(mpiut__tag_check(comm,tag),'<__FUNC__> tag unmatch.')
+      call mpiut__assert( mpiut__tag_check( comm, tag ),  &
+                          '<__FUNC__> tag unmatch.' )
     end if
+      
+    call MPI_TYPE_SIZE( MPI_INTEGER, size_of_int,  ierr )
+    call MPI_TYPE_SIZE( MPI_INTEGER, size_of_buff, ierr )
+    call mpiut__assert( size_of_int == size_of_buff,        &
+                        "Size of MPI_INTEGER differs from integer(SI)." )
 
     call MPI_BCAST(buff, 1, MPI_INTEGER, source, comm, ierr)
 
-  end subroutine bcast0d_i
+  end subroutine bcast0d_is
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine bcast0d_i8(comm, source, buff, tag)
+  subroutine bcast0d_id( comm, source, buff, tag )
     integer(SI) <in> :: comm
     integer(SI) <in> :: source   ! rank
     integer(DI) <io> :: buff
     integer(SI) <optin> :: tag
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-    integer(SI) :: ierr
+    integer(SI) :: ierr, size_of_int8, size_of_buff
 
     if ( present(tag) ) then
-      call mpiut__assert(mpiut__tag_check(comm,tag),'<__FUNC__> tag unmatch.')
+      call mpiut__assert( mpiut__tag_check( comm, tag ),  &
+                          '<__FUNC__> tag unmatch.' )
     end if
+      
+    call MPI_TYPE_SIZE( MPI_INTEGER8, size_of_int8, ierr )
+    call MPI_TYPE_SIZE( MPI_INTEGER8, size_of_buff, ierr )
+    call mpiut__assert( size_of_int8 == size_of_buff,        &
+                        "Size of MPI_INTEGER8 differs from integer(DI)." )
 
-    call MPI_BCAST(buff, 1, MPI_INTEGER8, source, comm, ierr)
+    call MPI_BCAST( buff, 1, MPI_INTEGER8, source, comm, ierr )
 
-  end subroutine bcast0d_i8
+  end subroutine bcast0d_id
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine bcast0d_f(comm, source, buff, tag)
+  subroutine bcast0d_rs( comm, source, buff, tag )
     integer(SI) <in> :: comm
     integer(SI) <in> :: source   ! rank
-    real(SR) <io> :: buff
+    real(SR)    <io> :: buff
     integer(SI) <optin> :: tag
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     integer(SI) :: ierr
 
     if ( present(tag) ) then
-      call mpiut__assert(mpiut__tag_check(comm,tag),'<__FUNC__> tag unmatch.')
+      call mpiut__assert( mpiut__tag_check( comm, tag ),  &
+                          '<__FUNC__> tag unmatch.' )
     end if
 
-    call MPI_BCAST(buff, 1, MPI_REAL, source, comm, ierr)
+    call MPI_BCAST( buff, 1, MPI_REAL, source, comm, ierr )
 
-  end subroutine bcast0d_f
+  end subroutine bcast0d_rs
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine bcast0d_r(comm, source, buff, tag)
+  subroutine bcast0d_rd( comm, source, buff, tag )
     integer(SI) <in> :: comm
     integer(SI) <in> :: source   ! rank
-    real(DR) <io> :: buff
+    real(DR)    <io> :: buff
     integer(SI) <optin> :: tag
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     integer(SI) :: ierr
 
     if ( present(tag) ) then
-      call mpiut__assert(mpiut__tag_check(comm,tag),'<__FUNC__> tag unmatch.')
+      call mpiut__assert( mpiut__tag_check( comm, tag ),  &
+                          '<__FUNC__> tag unmatch.' )
     end if
 
-    call MPI_BCAST(buff, 1, MPI_DOUBLE_PRECISION, source, comm, ierr)
+    call MPI_BCAST( buff, 1, MPI_DOUBLE_PRECISION, source, comm, ierr )
 
-  end subroutine bcast0d_r
+  end subroutine bcast0d_rd
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine bcast1d_f(comm, source, buff, tag)
+  subroutine bcast1d_rs( comm, source, buff, tag )
     integer(SI) <in> :: comm
     integer(SI) <in> :: source   ! rank
-    real(SR) <io> :: buff(:)
+    real(SR)    <io> :: buff(:)
     integer(SI) <optin> :: tag
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     integer(SI) :: n1, ierr
 
     if ( present(tag) ) then
-      call mpiut__assert(mpiut__tag_check(comm,tag),'<__FUNC__> tag unmatch.')
+      call mpiut__assert( mpiut__tag_check( comm, tag ),    &
+                          '<__FUNC__> tag unmatch.' )
     end if
 
     n1 = size(buff,dim=1)
 
-    call MPI_BCAST(buff, n1, MPI_REAL,  &
-                   source, comm, ierr)
+    call MPI_BCAST( buff, n1, MPI_REAL,  &
+                    source, comm, ierr )
 
-  end subroutine bcast1d_f
+  end subroutine bcast1d_rs
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine bcast3d_r(comm, source, buff, tag)
+  subroutine bcast3d_rd( comm, source, buff, tag )
     integer(SI) <in> :: comm
     integer(SI) <in> :: source   ! rank
-    real(DR) <io> :: buff(:,:,:)
+    real(DR)    <io> :: buff(:,:,:)
     integer(SI) <optin> :: tag
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     integer(SI) :: n1, n2, n3, ierr
 
     if ( present(tag) ) then
-      call mpiut__assert(mpiut__tag_check(comm,tag),'<__FUNC__> tag unmatch.')
+      call mpiut__assert( mpiut__tag_check( comm, tag ),  &
+                          '<__FUNC__> tag unmatch.' )
     end if
 
     n1 = size(buff,dim=1)
     n2 = size(buff,dim=2)
     n3 = size(buff,dim=3)
 
-    call MPI_BCAST(buff, n1*n2*n3, MPI_DOUBLE_PRECISION,  &
-                   source, comm, ierr)
+    call MPI_BCAST( buff, n1*n2*n3, MPI_DOUBLE_PRECISION,  &
+                    source, comm, ierr )
 
-  end subroutine bcast3d_r
+  end subroutine bcast3d_rd
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine bcast3d_f(comm, source, buff, tag)
+  subroutine bcast3d_rs( comm, source, buff, tag )
     integer(SI) <in> :: comm
     integer(SI) <in> :: source   ! rank
-    real(SR) <io> :: buff(:,:,:)
+    real(SR)    <io> :: buff(:,:,:)
     integer(SI) <optin> :: tag
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     integer(SI) :: n1, n2, n3, ierr
 
     if ( present(tag) ) then
-      call mpiut__assert(mpiut__tag_check(comm,tag),'<__FUNC__> tag unmatch.')
+      call mpiut__assert( mpiut__tag_check( comm, tag ),   &
+                          '<__FUNC__> tag unmatch.' )
     end if
 
     n1 = size(buff,dim=1)
     n2 = size(buff,dim=2)
     n3 = size(buff,dim=3)
 
-    call MPI_BCAST(buff, n1*n2*n3, MPI_REAL,  &
-                   source, comm, ierr)
+    call MPI_BCAST( buff, n1*n2*n3, MPI_REAL,  &
+                    source, comm, ierr )
 
-  end subroutine bcast3d_f
+  end subroutine bcast3d_rs
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine bcast3d_i(comm, source, buff, tag)
+  subroutine bcast3d_is( comm, source, buff, tag )
     integer(SI) <in> :: comm
     integer(SI) <in> :: source   ! rank
     integer(SI) <io> :: buff(:,:,:)
@@ -1048,99 +1068,98 @@ contains
     integer(SI) :: n1, n2, n3, ierr
 
     if ( present(tag) ) then
-      call mpiut__assert(mpiut__tag_check(comm,tag),'<__FUNC__> tag unmatch.')
+      call mpiut__assert( mpiut__tag_check( comm, tag ), &
+                          '<__FUNC__> tag unmatch.' )
     end if
 
     n1 = size(buff,dim=1)
     n2 = size(buff,dim=2)
     n3 = size(buff,dim=3)
 
-    call MPI_BCAST(buff, n1*n2*n3, MPI_INTEGER,  &
-                   source, comm, ierr)
+    call MPI_BCAST( buff, n1*n2*n3, MPI_INTEGER,  &
+                    source, comm, ierr )
 
-  end subroutine bcast3d_i
+  end subroutine bcast3d_is
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine copy_p2p_3d_r(comm,tag,source,dest,buff)
+  subroutine copy_p2p_3d_rd( comm, tag, source, dest, buff )
     integer(SI) <in> :: comm
     integer(SI) <in> :: tag
     integer(SI) <in> :: source, dest   ! ranks
-    real(DR) <io> :: buff(:,:,:)
+    real(DR)    <io> :: buff(:,:,:)
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     real(DR), dimension(size(buff,1),size(buff,2),size(buff,3)) :: work
-    integer(SI)                             :: nsize, ierr, me
+    integer(SI) :: nsize, ierr, me, request
     integer(SI), dimension(MPI_STATUS_SIZE) :: status
-    integer(SI)                             :: request
 
     nsize = size(buff,1)*size(buff,2)*size(buff,3)
 
     work = buff
 
-    me = mpiut__comm_rank(comm)
+    me = mpiut__comm_rank( comm )
 
     if ( me==dest ) then
-       call MPI_IRECV(buff, nsize, MPI_DOUBLE_PRECISION, source, &
-                      tag,  comm, request, ierr)
+       call MPI_IRECV( buff, nsize, MPI_DOUBLE_PRECISION, source, &
+                       tag,  comm, request, ierr )
     end if
 
     if ( me==source ) then
-       call MPI_SEND(work, nsize, MPI_DOUBLE_PRECISION, dest,   &
-                     tag,  comm, ierr)
+       call MPI_SEND( work, nsize, MPI_DOUBLE_PRECISION, dest,   &
+                      tag,  comm, ierr )
     end if
 
-    call MPI_WAIT(request, status, ierr)
+    call MPI_WAIT( request, status, ierr )
 
-  end subroutine copy_p2p_3d_r
+  end subroutine copy_p2p_3d_rd
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine copy_p2p_3d_s(comm,tag,source,dest,buff)
+  subroutine copy_p2p_3d_rs( comm, tag, source, dest, buff )
     integer(SI) <in> :: comm
     integer(SI) <in> :: tag
     integer(SI) <in> :: source, dest   ! ranks
-    real(SR) <io> :: buff(:,:,:)
+    real(SR)    <io> :: buff(:,:,:)
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     real(SR), dimension(size(buff,1),size(buff,2),size(buff,3)) :: work
-    integer(SI)                             :: nsize, ierr, me
+    integer(SI) :: nsize, ierr, me, request
     integer(SI), dimension(MPI_STATUS_SIZE) :: status
-    integer(SI)                             :: request
 
     nsize = size(buff,1)*size(buff,2)*size(buff,3)
 
     work = buff
 
-    me = mpiut__comm_rank(comm)
+    me = mpiut__comm_rank( comm )
 
     if ( me==dest ) then
-       call MPI_IRECV(buff, nsize, MPI_REAL, source, &
-                      tag,  comm, request, ierr)
+       call MPI_IRECV( buff, nsize, MPI_REAL, source, &
+                       tag,  comm, request, ierr )
     end if
 
     if ( me==source ) then
-       call MPI_SEND(work, nsize, MPI_REAL, dest,    &
-                     tag,  comm, ierr)
+       call MPI_SEND( work, nsize, MPI_REAL, dest,    &
+                      tag,  comm, ierr )
     end if
 
-    call MPI_WAIT(request, status, ierr)
+    call MPI_WAIT( request, status, ierr )
 
-  end subroutine copy_p2p_3d_s
+  end subroutine copy_p2p_3d_rs
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine copy_p_to_p_3d_s(comm,tag,source,dest,buff)
+  subroutine copy_p_to_p_3d_rs( comm, tag, source, dest, buff )
     integer(SI) <in> :: comm
     integer(SI) <in> :: tag
     integer(SI) <in> :: source, dest   ! ranks
-    real(SR) <io> :: buff(:,:,:)
+    real(SR)    <io> :: buff(:,:,:)
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-    real(SR) :: work(size(buff,1),size(buff,2),size(buff,3))
+    real(SR)    :: work(size(buff,1),size(buff,2),size(buff,3))
     integer(SI) :: nsize, ierr, me
     integer(SI) :: status(MPI_STATUS_SIZE)
 
@@ -1148,26 +1167,25 @@ contains
 
     work = buff
 
-    me = mpiut__comm_rank(comm)
+    me = mpiut__comm_rank( comm )
 
     if ( me==dest ) then
-       call MPI_RECV(buff, nsize, MPI_REAL, source, &
-                      tag,  comm, status, ierr)
+       call MPI_RECV( buff, nsize, MPI_REAL, source, &
+                      tag,  comm, status, ierr )
     end if
 
     if ( me==source ) then
-       call MPI_SEND(work, nsize, MPI_REAL, dest,    &
-                     tag,  comm, ierr)
+       call MPI_SEND( work, nsize, MPI_REAL, dest,    &
+                      tag,  comm, ierr )
     end if
 
-  end subroutine copy_p_to_p_3d_s
-
+  end subroutine copy_p_to_p_3d_sr
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine exchange3d_1(comm,rank_next,                       &
-                          f01)
-    integer(SI)          <in> :: comm
+  subroutine exchange3d_1( comm, rank_next,   &
+                           f01 )
+    integer(SI)       <in> :: comm
     type(rank_next_t) <in> :: rank_next
     type(sfield_t)    <io> :: f01
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
@@ -1199,9 +1217,9 @@ contains
   contains
 
     subroutine iN_i_direction
-      integer(SI), dimension(2)                 :: requests
+      integer(SI) :: ncount, ierr, j, k
+      integer(SI), dimension(2) :: requests
       integer(SI), dimension(MPI_STATUS_SIZE,2) :: status
-      integer(SI)                               :: ncount, ierr, j, k
 
       do k full
         do j full
@@ -2696,7 +2714,7 @@ contains
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine maxval_0d_i(comm,i,max_i)
+  subroutine maxval_0d_is( comm, i, max_i )
     integer(SI) <in>  :: comm
     integer(SI) <in>  :: i
     integer(SI) <out> :: max_i
@@ -2707,14 +2725,14 @@ contains
 
     allocate(sgks_array(mpiut__comm_size(comm)))
 
-    call MPI_ALLGATHER(i,1,MPI_INTEGER,              &
-                       sgks_array, 1, MPI_INTEGER,   &
-                       comm, ierr)
+    call MPI_ALLGATHER( i,1,MPI_INTEGER,              &
+                        sgks_array, 1, MPI_INTEGER,   &
+                        comm, ierr )
 
     max_i = maxval(sgks_array)
     deallocate(sgks_array)
 
-  end subroutine maxval_0d_i
+  end subroutine maxval_0d_is
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
@@ -2742,13 +2760,13 @@ contains
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine maxval_0d_r(comm,r,max_r)
+  subroutine maxval_0d_rd( comm, r, max_r )
     integer(SI) <in>  :: comm
-    real(DR) <in>  :: r
-    real(DR) <out> :: max_r
+    real(DR) <in>     :: r
+    real(DR) <out>    :: max_r
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-    integer(SI)                            :: ierr
+    integer(SI) :: ierr
     real(DR), allocatable :: sgks_array(:)
 
     allocate(sgks_array(mpiut__comm_size(comm)))
@@ -2760,7 +2778,7 @@ contains
     max_r = maxval(sgks_array)
     deallocate(sgks_array)
 
-  end subroutine maxval_0d_r
+  end subroutine maxval_0d_rd
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
@@ -2789,29 +2807,29 @@ contains
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine message_decorated_str_int(comm,mark,string,int)
-    integer(SI)    <in> :: comm
+  subroutine message_decorated_str_is( comm, mark, string, int )
+    integer(SI) <in> :: comm
     char(len=1) <in> :: mark
     char(len=*) <in> :: string
-    integer(SI)    <in> :: int
+    integer(SI) <in> :: int
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 
     !!>
     Usage:
-       call mess...('#','This is message at nloop = ', nloop)
+       call mess...( '#', 'This is message at nloop = ', nloop )
     !!<
 
     ! << only the root process speaks >>
-    if ( mpiut__comm_rank(comm) /= 0 ) return
+    if ( mpiut__comm_rank( comm ) /= 0 ) return
 
-    call ut__deco_message(mark,string,int)
+    call ut__deco_message( mark, string, int )
 
-  end subroutine message_decorated_str_int
+  end subroutine message_decorated_str_is
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine message_decorated_str_intd(comm,mark,string,int)
+  subroutine message_decorated_str_id(comm,mark,string,int)
     integer(SI)    <in> :: comm
     char(len=1) <in> :: mark
     char(len=*) <in> :: string
@@ -2828,39 +2846,39 @@ contains
 
     call ut__deco_message(mark,string,int)
 
-  end subroutine message_decorated_str_intd
+  end subroutine message_decorated_str_id
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine message_leader_double(comm,string,double)
-    integer(SI)    <in> :: comm
+  subroutine message_leader_rd( comm, string, double )
+    integer(SI) <in> :: comm
     char(len=*) <in> :: string
     real(DR)    <in> :: double
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     ! << only the root process speaks >>
-    if ( mpiut__comm_rank(comm) /= 0 ) return
+    if ( mpiut__comm_rank( comm ) /= 0 ) return
 
-    call ut__message_leader(string,double)
+    call ut__message_leader( string, double )
 
-  end subroutine message_leader_double
+  end subroutine message_leader_rd
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine message_leader_float(comm,string,float)
-    integer(SI)    <in> :: comm
+  subroutine message_leader_rs( comm, string, float )
+    integer(SI) <in> :: comm
     char(len=*) <in> :: string
     real(SR)    <in> :: float
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     ! << only the root process speaks >>
-    if ( mpiut__comm_rank(comm) /= 0 ) return
+    if ( mpiut__comm_rank( comm ) /= 0 ) return
 
-    call ut__message_leader(string,float)
+    call ut__message_leader( string, float )
 
-  end subroutine message_leader_float
+  end subroutine message_leader_rs
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
@@ -2881,34 +2899,34 @@ contains
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine message_leader_int(comm,string,int)
-    integer(SI)    <in> :: comm
+  subroutine message_leader_is( comm, string, int )
+    integer(SI) <in> :: comm
     char(len=*) <in> :: string
-    integer(SI)    <in> :: int
+    integer(SI) <in> :: int
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     ! << only the root process speaks >>
-    if ( mpiut__comm_rank(comm) /= 0 ) return
+    if ( mpiut__comm_rank( comm ) /= 0 ) return
 
-    call ut__message_leader(string,int)
+    call ut__message_leader( string, int )
 
-  end subroutine message_leader_int
+  end subroutine message_leader_is
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine message_leader_intd(comm,string,int)
-    integer(SI)    <in> :: comm
+  subroutine message_leader_id( comm, string, int )
+    integer(SI) <in> :: comm
     char(len=*) <in> :: string
-    integer(DI)    <in> :: int
+    integer(DI) <in> :: int
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     ! << only the root process speaks >>
-    if ( mpiut__comm_rank(comm) /= 0 ) return
+    if ( mpiut__comm_rank( comm ) /= 0 ) return
 
-    call ut__message_leader(string,int)
+    call ut__message_leader( string, int )
 
-  end subroutine message_leader_intd
+  end subroutine message_leader_id
 
 
 
@@ -2929,7 +2947,7 @@ contains
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine message_str_double(comm,string,double)
+  subroutine message_str_rd(comm,string,double)
     integer(SI)    <in> :: comm
     char(len=*) <in> :: string
     real(DR)    <in> :: double
@@ -2940,12 +2958,12 @@ contains
 
     call ut__message(string,double)
 
-  end subroutine message_str_double
+  end subroutine message_str_rd
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine message_str_double_str(comm,str1,double,str2)
+  subroutine message_str_rd_str(comm,str1,double,str2)
     integer(SI)    <in> :: comm
     char(len=*) <in> :: str1, str2
     real(DR)    <in> :: double
@@ -2956,7 +2974,7 @@ contains
 
     call ut__message(str1,double,str2)
 
-  end subroutine message_str_double_str
+  end subroutine message_str_rd_str
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
@@ -3009,342 +3027,342 @@ contains
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine message_str_int(comm,string,int)
-    integer(SI)    <in> :: comm
+  subroutine message_str_is( comm, string, int )
+    integer(SI) <in> :: comm
     char(len=*) <in> :: string
-    integer(SI)    <in> :: int
+    integer(SI) <in> :: int
+!__________  _________  ________ _______ ______ _____ ____ ___ __ _
+!
+    ! << only the root process speaks >>
+    if ( mpiut__comm_rank( comm ) /= 0 ) return
+
+    call ut__message( string, int )
+
+  end subroutine message_str_is
+
+
+!__________  _________  ________ _______ ______ _____ ____ ___ __ _
+!
+  subroutine message_str_id( comm, string, int )
+    integer(SI) <in> :: comm
+    char(len=*) <in> :: string
+    integer(DI) <in> :: int
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     ! << only the root process speaks >>
     if ( mpiut__comm_rank(comm) /= 0 ) return
 
-    call ut__message(string,int)
+    call ut__message( string, int )
 
-  end subroutine message_str_int
+  end subroutine message_str_id
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine message_str_intd(comm,string,int)
-    integer(SI)    <in> :: comm
+  subroutine message_str_is_is( comm, string, i1, i2 )
+    integer(SI) <in> :: comm
     char(len=*) <in> :: string
-    integer(DI)    <in> :: int
+    integer(SI) <in> :: i1, i2
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     ! << only the root process speaks >>
-    if ( mpiut__comm_rank(comm) /= 0 ) return
+    if ( mpiut__comm_rank( comm ) /= 0 ) return
 
-    call ut__message(string,int)
+    call ut__message( string, i1, i2 )
 
-  end subroutine message_str_intd
+  end subroutine message_str_is_is
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine message_str_int_int(comm,string,i1,i2)
-    integer(SI)    <in> :: comm
+  subroutine message_str_is_id( comm, string, i1, i2 )
+    integer(SI) <in> :: comm
     char(len=*) <in> :: string
-    integer(SI)    <in> :: i1, i2
+    integer(SI) <in> :: i1
+    integer(DI) <in> :: i2
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     ! << only the root process speaks >>
-    if ( mpiut__comm_rank(comm) /= 0 ) return
+    if ( mpiut__comm_rank( comm ) /= 0 ) return
 
-    call ut__message(string,i1,i2)
+    call ut__message( string, i1, i2 )
 
-  end subroutine message_str_int_int
+  end subroutine message_str_is_id
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine message_str_int_intd(comm,string,i1,i2)
-    integer(SI)    <in> :: comm
+  subroutine message_str_id_is( comm, string, i1, i2 )
+    integer(SI) <in> :: comm
     char(len=*) <in> :: string
-    integer(SI)    <in> :: i1
-    integer(DI)    <in> :: i2
+    integer(DI) <in> :: i1
+    integer(SI) <in> :: i2
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     ! << only the root process speaks >>
-    if ( mpiut__comm_rank(comm) /= 0 ) return
+    if ( mpiut__comm_rank( comm ) /= 0 ) return
 
-    call ut__message(string,i1,i2)
+    call ut__message( string, i1, i2 )
 
-  end subroutine message_str_int_intd
+  end subroutine message_str_id_is
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine message_str_intd_int(comm,string,i1,i2)
-    integer(SI)    <in> :: comm
+  subroutine message_str_id_id( comm, string, i1, i2 )
+    integer(SI) <in> :: comm
     char(len=*) <in> :: string
-    integer(DI)    <in> :: i1
-    integer(SI)    <in> :: i2
+    integer(DI) <in> :: i1, i2
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     ! << only the root process speaks >>
-    if ( mpiut__comm_rank(comm) /= 0 ) return
+    if ( mpiut__comm_rank( comm ) /= 0 ) return
 
-    call ut__message(string,i1,i2)
+    call ut__message( string, i1, i2 )
 
-  end subroutine message_str_intd_int
+  end subroutine message_str_id_id
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine message_str_intd_intd(comm,string,i1,i2)
-    integer(SI)    <in> :: comm
+  subroutine message_str_is_is_is( comm, string, i1, i2, i3 )
+    integer(SI) <in> :: comm
     char(len=*) <in> :: string
-    integer(DI)    <in> :: i1, i2
+    integer(SI) <in> :: i1, i2, i3
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     ! << only the root process speaks >>
-    if ( mpiut__comm_rank(comm) /= 0 ) return
+    if ( mpiut__comm_rank( comm ) /= 0 ) return
 
-    call ut__message(string,i1,i2)
+    call ut__message( string, i1, i2, i3 )
 
-  end subroutine message_str_intd_intd
+  end subroutine message_str_is_is_is
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine message_str_int_int_int(comm,string,i1,i2,i3)
-    integer(SI)    <in> :: comm
+  subroutine message_str_is_is_rd( comm, string, i1, i2, d1 )
+    integer(SI) <in> :: comm
     char(len=*) <in> :: string
-    integer(SI)    <in> :: i1, i2, i3
-!__________  _________  ________ _______ ______ _____ ____ ___ __ _
-!
-    ! << only the root process speaks >>
-    if ( mpiut__comm_rank(comm) /= 0 ) return
-
-    call ut__message(string,i1,i2,i3)
-
-  end subroutine message_str_int_int_int
-
-
-!__________  _________  ________ _______ ______ _____ ____ ___ __ _
-!
-  subroutine message_str_int_int_double(comm,string,i1,i2,d1)
-    integer(SI)    <in> :: comm
-    char(len=*) <in> :: string
-    integer(SI)    <in> :: i1, i2
+    integer(SI) <in> :: i1, i2
     real(DR)    <in> :: d1
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     ! << only the root process speaks >>
-    if ( mpiut__comm_rank(comm) /= 0 ) return
+    if ( mpiut__comm_rank( comm ) /= 0 ) return
 
-    call ut__message(string,i1,i2,d1)
+    call ut__message( string, i1, i2, d1 )
 
-  end subroutine message_str_int_int_double
+  end subroutine message_str_is_is_rd
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine message_str_intd_int_double(comm,string,i1,i2,d1)
-    integer(SI)    <in> :: comm
+  subroutine message_str_id_is_rd( comm, string, i1, i2, d1 )
+    integer(SI) <in> :: comm
     char(len=*) <in> :: string
-    integer(DI)    <in> :: i1
-    integer(SI)    <in> :: i2
+    integer(DI) <in> :: i1
+    integer(SI) <in> :: i2
     real(DR)    <in> :: d1
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     ! << only the root process speaks >>
-    if ( mpiut__comm_rank(comm) /= 0 ) return
+    if ( mpiut__comm_rank( comm ) /= 0 ) return
 
-    call ut__message(string,i1,i2,d1)
+    call ut__message( string, i1, i2, d1 )
 
-  end subroutine message_str_intd_int_double
+  end subroutine message_str_id_is_rd
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine message_str_int_double(comm,string,i1,d1)
-    integer(SI)    <in> :: comm
+  subroutine message_str_is_rd( comm, string, i1, d1 )
+    integer(SI) <in> :: comm
     char(len=*) <in> :: string
-    integer(SI)    <in> :: i1
+    integer(SI) <in> :: i1
     real(DR)    <in> :: d1
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     ! << only the root process speaks >>
-    if ( mpiut__comm_rank(comm) /= 0 ) return
+    if ( mpiut__comm_rank( comm ) /= 0 ) return
 
-    call ut__message(string,i1,d1)
+    call ut__message( string, i1, d1 )
 
-  end subroutine message_str_int_double
+  end subroutine message_str_is_rd
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine message_str_intd_double(comm,string,i1,d1)
-    integer(SI)    <in> :: comm
+  subroutine message_str_id_rd( comm, string, i1, d1 )
+    integer(SI) <in> :: comm
     char(len=*) <in> :: string
-    integer(DI)    <in> :: i1
+    integer(DI) <in> :: i1
     real(DR)    <in> :: d1
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     ! << only the root process speaks >>
-    if ( mpiut__comm_rank(comm) /= 0 ) return
+    if ( mpiut__comm_rank( comm ) /= 0 ) return
 
-    call ut__message(string,i1,d1)
+    call ut__message( string, i1, d1 )
 
-  end subroutine message_str_intd_double
+  end subroutine message_str_id_rd
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine message_str_int_double_double(comm,string,i1,d1,d2)
-    integer(SI)    <in> :: comm
+  subroutine message_str_is_rd_rd( comm, string, i1, d1, d2 )
+    integer(SI) <in> :: comm
     char(len=*) <in> :: string
-    integer(SI)    <in> :: i1
+    integer(SI) <in> :: i1
     real(DR)    <in> :: d1, d2
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     ! << only the root process speaks >>
-    if ( mpiut__comm_rank(comm) /= 0 ) return
+    if ( mpiut__comm_rank( comm ) /= 0 ) return
 
-    call ut__message(string,i1,d1,d2)
+    call ut__message( string, i1, d1, d2 )
 
-  end subroutine message_str_int_double_double
+  end subroutine message_str_is_rd_rd
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine message_str_intd_double_double(comm,string,i1,d1,d2)
-    integer(SI)    <in> :: comm
+  subroutine message_str_id_rd_rd( comm, string, i1, d1, d2 )
+    integer(SI) <in> :: comm
     char(len=*) <in> :: string
-    integer(DI)    <in> :: i1
+    integer(DI) <in> :: i1
     real(DR)    <in> :: d1, d2
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     ! << only the root process speaks >>
-    if ( mpiut__comm_rank(comm) /= 0 ) return
+    if ( mpiut__comm_rank( comm ) /= 0 ) return
 
-    call ut__message(string,i1,d1,d2)
+    call ut__message( string, i1, d1, d2 )
 
-  end subroutine message_str_intd_double_double
+  end subroutine message_str_id_rd_rd
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine message_str_int_float_float(comm,string,i1,f1,f2)
-    integer(SI)    <in> :: comm
+  subroutine message_str_is_rs_rs( comm, string, i1, f1, f2 )
+    integer(SI) <in> :: comm
     char(len=*) <in> :: string
-    integer(SI)    <in> :: i1
+    integer(SI) <in> :: i1
     real(SR)    <in> :: f1, f2
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     ! << only the root process speaks >>
-    if ( mpiut__comm_rank(comm) /= 0 ) return
+    if ( mpiut__comm_rank( comm ) /= 0 ) return
 
-    call ut__message(string,i1,f1,f2)
+    call ut__message( string, i1, f1, f2 )
 
-  end subroutine message_str_int_float_float
+  end subroutine message_str_is_rs_rs
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine message_str_intd_float_float(comm,string,i1,f1,f2)
-    integer(SI)    <in> :: comm
+  subroutine message_str_id_rs_rs( comm, string, i1, f1, f2 )
+    integer(SI) <in> :: comm
     char(len=*) <in> :: string
-    integer(DI)    <in> :: i1
+    integer(DI) <in> :: i1
     real(SR)    <in> :: f1, f2
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     ! << only the root process speaks >>
-    if ( mpiut__comm_rank(comm) /= 0 ) return
+    if ( mpiut__comm_rank( comm ) /= 0 ) return
 
-    call ut__message(string,i1,f1,f2)
+    call ut__message( string, i1, f1, f2 )
 
-  end subroutine message_str_intd_float_float
+  end subroutine message_str_id_rs_rs
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine message_str_int_str(comm,str1,i1,str2)
-    integer(SI)    <in> :: comm
+  subroutine message_str_is_str( comm, str1, i1, str2 )
+    integer(SI) <in> :: comm
     char(len=*) <in> :: str1, str2
-    integer(SI)    <in> :: i1
+    integer(SI) <in> :: i1
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     ! << only the root process speaks >>
-    if ( mpiut__comm_rank(comm) /= 0 ) return
+    if ( mpiut__comm_rank( comm ) /= 0 ) return
 
-    call ut__message(str1,i1,str2)
+    call ut__message( str1, i1, str2 )
 
-  end subroutine message_str_int_str
+  end subroutine message_str_is_str
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine message_str_int_str_int(comm,str1,i1,str2,i2)
-    integer(SI)    <in> :: comm
+  subroutine message_str_is_str_is( comm, str1, i1, str2, i2 )
+    integer(SI) <in> :: comm
     char(len=*) <in> :: str1, str2
-    integer(SI)    <in> :: i1, i2
+    integer(SI) <in> :: i1, i2
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     ! << only the root process speaks >>
-    if ( mpiut__comm_rank(comm) /= 0 ) return
+    if ( mpiut__comm_rank( comm ) /= 0 ) return
 
-    call ut__message(str1,i1,str2,i2)
+    call ut__message( str1, i1, str2, i2 )
 
-  end subroutine message_str_int_str_int
+  end subroutine message_str_is_str_is
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine message_str_intd_str_int(comm,str1,i1,str2,i2)
-    integer(SI)    <in> :: comm
+  subroutine message_str_id_str_is( comm, str1, i1, str2, i2 )
+    integer(SI) <in> :: comm
     char(len=*) <in> :: str1, str2
-    integer(DI)    <in> :: i1
-    integer(SI)    <in> :: i2
+    integer(DI) <in> :: i1
+    integer(SI) <in> :: i2
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     ! << only the root process speaks >>
-    if ( mpiut__comm_rank(comm) /= 0 ) return
+    if ( mpiut__comm_rank( comm ) /= 0 ) return
 
-    call ut__message(str1,i1,str2,i2)
+    call ut__message( str1, i1, str2, i2 )
 
-  end subroutine message_str_intd_str_int
+  end subroutine message_str_id_str_is
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine message_str_int_str_double(comm,str1,i1,str2,d1)
-    integer(SI)    <in> :: comm
+  subroutine message_str_is_str_rd( comm, str1, i1, str2, d1 )
+    integer(SI) <in> :: comm
     char(len=*) <in> :: str1, str2
-    integer(SI)    <in> :: i1
+    integer(SI) <in> :: i1
     real(DR)    <in> :: d1
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     ! << only the root process speaks >>
-    if ( mpiut__comm_rank(comm) /= 0 ) return
+    if ( mpiut__comm_rank( comm ) /= 0 ) return
 
-    call ut__message(str1,i1,str2,d1)
+    call ut__message( str1, i1, str2, d1 )
 
-  end subroutine message_str_int_str_double
+  end subroutine message_str_is_str_rd
 
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine message_str_intd_str_double(comm,str1,i1,str2,d1)
-    integer(SI)    <in> :: comm
+  subroutine message_str_id_str_rd( comm, str1, i1, str2, d1 )
+    integer(SI) <in> :: comm
     char(len=*) <in> :: str1, str2
-    integer(DI)    <in> :: i1
+    integer(DI) <in> :: i1
     real(DR)    <in> :: d1
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     ! << only the root process speaks >>
-    if ( mpiut__comm_rank(comm) /= 0 ) return
+    if ( mpiut__comm_rank( comm ) /= 0 ) return
 
-    call ut__message(str1,i1,str2,d1)
+    call ut__message( str1, i1, str2, d1 )
 
-  end subroutine message_str_intd_str_double
+  end subroutine message_str_id_str_rd
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine minval_0d_i(comm,i,min_i)
+  subroutine minval_0d_is( comm, i, min_i )
     integer(SI) <in>  :: comm
     integer(SI) <in>  :: i
     integer(SI) <out> :: min_i
@@ -3355,21 +3373,21 @@ contains
 
     allocate(sgks_array(mpiut__comm_size(comm)))
 
-    call MPI_ALLGATHER(i,1,MPI_INTEGER,              &
-                       sgks_array, 1, MPI_INTEGER,   &
-                       comm, ierr)
+    call MPI_ALLGATHER( i,1,MPI_INTEGER,              &
+                        sgks_array, 1, MPI_INTEGER,   &
+                        comm, ierr )
 
     ! You can use allreduce_min, too. I don't know which is faster.
 
     min_i = minval(sgks_array)
     deallocate(sgks_array)
 
-  end subroutine minval_0d_i
+  end subroutine minval_0d_is
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine minval_0d_id(comm,i,min_i)
+  subroutine minval_0d_id( comm, i, min_i )
     integer(SI) <in>  :: comm
     integer(DI) <in>  :: i
     integer(DI) <out> :: min_i
@@ -3394,10 +3412,10 @@ contains
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine minval_0d_r(comm,r,min_r)
+  subroutine minval_0d_rd( comm, r, min_r )
     integer(SI) <in>  :: comm
-    real(DR) <in>  :: r
-    real(DR) <out> :: min_r
+    real(DR) <in>     :: r
+    real(DR) <out>    :: min_r
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     integer(SI) :: ierr
@@ -3414,7 +3432,7 @@ contains
     min_r = minval(sgks_array)
     deallocate(sgks_array)
 
-  end subroutine minval_0d_r
+  end subroutine minval_0d_rd
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
@@ -3652,9 +3670,9 @@ contains
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine reduce_sum0d_r(comm, root, buff)
+  subroutine reduce_sum0d_rd( comm, root, buff )
     integer(SI) <in> :: comm, root
-    real(DR) <io> :: buff
+    real(DR)    <io> :: buff
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     real(DR) :: work
@@ -3662,22 +3680,22 @@ contains
 
     work = buff
 
-    call MPI_REDUCE(work,                  &
-                    buff,                  &
-                    1,                     &
-                    MPI_DOUBLE_PRECISION,  &
-                    MPI_SUM,               &
-                    root,                  &
-                    comm,                  &
-                    ierr)
-  end subroutine reduce_sum0d_r
+    call MPI_REDUCE( work,                  &
+                     buff,                  &
+                     1,                     &
+                     MPI_DOUBLE_PRECISION,  &
+                     MPI_SUM,               &
+                     root,                  &
+                     comm,                  &
+                     ierr )
+  end subroutine reduce_sum0d_rd
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine reduce_sum3d_r(comm, root, buff)
+  subroutine reduce_sum3d_rd( comm, root, buff )
     integer(SI) <in> :: comm, root
-    real(DR) <io> :: buff(:,:,:)
+    real(DR)    <io> :: buff(:,:,:)
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     real(DR), dimension(size(buff,1),size(buff,2),size(buff,3)) :: work
@@ -3685,16 +3703,16 @@ contains
 
     work(:,:,:) = buff(:,:,:)
 
-    call MPI_REDUCE(work,                                     &
-                    buff,                                     &
-                    size(buff,1)*size(buff,2)*size(buff,3),   &
-                    MPI_DOUBLE_PRECISION,                     &
-                    MPI_SUM,                                  &
-                    root,                                     &
-                    comm,                                     &
-                    ierr)
+    call MPI_REDUCE( work,                                     &
+                     buff,                                     &
+                     size(buff,1)*size(buff,2)*size(buff,3),   &
+                     MPI_DOUBLE_PRECISION,                     &
+                     MPI_SUM,                                  &
+                     root,                                     &
+                     comm,                                     &
+                     ierr )
 
-  end subroutine reduce_sum3d_r
+  end subroutine reduce_sum3d_rd
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
@@ -3949,42 +3967,42 @@ contains
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine mpiut__allreduce_land(comm, buff)
+  subroutine mpiut__allreduce_land( comm, buff )
     integer(SI) <in> :: comm
-    logical  <io> :: buff
+    logical     <io> :: buff
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     integer(SI) :: ierr
 
-    call MPI_ALLREDUCE(MPI_IN_PLACE,                             &
-                       buff,                                     &
-                       1,                                        &
-                       MPI_LOGICAL,                              &
-                       MPI_LAND,                                 &
-                       comm,                                     &
-                       ierr)
-    call mpiut__assert(ierr==0,'<__FUNC__> failed.')
+    call MPI_ALLREDUCE( MPI_IN_PLACE,                    &
+                        buff,                            &
+                        1,                               &
+                        MPI_LOGICAL,                     &
+                        MPI_LAND,                        &
+                        comm,                            &
+                        ierr )
+    call mpiut__assert( ierr==0, '<__FUNC__> failed.' )
 
   end subroutine mpiut__allreduce_land
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine mpiut__allreduce_lor(comm, buff)
+  subroutine mpiut__allreduce_lor( comm, buff )
     integer(SI) <in> :: comm
-    logical  <io> :: buff
+    logical     <io> :: buff
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     integer(SI) :: ierr
 
-    call MPI_ALLREDUCE(MPI_IN_PLACE,                             &
-                       buff,                                     &
-                       1,                                        &
-                       MPI_LOGICAL,                              &
-                       MPI_LOR,                                  &
-                       comm,                                     &
-                       ierr)
-    call mpiut__assert(ierr==0,'<__FUNC__> failed.')
+    call MPI_ALLREDUCE( MPI_IN_PLACE,                    &
+                        buff,                            &
+                        1,                               &
+                        MPI_LOGICAL,                     &
+                        MPI_LOR,                         &
+                        comm,                            &
+                        ierr )
+    call mpiut__assert( ierr==0, '<__FUNC__> failed.' )
 
   end subroutine mpiut__allreduce_lor
 
