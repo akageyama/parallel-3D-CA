@@ -69,6 +69,7 @@
     2022.07.17: Remove comments on the old bug in exchange.
     2022.07.17: Rename exchange3d_ -> exchange3d_dr_
     2022.07.17: Add exchange3d_si_1
+    2022.07.17: Remove the old trick of MPI_IN_PLACE=NIL.
 
 !!<
 
@@ -338,24 +339,6 @@ contains
 !
     integer(SI) :: ierr
 
-    !--- In case your MPI doesn't support MPI_IN_PLACE ------------------+
-    !                                                                    !
-    real(DR) :: sendbuff                                                 !
-    if (MPI_IN_PLACE==NIL) then                                          !
-       sendbuff = buff                                                   !
-       call MPI_ALLREDUCE(sendbuff,                                 &    !
-                          buff,                                     &    !
-                          1,                                        &    !
-                          MPI_DOUBLE_PRECISION,                     &    !
-                          MPI_MAX,                                  &    !
-                          comm,                                     &    !
-                          ierr)                                          !
-       call mpiut__assert(ierr==0,'<mpiut__max0d_r> failed.')            !
-       return                                                            !
-    end if                                                               !
-    !                                                                    !
-    !--- In case your MPI doesn't support MPI_IN_PLACE ------------------+
-
     ! You may have to call....  2004.04.16.
     ! call MPI_BARRIER( comm, ierr )
 
@@ -422,23 +405,6 @@ contains
 !
     integer(SI) :: ierr
 
-    !--- In case your MPI doesn't support MPI_IN_PLACE ------------------+
-    !                                                                    !
-    integer(SI) :: sendbuff                                                 !
-    if (MPI_IN_PLACE==NIL) then                                          !
-       sendbuff = buff                                                   !
-       call MPI_ALLREDUCE(sendbuff,                                 &    !
-                          buff,                                     &    !
-                          1,                                        &    !
-                          MPI_INTEGER,                              &    !
-                          MPI_MIN,                                  &    !
-                          comm,                                     &    !
-                          ierr)                                          !
-       return                                                            !
-    end if                                                               !
-    !                                                                    !
-    !--- In case your MPI doesn't support MPI_IN_PLACE ------------------+
-
     ! You may have to call....  2004.04.16.
     ! call MPI_BARRIER( comm, ierr )
 
@@ -482,23 +448,6 @@ contains
 !
     integer(SI) :: ierr
 
-    !--- In case your MPI doesn't support MPI_IN_PLACE ------------------+
-    !                                                                    !
-    real(DR) :: sendbuff                                                 !
-    if (MPI_IN_PLACE==NIL) then                                          !
-       sendbuff = buff                                                   !
-       call MPI_ALLREDUCE(sendbuff,                                 &    !
-                          buff,                                     &    !
-                          1,                                        &    !
-                          MPI_DOUBLE_PRECISION,                     &    !
-                          MPI_MIN,                                  &    !
-                          comm,                                     &    !
-                          ierr)                                          !
-       return                                                            !
-    end if                                                               !
-    !                                                                    !
-    !--- In case your MPI doesn't support MPI_IN_PLACE ------------------+
-
     ! You may have to call....  2004.04.16.
     ! call MPI_BARRIER( comm, ierr )
 
@@ -522,23 +471,6 @@ contains
 !
     integer(SI) :: ierr
 
-    !--- In case your MPI doesn't support MPI_IN_PLACE ------------------+
-    !                                                                    !
-    integer(SI) :: sendbuff                                                 !
-    if ( MPI_IN_PLACE==NIL) then                                          !
-       sendbuff = buff                                                   !
-       call MPI_ALLREDUCE(sendbuff,                                 &    !
-                          buff,                                     &    !
-                          1,                                        &    !
-                          MPI_INTEGER,                              &    !
-                          MPI_SUM,                                  &    !
-                          comm,                                     &    !
-                          ierr)                                          !
-       return                                                            !
-    end if                                                               !
-    !                                                                    !
-    !--- In case your MPI doesn't support MPI_IN_PLACE ------------------+
-
     call MPI_ALLREDUCE( MPI_IN_PLACE,     &
                         buff,             &
                         1,                &
@@ -558,23 +490,6 @@ contains
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     integer(SI) :: ierr
-
-    !--- In case your MPI doesn't support MPI_IN_PLACE ------------------+
-    !                                                                    !
-    real(DR) :: sendbuff                                                 !
-    if (MPI_IN_PLACE==NIL) then                                          !
-       sendbuff= buff                                                    !
-       call MPI_ALLREDUCE(sendbuff,                                 &    !
-                          buff,                                     &    !
-                          1,                                        &    !
-                          MPI_DOUBLE_PRECISION,                     &    !
-                          MPI_SUM,                                  &    !
-                          comm,                                     &    !
-                          ierr)                                          !
-       return                                                            !
-    end if                                                               !
-    !                                                                    !
-    !--- In case your MPI doesn't support MPI_IN_PLACE ------------------+
 
     call MPI_ALLREDUCE( MPI_IN_PLACE,              &
                         buff,                      &
@@ -596,25 +511,6 @@ contains
 !
     integer(SI) :: ierr
 
-    !--- In case your MPI doesn't support MPI_IN_PLACE ------------------+
-    !                                                                    !
-    integer(SI), allocatable :: sendbuff(:)                                 !
-    if (MPI_IN_PLACE==NIL) then                                          !
-       allocate(sendbuff(size(buff,dim=1)))                              !
-       sendbuff(:) = buff(:)                                             !
-       call MPI_ALLREDUCE(sendbuff,                                 &    !
-                          buff,                                     &    !
-                          size(buff,1),                             &    !
-                          MPI_INTEGER,                              &    !
-                          MPI_SUM,                                  &    !
-                          comm,                                     &    !
-                          ierr)                                          !
-       deallocate(sendbuff)                                              !
-       return                                                            !
-    end if                                                               !
-    !                                                                    !
-    !--- In case your MPI doesn't support MPI_IN_PLACE ------------------+
-
     call MPI_ALLREDUCE( MPI_IN_PLACE,       &
                         buff,               &
                         size(buff,1),       &
@@ -635,26 +531,6 @@ contains
 !
     integer(SI) :: ierr
 
-    !--- In case your MPI doesn't support MPI_IN_PLACE ------------------+
-    !                                                                    !
-    real(DR), allocatable :: sendbuff(:)                                 !
-    if (MPI_IN_PLACE==NIL) then                                          !
-       allocate(sendbuff(size(buff,dim=1)))                              !
-       sendbuff(:) = buff(:)                                             !
-       call MPI_ALLREDUCE(sendbuff,                &                     !
-                          buff,                    &                     !
-                          size(buff,1),            &                     !
-                          MPI_DOUBLE_PRECISION,    &                     !
-                          MPI_SUM,                 &                     !
-                          comm,                    &                     !
-                          ierr)                                          !
-       deallocate(sendbuff)                                              !
-       return                                                            !
-    end if                                                               !
-    !                                                                    !
-    !--- In case your MPI doesn't support MPI_IN_PLACE ------------------+
-
-
     call MPI_ALLREDUCE( MPI_IN_PLACE,            &
                         buff,                    &
                         size(buff,1),            &
@@ -674,26 +550,6 @@ contains
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     integer(SI) :: ierr
-
-    !--- In case your MPI doesn't support MPI_IN_PLACE ------------------+
-    !                                                                    !
-    integer(SI), allocatable :: sendbuff(:,:)                               !
-    if (MPI_IN_PLACE==NIL) then                                          !
-       allocate(sendbuff(size(buff,dim=1),      &                        !
-                         size(buff,dim=2)))                              !
-       sendbuff(:,:) = buff(:,:)                                         !
-       call MPI_ALLREDUCE(sendbuff,                                 &    !
-                          buff,                                     &    !
-                          size(buff,1)*size(buff,2),                &    !
-                          MPI_INTEGER,                              &    !
-                          MPI_SUM,                                  &    !
-                          comm,                                     &    !
-                          ierr)                                          !
-       deallocate(sendbuff)                                              !
-       return                                                            !
-    end if                                                               !
-    !                                                                    !
-    !--- In case your MPI doesn't support MPI_IN_PLACE ------------------+
 
     call MPI_ALLREDUCE( MPI_IN_PLACE,                             &
                         buff,                                     &
@@ -755,27 +611,6 @@ contains
 !
     integer(SI) :: ierr
 
-    !--- In case your MPI doesn't support MPI_IN_PLACE ------------------+
-    !                                                                    !
-    integer(SI), allocatable :: sendbuff(:,:,:)                             !
-    if (MPI_IN_PLACE==NIL) then                                          !
-       allocate(sendbuff(size(buff,dim=1),      &                        !
-                         size(buff,dim=2),      &                        !
-                         size(buff,dim=3)))                              !
-       sendbuff(:,:,:) = buff(:,:,:)                                     !
-       call MPI_ALLREDUCE(sendbuff,                                 &    !
-                          buff,                                     &    !
-                          size(buff,1)*size(buff,2)*size(buff,3),   &    !
-                          MPI_INTEGER,                              &    !
-                          MPI_SUM,                                  &    !
-                          comm,                                     &    !
-                          ierr)                                          !
-       deallocate(sendbuff)                                              !
-       return                                                            !
-    end if                                                               !
-    !                                                                    !
-    !--- In case your MPI doesn't support MPI_IN_PLACE ------------------+
-
     call MPI_ALLREDUCE( MPI_IN_PLACE,                             &
                         buff,                                     &
                         size(buff,1)*size(buff,2)*size(buff,3),   &
@@ -796,27 +631,6 @@ contains
 !
     integer(SI) :: ierr
 
-    !--- In case your MPI doesn't support MPI_IN_PLACE ------------------+
-    !                                                                    !
-    real(DR), allocatable :: sendbuff(:,:,:)                             !
-    if (MPI_IN_PLACE==NIL) then                                          !
-       allocate(sendbuff(size(buff,dim=1),      &                        !
-                         size(buff,dim=2),      &                        !
-                         size(buff,dim=3)))                              !
-       sendbuff(:,:,:) = buff(:,:,:)                                     !
-       call MPI_ALLREDUCE(sendbuff,                                 &    !
-                          buff,                                     &    !
-                          size(buff,1)*size(buff,2)*size(buff,3),   &    !
-                          MPI_DOUBLE_PRECISION,                     &    !
-                          MPI_SUM,                                  &    !
-                          comm,                                     &    !
-                          ierr)                                          !
-       deallocate(sendbuff)                                              !
-       return                                                            !
-    end if                                                               !
-    !                                                                    !
-    !--- In case your MPI doesn't support MPI_IN_PLACE ------------------+
-
     call MPI_ALLREDUCE( MPI_IN_PLACE,                             &
                         buff,                                     &
                         size(buff,1)*size(buff,2)*size(buff,3),   &
@@ -835,27 +649,6 @@ contains
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     integer(SI) :: ierr
-
-    !--- In case your MPI doesn't support MPI_IN_PLACE ------------------+
-    !                                                                    !
-    real(SR), allocatable :: sendbuff(:,:,:)                             !
-    if (MPI_IN_PLACE==NIL) then                                          !
-       allocate(sendbuff(size(buff,dim=1),      &                        !
-                         size(buff,dim=2),      &                        !
-                         size(buff,dim=3)))                              !
-       sendbuff(:,:,:) = buff(:,:,:)                                     !
-       call MPI_ALLREDUCE(sendbuff,                                 &    !
-                          buff,                                     &    !
-                          size(buff,1)*size(buff,2)*size(buff,3),   &    !
-                          MPI_REAL,                                 &    !
-                          MPI_SUM,                                  &    !
-                          comm,                                     &    !
-                          ierr)                                          !
-       deallocate(sendbuff)                                              !
-       return                                                            !
-    end if                                                               !
-    !                                                                    !
-    !--- In case your MPI doesn't support MPI_IN_PLACE ------------------+
 
     call MPI_ALLREDUCE( MPI_IN_PLACE,                             &
                         buff,                                     &
