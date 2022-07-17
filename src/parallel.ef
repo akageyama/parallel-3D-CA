@@ -1,0 +1,85 @@
+module parallel_m
+  use constants_m
+  use mpi
+  use mpiut_m
+  !$use omp_lib
+  use ut_m
+  implicit none
+  private
+
+  type, public :: parallel_t
+    integer(SI) :: commun
+    integer(SI) :: myrank
+    integer(SI) :: nprocs
+  contains
+    procedure :: initialize => parallel__initialize
+  end type
+
+  type :: rank_t
+    integer(SI)       :: me   ! The rank number of myself.
+    type(rank_next_t) :: next ! This type is defined in mpiut.
+  end type rank_t
+
+  type :: pos_t
+    type(pos_index_t) :: index
+    char(len=12)      :: string  ! e.g., "p012_035_064"
+  end type pos_t
+
+  type, public :: psim_t
+    integer(SI) :: nprocs
+    integer(SI) :: comm   ! pworld.comm also holds this.
+    type(rank_t) :: rank
+    type(pos_t)  :: pos
+    type(rank_next_t) :: boundary_pair
+    logical :: i_have_xmax
+    logical :: i_have_xmin
+    logical :: i_have_ymax
+    logical :: i_have_ymin
+    logical :: i_have_zmax
+    logical :: i_have_zmin
+  contains
+    procedure :: init => psim__init
+    procedure :: io_clerk => psim__io_clerk
+    procedure, nopass :: rank_to_pos_index =>  &
+                         psim__rank_to_pos
+  end type psim_t
+
+
+contains
+
+
+  subroutine print_omp_num_thread( comm )
+    integer(SI) <in> :: comm
+
+    integer(SI) :: omp_get_num_threads
+    integer(SI) :: omp_get_thread_num
+
+    !$omp parallel
+      if ( omp_get_thread_num()==0 ) then
+        call mpiut__message_leader( wcomm,  &
+                                    'OpenMP thread num',  &
+                                    omp_get_num_threads() )
+      end if
+    !$omp end parallel
+
+  end subroutine print_omp_num_thread
+
+
+  subroutine parallel__initialize( self, commun )
+    class(parallel_t) <out> :: self
+    integer(SI) <in> :: commun
+
+    self.myrank = mpiut__comm_rank( commun )
+    self.nprocs = mpiut__comm_size( commun )
+    self.commun = commun
+
+    call mpiut__message_leader( commun, '<__MODFUNC__> world size',  &
+                                self.nprocs)
+
+    call mpiut__assert( self.nprocs==NPROC_X*NPROC_Y*NPROC_Z,  &
+                        '<__MODFUNC__> We assume that nprocs==NPROC_X*NPROC_Y*NPROC_Z')
+
+    call print_omp_num_thread( commun )
+
+  end subroutine parallel__initialize
+
