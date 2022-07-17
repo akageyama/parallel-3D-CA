@@ -26,7 +26,7 @@ module automaton_m
   type, public :: automaton_t
     integer :: time_counter
     type(cell_t) :: cell
-    type(state_t) :: state
+    type(array3d_si_t) :: state
     type(rule_t) :: rule
   contains
     procedure :: initialize => automaton__initialize
@@ -39,7 +39,7 @@ contains
 
 
   subroutine boundary_condition( state )
-    type(state_t) <io> :: state
+    type(array3d_si_t) <io> :: state
 
     integer :: i, j, k
 
@@ -69,7 +69,7 @@ contains
 
   function count_alive_neighbors( i, j, k, state ) result(num)
     integer <in> :: i, j, k
-    type(state_t) <in> :: state
+    type(array3d_si_t) <in> :: state
     integer :: num
     
     integer :: ii, jj, kk
@@ -138,7 +138,7 @@ contains
  
 
   subroutine reset_state( state )
-    type(state_t) <out> :: state
+    type(array3d_si_t) <out> :: state
 
     state(:,:,:) = NON_ALIVE
   end subroutine reset_state
@@ -359,7 +359,7 @@ contains
 
     !!<
 
-    type(state_t) :: temp
+    type(array3d_si_t) :: temp
     integer :: num ! number of alive cells in the neibhor.
     integer :: mystate
     integer :: i, j, k

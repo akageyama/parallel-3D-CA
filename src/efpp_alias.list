@@ -1,4 +1,23 @@
 # macros
      "__EFPPVER__" => "180831"
 
-     "type(state_t)" => "integer, dimension(0:NXPP1,0:NYPP1,0:NZPP1)"
+     "type(array3d_si_t)" 
+  => "integer(SI), dimension(0:NXPP1,0:NYPP1,0:NZPP1)"
+
+     "do i full" 
+  => "do i = 0, NXPP1"
+
+     "do j full" 
+  => "do j = 0, NYPP1"
+
+     "do k full"
+  => "do k = 0, NZPP1"     
+
+     "do i bulk"
+  => "do i = 1, NXPP"
+
+     "do j bulk"
+  => "do j = 1, NYPP"
+
+     "do k bulk"
+  => "do k = 1, NZPP"

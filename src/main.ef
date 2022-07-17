@@ -1,6 +1,7 @@
 program main
   use constants_m
   use automaton_m
+  use mpiut_m
   implicit none
 
   integer :: update
