@@ -1,9 +1,9 @@
 !!>
 
-  parallel-3D-CA: Parallel Three-dimensional Celluar Automaton
-                                           Akira Kageyama
-                                   kage@port.kobe-u.ac.jp
-                                               Kobe Univ.
+  parallel-3D-CA: Parallel 3-D Celluar Automaton
+                                  Akira Kageyama
+                          kage@port.kobe-u.ac.jp
+                                 Kobe University
 
   Note:
    * Written in "E-language". Apply "efpp.sh" for Fortran 2003.
@@ -67,7 +67,8 @@
     2022.07.17: Type size check in bcast0d_i.
     2022.07.17: Rename int, intd, flaot, double --> is, id, rs, rd.
     2022.07.17: Remove comments on the old bug in exchange.
-    2022.07.17: Rename exchange_3d_ -> exchange_3d_rd_
+    2022.07.17: Rename exchange3d_ -> exchange3d_dr_
+    2022.07.17: Add exchange3d_si_1
 
 !!<
 
@@ -186,12 +187,14 @@ module mpiut_m
   end interface mpiut__copy_p2p
 
   interface mpiut__exchange
-     module procedure exchange3d_rd_1,     &
-                      exchange3d_rd_2,     &
-                      exchange3d_rd_3,     &
-                      exchange3d_rd_4,     &
-                      exchange3d_rd_5,     &
-                      exchange3d_rd_8
+     module procedure exchange3d_dr_1,     &
+                      exchange3d_dr_2,     &
+                      exchange3d_dr_3,     &
+                      exchange3d_dr_4,     &
+                      exchange3d_dr_5,     &
+                      exchange3d_dr_8,     &
+                      exchange3d_si_1
+
   end interface
 
   interface mpiut__message
@@ -437,7 +440,7 @@ contains
     !--- In case your MPI doesn't support MPI_IN_PLACE ------------------+
 
     ! You may have to call....  2004.04.16.
-    ! call MPI_BARRIER(comm, ierr)
+    ! call MPI_BARRIER( comm, ierr )
 
     call MPI_ALLREDUCE( MPI_IN_PLACE,           &
                         buff,                   &
@@ -1185,7 +1188,184 @@ contains
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine exchange3d_rd_1( comm, rank_next,   &
+  subroutine exchange3d_si_1( comm, rank_next,   &
+                              f01 )
+    integer(SI)        <in> :: comm
+    type(rank_next_t)  <in> :: rank_next
+    type(array3d_si_t) <io> :: f01
+!__________  _________  ________ _______ ______ _____ ____ ___ __ _
+!
+    integer(SI), dimension(0:NYPP1,0:NZPP1,1) :: send_buff_ip1, send_buff_im1, &
+                                                 recv_buff_ip1, recv_buff_im1
+    integer(SI), dimension(0:NXPP1,0:NZPP1,1) :: send_buff_jp1, send_buff_jm1, &
+                                                 recv_buff_jp1, recv_buff_jm1
+    integer(SI), dimension(0:NXPP1,0:NYPP1,1) :: send_buff_kp1, send_buff_km1, &
+                                                 recv_buff_kp1, recv_buff_km1
+    call iN_i_direction
+    call iN_j_direction
+    call iN_k_direction
+
+  contains
+
+    subroutine iN_i_direction
+      integer(SI) :: ncount, ierr, j, k
+      integer(SI), dimension(2) :: requests
+      integer(SI), dimension(MPI_STATUS_SIZE,2) :: status
+
+      do k full
+        do j full
+          send_buff_ip1(j,k,1) = f01(NXPP,j,k)
+
+          send_buff_im1(j,k,1) = f01(   1,j,k)
+        end do
+      end do
+
+      ncount = (NYPP1+1)*(NZPP1+1)*1
+
+      call MPI_IRECV( recv_buff_ip1, ncount,       &
+                      MPI_INTEGER,        &
+                      rank_next.ip1,               &
+                      0, comm, requests(1), ierr )
+      call MPI_IRECV( recv_buff_im1, ncount,       &
+                      MPI_INTEGER,        &
+                      rank_next.im1,               &
+                      0, comm, requests(2), ierr )
+      call MPI_BARRIER( comm, ierr )
+
+      call MPI_SEND( send_buff_ip1, ncount,        &
+                     MPI_INTEGER,         &
+                     rank_next.ip1,                &
+                     0, comm, ierr )
+      call MPI_SEND( send_buff_im1, ncount,        &
+                     MPI_INTEGER,         &
+                     rank_next.im1,                &
+                     0, comm, ierr )
+      call MPI_WAITALL( 2, requests, status, ierr )
+
+      if ( rank_next.ip1 /= MPI_PROC_NULL ) then
+        do k full
+          do j full
+            f01(NXPP1,j,k) = recv_buff_ip1(j,k,1)
+          end do
+        end do
+      end if
+      if ( rank_next.im1 /= MPI_PROC_NULL ) then
+        do k full
+          do j full
+            f01(0,j,k) = recv_buff_im1(j,k,1)
+          end do
+        end do
+      end if
+    end subroutine iN_i_direction
+
+    subroutine iN_j_direction
+      integer(SI) :: ncount, ierr, i, k
+      integer(SI), dimension(2) :: requests
+      integer(SI), dimension(MPI_STATUS_SIZE,2) :: status
+
+      do k full
+        do i full
+          send_buff_jp1(i,k,1) = f01(i,NYPP,k)
+
+          send_buff_jm1(i,k,1) = f01(i,   1,k)
+        end do
+      end do
+
+      ncount = (NXPP1+1)*(NZPP1+1)*1
+
+      call MPI_IRECV( recv_buff_jp1, ncount,       &
+                      MPI_INTEGER,        &
+                      rank_next.jp1,               &
+                      0, comm, requests(1), ierr )
+      call MPI_IRECV( recv_buff_jm1, ncount,       &
+                      MPI_INTEGER,        &
+                      rank_next.jm1,               &
+                      0, comm, requests(2), ierr )
+      call MPI_BARRIER( comm, ierr )
+
+      call MPI_SEND( send_buff_jp1, ncount,        &
+                     MPI_INTEGER,         &
+                     rank_next.jp1,                &
+                     0, comm, ierr )
+      call MPI_SEND( send_buff_jm1, ncount,        &
+                     MPI_INTEGER,         &
+                     rank_next.jm1,                &
+                     0, comm, ierr )
+      call MPI_WAITALL(2, requests, status, ierr)
+
+      if ( rank_next.jp1 /= MPI_PROC_NULL ) then
+        do k full
+          do i full
+            f01(i,NYPP1,k) = recv_buff_jp1(i,k,1)
+          end do
+        end do
+      end if
+      if ( rank_next.jm1 /= MPI_PROC_NULL ) then
+        do k full
+          do i full
+            f01(i,0,k) = recv_buff_jm1(i,k,1)
+          end do
+        end do
+      end if
+    end subroutine iN_j_direction
+
+    subroutine iN_k_direction
+      integer(SI) :: ncount, ierr, i, j
+      integer(SI), dimension(2) :: requests
+      integer(SI), dimension(MPI_STATUS_SIZE,2) :: status
+
+      do j full
+        do i full
+          send_buff_kp1(i,j,1) = f01(i,j,NZPP)
+
+          send_buff_km1(i,j,1) = f01(i,j,   1)
+        end do
+      end do
+
+      ncount = (NXPP1+1)*(NYPP1+1)*1
+
+      call MPI_IRECV( recv_buff_kp1, ncount,       &
+                      MPI_INTEGER,        &
+                      rank_next.kp1,               &
+                      0, comm, requests(1), ierr )
+      call MPI_IRECV( recv_buff_km1, ncount,       &
+                      MPI_INTEGER,        &
+                      rank_next.km1,               &
+                      0, comm, requests(2), ierr )
+      call MPI_BARRIER( comm, ierr )
+
+      call MPI_SEND( send_buff_kp1, ncount,        &
+                     MPI_INTEGER,         &
+                     rank_next.kp1,                &
+                     0, comm, ierr )
+      call MPI_SEND( send_buff_km1, ncount,        &
+                     MPI_INTEGER,         &
+                     rank_next.km1,                &
+                     0, comm, ierr )
+      call MPI_WAITALL(2, requests, status, ierr)
+
+      if ( rank_next.kp1 /= MPI_PROC_NULL ) then
+        do j full
+          do i full
+            f01(i,j,NZPP1) = recv_buff_kp1(i,j,1)
+          end do
+        end do
+      end if
+      if ( rank_next.km1 /= MPI_PROC_NULL ) then
+        do j full
+          do i full
+            f01(i,j,0) = recv_buff_km1(i,j,1)
+          end do
+        end do
+      end if
+    end subroutine iN_k_direction
+
+  end subroutine exchange3d_si_1
+
+
+!__________  _________  ________ _______ ______ _____ ____ ___ __ _
+!
+  subroutine exchange3d_dr_1( comm, rank_next,   &
                               f01 )
     integer(SI)        <in> :: comm
     type(rank_next_t)  <in> :: rank_next
@@ -1227,7 +1407,7 @@ contains
                       MPI_DOUBLE_PRECISION,        &
                       rank_next.im1,               &
                       0, comm, requests(2), ierr )
-      call MPI_BARRIER(comm, ierr)
+      call MPI_BARRIER( comm, ierr )
 
       call MPI_SEND( send_buff_ip1, ncount,        &
                      MPI_DOUBLE_PRECISION,         &
@@ -1278,7 +1458,7 @@ contains
                       MPI_DOUBLE_PRECISION,        &
                       rank_next.jm1,               &
                       0, comm, requests(2), ierr )
-      call MPI_BARRIER(comm, ierr)
+      call MPI_BARRIER( comm, ierr )
 
       call MPI_SEND( send_buff_jp1, ncount,        &
                      MPI_DOUBLE_PRECISION,         &
@@ -1329,7 +1509,7 @@ contains
                       MPI_DOUBLE_PRECISION,        &
                       rank_next.km1,               &
                       0, comm, requests(2), ierr )
-      call MPI_BARRIER(comm, ierr)
+      call MPI_BARRIER( comm, ierr )
 
       call MPI_SEND( send_buff_kp1, ncount,        &
                      MPI_DOUBLE_PRECISION,         &
@@ -1357,12 +1537,12 @@ contains
       end if
     end subroutine iN_k_direction
 
-  end subroutine exchange3d_rd_1
+  end subroutine exchange3d_dr_1
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine exchange3d_rd_2( comm, rank_next,                       &
+  subroutine exchange3d_dr_2( comm, rank_next,                       &
                               f01, f02 )
     integer(SI)        <in> :: comm
     type(rank_next_t)  <in> :: rank_next
@@ -1406,7 +1586,7 @@ contains
                       MPI_DOUBLE_PRECISION,        &
                       rank_next.im1,               &
                       0, comm, requests(2), ierr )
-      call MPI_BARRIER(comm, ierr)
+      call MPI_BARRIER( comm, ierr )
 
       call MPI_SEND( send_buff_ip1, ncount,        &
                      MPI_DOUBLE_PRECISION,         &
@@ -1461,7 +1641,7 @@ contains
                       MPI_DOUBLE_PRECISION,        &
                       rank_next.jm1,               &
                       0, comm, requests(2), ierr )
-      call MPI_BARRIER(comm, ierr)
+      call MPI_BARRIER( comm, ierr )
 
       call MPI_SEND( send_buff_jp1, ncount,        &
                      MPI_DOUBLE_PRECISION,         &
@@ -1516,7 +1696,7 @@ contains
                       MPI_DOUBLE_PRECISION,        &
                       rank_next.km1,               &
                       0, comm, requests(2), ierr )
-      call MPI_BARRIER(comm, ierr)
+      call MPI_BARRIER( comm, ierr )
 
       call MPI_SEND( send_buff_kp1, ncount,        &
                      MPI_DOUBLE_PRECISION,         &
@@ -1546,12 +1726,12 @@ contains
       end if
     end subroutine iN_k_direction
 
-  end subroutine exchange3d_rd_2
+  end subroutine exchange3d_dr_2
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine exchange3d_rd_3( comm, rank_next,    &
+  subroutine exchange3d_dr_3( comm, rank_next,    &
                               f01, f02, f03)
     integer(SI)        <in> :: comm
     type(rank_next_t)  <in> :: rank_next
@@ -1597,7 +1777,7 @@ contains
                       MPI_DOUBLE_PRECISION,        &
                       rank_next.im1,               &
                       0, comm, requests(2), ierr )
-      call MPI_BARRIER(comm, ierr)
+      call MPI_BARRIER( comm, ierr )
 
       call MPI_SEND( send_buff_ip1, ncount,        &
                      MPI_DOUBLE_PRECISION,         &
@@ -1656,7 +1836,7 @@ contains
                       MPI_DOUBLE_PRECISION,        &
                       rank_next.jm1,               &
                       0, comm, requests(2), ierr )
-      call MPI_BARRIER(comm, ierr)
+      call MPI_BARRIER( comm, ierr )
 
       call MPI_SEND( send_buff_jp1, ncount,        &
                      MPI_DOUBLE_PRECISION,         &
@@ -1715,7 +1895,7 @@ contains
                       MPI_DOUBLE_PRECISION,        &
                       rank_next.km1,               &
                       0, comm, requests(2), ierr )
-      call MPI_BARRIER(comm, ierr)
+      call MPI_BARRIER( comm, ierr )
 
       call MPI_SEND( send_buff_kp1, ncount,        &
                      MPI_DOUBLE_PRECISION,         &
@@ -1747,12 +1927,12 @@ contains
       end if
     end subroutine iN_k_direction
 
-  end subroutine exchange3d_rd_3
+  end subroutine exchange3d_dr_3
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine exchange3d_rd_4( comm, rank_next,                       &
+  subroutine exchange3d_dr_4( comm, rank_next,                       &
                               f01, f02, f03, f04 )
     integer(SI)        <in> :: comm
     type(rank_next_t)  <in> :: rank_next
@@ -1800,7 +1980,7 @@ contains
                       MPI_DOUBLE_PRECISION,        &
                       rank_next.im1,               &
                       0, comm, requests(2), ierr )
-      call MPI_BARRIER(comm, ierr)
+      call MPI_BARRIER( comm, ierr )
 
       call MPI_SEND( send_buff_ip1, ncount,        &
                      MPI_DOUBLE_PRECISION,         &
@@ -1863,7 +2043,7 @@ contains
                       MPI_DOUBLE_PRECISION,        &
                       rank_next.jm1,               &
                       0, comm, requests(2), ierr )
-      call MPI_BARRIER(comm, ierr)
+      call MPI_BARRIER( comm, ierr )
 
       call MPI_SEND( send_buff_jp1, ncount,        &
                      MPI_DOUBLE_PRECISION,         &
@@ -1926,7 +2106,7 @@ contains
                       MPI_DOUBLE_PRECISION,        &
                       rank_next.km1,               &
                       0, comm, requests(2), ierr )
-      call MPI_BARRIER(comm, ierr)
+      call MPI_BARRIER( comm, ierr )
 
       call MPI_SEND( send_buff_kp1, ncount,        &
                      MPI_DOUBLE_PRECISION,         &
@@ -1960,12 +2140,12 @@ contains
       end if
     end subroutine iN_k_direction
 
-  end subroutine exchange3d_rd_4
+  end subroutine exchange3d_dr_4
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine exchange3d_rd_5( comm, rank_next,            &
+  subroutine exchange3d_dr_5( comm, rank_next,            &
                               f01, f02, f03, f04, f05)
     integer(SI)        <in> :: comm
     type(rank_next_t)  <in> :: rank_next
@@ -2015,7 +2195,7 @@ contains
                       MPI_DOUBLE_PRECISION,        &
                       rank_next.im1,               &
                       0, comm, requests(2), ierr )
-      call MPI_BARRIER(comm, ierr)
+      call MPI_BARRIER( comm, ierr )
 
       call MPI_SEND( send_buff_ip1, ncount,        &
                      MPI_DOUBLE_PRECISION,         &
@@ -2082,7 +2262,7 @@ contains
                       MPI_DOUBLE_PRECISION,        &
                       rank_next.jm1,               &
                       0, comm, requests(2), ierr )
-      call MPI_BARRIER(comm, ierr)
+      call MPI_BARRIER( comm, ierr )
 
       call MPI_SEND( send_buff_jp1, ncount,        &
                      MPI_DOUBLE_PRECISION,         &
@@ -2149,7 +2329,7 @@ contains
                       MPI_DOUBLE_PRECISION,        &
                       rank_next.km1,               &
                       0, comm, requests(2), ierr )
-      call MPI_BARRIER(comm, ierr)
+      call MPI_BARRIER( comm, ierr )
 
       call MPI_SEND( send_buff_kp1, ncount,        &
                      MPI_DOUBLE_PRECISION,         &
@@ -2185,12 +2365,12 @@ contains
       end if
     end subroutine iN_k_direction
 
-  end subroutine exchange3d_rd_5
+  end subroutine exchange3d_dr_5
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine exchange3d_rd_8( comm, rank_next,                       &
+  subroutine exchange3d_dr_8( comm, rank_next,                       &
                               f01, f02, f03, f04, f05, f06, f07, f08)
     integer(SI)        <in> :: comm
     type(rank_next_t)  <in> :: rank_next
@@ -2246,7 +2426,7 @@ contains
                       MPI_DOUBLE_PRECISION,        &
                       rank_next.im1,               &
                       0, comm, requests(2), ierr )
-      call MPI_BARRIER(comm, ierr)
+      call MPI_BARRIER( comm, ierr )
 
       call MPI_SEND( send_buff_ip1, ncount,        &
                      MPI_DOUBLE_PRECISION,         &
@@ -2325,7 +2505,7 @@ contains
                       MPI_DOUBLE_PRECISION,        &
                       rank_next.jm1,               &
                       0, comm, requests(2), ierr )
-      call MPI_BARRIER(comm, ierr)
+      call MPI_BARRIER( comm, ierr )
 
       call MPI_SEND( send_buff_jp1, ncount,        &
                      MPI_DOUBLE_PRECISION,         &
@@ -2404,7 +2584,7 @@ contains
                       MPI_DOUBLE_PRECISION,        &
                       rank_next.km1,               &
                       0, comm, requests(2), ierr )
-      call MPI_BARRIER(comm, ierr)
+      call MPI_BARRIER( comm, ierr )
 
       call MPI_SEND( send_buff_kp1, ncount,        &
                      MPI_DOUBLE_PRECISION,         &
@@ -2446,7 +2626,7 @@ contains
       end if
     end subroutine iN_k_direction
 
-  end subroutine exchange3d_rd_8
+  end subroutine exchange3d_dr_8
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
