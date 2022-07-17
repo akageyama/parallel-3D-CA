@@ -35,7 +35,7 @@
     2013.08.03: Removed if (...MPI_PROC_NULL) sentense.
     2014.12.05: Bug fiex in exchange3d_*.
     2014.12.05: Added exchange3d_2 and exchange3d_5.
-    2016.07.14: maxval_0d_id: MPI_INTEGER-->MPI_INTEGER8 by Y. Ueda.
+    2016.07.14: maxval_0d_di: MPI_INTEGER-->MPI_INTEGER8 by Y. Ueda.
     2016.07.14: Same for minval_0d_id by Y. Ueda.
     2017.06.30: Some minor format changes. -kage.
     2017.07.08: Added new routine mpiut__copy_p_to_p. -kage
@@ -134,42 +134,42 @@ module mpiut_m
   end type rank_next_t
 
   interface mpiut__allreduce_max
-     module procedure  allreduce_max0d_is,  &
-                       allreduce_max0d_id,  &
-                       allreduce_max0d_rd,  &
-                       allreduce_max1d_is,  &
-                       allreduce_max1d_rd
+     module procedure  allreduce_max0d_si,  &
+                       allreduce_max0d_di,  &
+                       allreduce_max0d_dr,  &
+                       allreduce_max1d_si,  &
+                       allreduce_max1d_dr
   end interface
 
   interface mpiut__allreduce_min
-     module procedure  allreduce_min0d_is,  &
-                       allreduce_min0d_id,  &
-                       allreduce_min0d_rd
+     module procedure  allreduce_min0d_si,  &
+                       allreduce_min0d_di,  &
+                       allreduce_min0d_dr
   end interface
 
   interface mpiut__allreduce_sum
-     module procedure  allreduce_sum0d_is,    &
-                       allreduce_sum0d_rd,    &
-                       allreduce_sum1d_is,    &
-                       allreduce_sum1d_rd,    &
-                       allreduce_sum2d_is,    &
-                       allreduce_sum2d_rs,    &
-                       allreduce_sum2d_rd,    &
-                       allreduce_sum3d_is,    &
-                       allreduce_sum3d_rs,    &
-                       allreduce_sum3d_rd
+     module procedure  allreduce_sum0d_si,    &
+                       allreduce_sum0d_dr,    &
+                       allreduce_sum1d_si,    &
+                       allreduce_sum1d_dr,    &
+                       allreduce_sum2d_si,    &
+                       allreduce_sum2d_sr,    &
+                       allreduce_sum2d_dr,    &
+                       allreduce_sum3d_si,    &
+                       allreduce_sum3d_sr,    &
+                       allreduce_sum3d_dr
   end interface
 
   interface mpiut__bcast
      module procedure bcast_str,          &
-                      bcast0d_is,         &
-                      bcast0d_id,         &
-                      bcast0d_rs,         &
-                      bcast0d_rd,         &
-                      bcast1d_rs,         &
-                      bcast3d_is,         &
-                      bcast3d_rs,         &
-                      bcast3d_rd
+                      bcast0d_si,         &
+                      bcast0d_di,         &
+                      bcast0d_sr,         &
+                      bcast0d_dr,         &
+                      bcast1d_sr,         &
+                      bcast3d_si,         &
+                      bcast3d_sr,         &
+                      bcast3d_dr
   end interface
 
   interface mpiut__const_check
@@ -178,12 +178,12 @@ module mpiut_m
   end interface
 
   interface mpiut__copy_p_to_p
-     module procedure copy_p_to_p_3d_rs
+     module procedure copy_p_to_p_3d_sr
   end interface
 
   interface mpiut__copy_p2p
-     module procedure copy_p2p_3d_rd,    &
-                      copy_p2p_3d_rs
+     module procedure copy_p2p_3d_dr,    &
+                      copy_p2p_3d_sr
   end interface mpiut__copy_p2p
 
   interface mpiut__exchange
@@ -199,82 +199,82 @@ module mpiut_m
 
   interface mpiut__message
      module procedure message_str,                &
-                      message_str_rd,             &
-                      message_str_rd_str,         &
-                      message_str_is,             &
-                      message_str_id,             &
-                      message_str_is_is,          &
-                      message_str_id_id,          &
-                      message_str_id_is,          &
-                      message_str_is_id,          &
-                      message_str_is_is_is,       &
-                      message_str_is_is_rd,       &
-                      message_str_id_is_rd,       &
-                      message_str_is_rd,          &
-                      message_str_id_rd,          &
-                      message_str_is_rd_rd,       &
-                      message_str_id_rd_rd,       &
-                      message_str_is_rs_rs,       &
-                      message_str_id_rs_rs,       &
-                      message_str_is_str,         &
-                      message_str_is_str_is,      &
-                      message_str_id_str_is,      &
-                      message_str_is_str_rd,      &
-                      message_str_id_str_rd,      &
+                      message_str_dr,             &
+                      message_str_dr_str,         &
+                      message_str_si,             &
+                      message_str_di,             &
+                      message_str_si_si,          &
+                      message_str_di_di,          &
+                      message_str_di_si,          &
+                      message_str_si_di,          &
+                      message_str_si_si_si,       &
+                      message_str_si_si_dr,       &
+                      message_str_di_si_dr,       &
+                      message_str_si_dr,          &
+                      message_str_di_dr,          &
+                      message_str_si_dr_dr,       &
+                      message_str_di_dr_dr,       &
+                      message_str_si_sr_sr,       &
+                      message_str_di_sr_sr,       &
+                      message_str_si_str,         &
+                      message_str_si_str_si,      &
+                      message_str_di_str_si,      &
+                      message_str_si_str_dr,      &
+                      message_str_di_str_dr,      &
                       message_str_logical_str,    &
                       message_str_str
   end interface
 
   interface mpiut__message_leader
-     module procedure message_leader_rd,      &
-                      message_leader_rs,      &
+     module procedure message_leader_dr,      &
+                      message_leader_sr,      &
                       message_leader_str,     &
-                      message_leader_is,      &
-                      message_leader_id
+                      message_leader_si,      &
+                      message_leader_di
   end interface
 
   interface mpiut__deco_message
      module procedure message_decorated_str,       &
-                      message_decorated_str_is,    &
-                      message_decorated_str_id
+                      message_decorated_str_si,    &
+                      message_decorated_str_di
   end interface
 
   interface mpiut__maxval
-     module procedure maxval_0d_is,      &
-                      maxval_0d_id,      &
-                      maxval_0d_rd
+     module procedure maxval_0d_si,      &
+                      maxval_0d_di,      &
+                      maxval_0d_dr
   end interface
 
   interface mpiut__minval
-     module procedure minval_0d_is,      &
-                      minval_0d_id,      &
-                      minval_0d_rd
+     module procedure minval_0d_si,      &
+                      minval_0d_di,      &
+                      minval_0d_dr
   end interface
 
   interface mpiut__recv
-     module procedure recv_0d_id,  &
-                      recv_0d_is,  &
-                      recv_0d_rd,  &
-                      recv_1d_rd,  &
-                      recv_1d_rs,  &
-                      recv_3d_rd,  &
-                      recv_3d_rs,  &
+     module procedure recv_0d_di,  &
+                      recv_0d_si,  &
+                      recv_0d_dr,  &
+                      recv_1d_dr,  &
+                      recv_1d_sr,  &
+                      recv_3d_dr,  &
+                      recv_3d_sr,  &
                       recv_str
   end interface
 
   interface mpiut__reduce_sum
-     module procedure reduce_sum0d_rd,   &
-                      reduce_sum3d_rd
+     module procedure reduce_sum0d_dr,   &
+                      reduce_sum3d_dr
   end interface
 
   interface mpiut__send
-     module procedure send_0d_id,  &
-                      send_0d_is,  &
-                      send_0d_rd,  &
-                      send_1d_rd,  &
-                      send_1d_rs,  &
-                      send_3d_rd,  &
-                      send_3d_rs,  &
+     module procedure send_0d_di,  &
+                      send_0d_si,  &
+                      send_0d_dr,  &
+                      send_1d_dr,  &
+                      send_1d_sr,  &
+                      send_3d_dr,  &
+                      send_3d_sr,  &
                       send_str
   end interface
 
@@ -289,7 +289,7 @@ contains
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine allreduce_max0d_is( comm, buff )
+  subroutine allreduce_max0d_si( comm, buff )
     integer(SI) <in> :: comm
     integer(SI) <io> :: buff
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
@@ -305,12 +305,12 @@ contains
                         ierr )
     call mpiut__assert( ierr==0, '<__FUNC__> failed.' )
 
-  end subroutine allreduce_max0d_is
+  end subroutine allreduce_max0d_si
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine allreduce_max0d_id( comm, buff )
+  subroutine allreduce_max0d_di( comm, buff )
     integer(SI) <in> :: comm
     integer(DI) <io> :: buff
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
@@ -326,12 +326,12 @@ contains
                         ierr )
     call mpiut__assert( ierr==0, '<__FUNC__> failed.' )
 
-  end subroutine allreduce_max0d_id
+  end subroutine allreduce_max0d_di
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine allreduce_max0d_rd( comm, buff )
+  subroutine allreduce_max0d_dr( comm, buff )
     integer(SI) <in> :: comm
     real(DR)    <io> :: buff
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
@@ -368,12 +368,12 @@ contains
                         ierr )
     call mpiut__assert( ierr==0, '<__FUNC__> failed.' )
 
-  end subroutine allreduce_max0d_rd
+  end subroutine allreduce_max0d_dr
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine allreduce_max1d_is( comm, buff )
+  subroutine allreduce_max1d_si( comm, buff )
     integer(SI) <in> :: comm
     integer(SI) <io> :: buff(:)
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
@@ -389,12 +389,12 @@ contains
                         ierr )
     call mpiut__assert( ierr==0, '<__FUNC__> failed.' )
 
-  end subroutine allreduce_max1d_is
+  end subroutine allreduce_max1d_si
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine allreduce_max1d_rd( comm, buff )
+  subroutine allreduce_max1d_dr( comm, buff )
     integer(SI) <in> :: comm
     real(DR)    <io> :: buff(:)
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
@@ -410,12 +410,12 @@ contains
                         ierr )
     call mpiut__assert( ierr==0, '<__FUNC__> failed.' )
 
-  end subroutine allreduce_max1d_rd
+  end subroutine allreduce_max1d_dr
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine allreduce_min0d_is( comm, buff )
+  subroutine allreduce_min0d_si( comm, buff )
     integer(SI) <in> :: comm
     integer(SI) <io> :: buff
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
@@ -450,12 +450,12 @@ contains
                         comm,                   &
                         ierr )
 
-  end subroutine allreduce_min0d_is
+  end subroutine allreduce_min0d_si
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine allreduce_min0d_id( comm, buff )
+  subroutine allreduce_min0d_di( comm, buff )
     integer(SI) <in> :: comm
     integer(DI) <io> :: buff
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
@@ -470,12 +470,12 @@ contains
                         comm,           &
                         ierr )
 
-  end subroutine allreduce_min0d_id
+  end subroutine allreduce_min0d_di
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine allreduce_min0d_rd( comm, buff )
+  subroutine allreduce_min0d_dr( comm, buff )
     integer(SI) <in> :: comm
     real(DR)    <io> :: buff
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
@@ -510,12 +510,12 @@ contains
                         comm,                      &
                         ierr )
 
-  end subroutine allreduce_min0d_rd
+  end subroutine allreduce_min0d_dr
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine allreduce_sum0d_is( comm, buff )
+  subroutine allreduce_sum0d_si( comm, buff )
     integer(SI) <in> :: comm
     integer(SI) <io> :: buff
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
@@ -547,12 +547,12 @@ contains
                         comm,             &
                         ierr )
 
-  end subroutine allreduce_sum0d_is
+  end subroutine allreduce_sum0d_si
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine allreduce_sum0d_rd( comm, buff )
+  subroutine allreduce_sum0d_dr( comm, buff )
     integer(SI) <in> :: comm
     real(DR)    <io> :: buff
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
@@ -584,12 +584,12 @@ contains
                         comm,                      &
                         ierr)
 
-  end subroutine allreduce_sum0d_rd
+  end subroutine allreduce_sum0d_dr
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine allreduce_sum1d_is( comm, buff )
+  subroutine allreduce_sum1d_si( comm, buff )
     integer(SI) <in> :: comm
     integer(SI) <io> :: buff(:)
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
@@ -623,12 +623,12 @@ contains
                         comm,               &
                         ierr )
 
-  end subroutine allreduce_sum1d_is
+  end subroutine allreduce_sum1d_si
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine allreduce_sum1d_rd( comm, buff )
+  subroutine allreduce_sum1d_dr( comm, buff )
     integer(SI) <in> :: comm
     real(DR)    <io> :: buff(:)
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
@@ -663,12 +663,12 @@ contains
                         comm,                    &
                         ierr )
 
-  end subroutine allreduce_sum1d_rd
+  end subroutine allreduce_sum1d_dr
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine allreduce_sum2d_is( comm, buff )
+  subroutine allreduce_sum2d_si( comm, buff )
     integer(SI) <in> :: comm
     integer(SI) <io> :: buff(:,:)
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
@@ -703,12 +703,12 @@ contains
                         comm,                                     &
                         ierr )
 
-  end subroutine allreduce_sum2d_is
+  end subroutine allreduce_sum2d_si
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine allreduce_sum2d_rs( comm, buff )
+  subroutine allreduce_sum2d_sr( comm, buff )
     integer(SI) <in> :: comm
     real(SR)    <io> :: buff(:,:)
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
@@ -723,12 +723,12 @@ contains
                         comm,                       &
                         ierr )
 
-  end subroutine allreduce_sum2d_rs
+  end subroutine allreduce_sum2d_sr
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine allreduce_sum2d_rd( comm, buff )
+  subroutine allreduce_sum2d_dr( comm, buff )
     integer(SI) <in> :: comm
     real(DR)    <io> :: buff(:,:)
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
@@ -743,12 +743,12 @@ contains
                         comm,                       &
                         ierr )
 
-  end subroutine allreduce_sum2d_rd
+  end subroutine allreduce_sum2d_dr
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine allreduce_sum3d_is( comm, buff )
+  subroutine allreduce_sum3d_si( comm, buff )
     integer(SI) <in> :: comm
     integer(SI) <io> :: buff(:,:,:)
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
@@ -784,12 +784,12 @@ contains
                         comm,                                     &
                         ierr )
 
-  end subroutine allreduce_sum3d_is
+  end subroutine allreduce_sum3d_si
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine allreduce_sum3d_rd( comm, buff )
+  subroutine allreduce_sum3d_dr( comm, buff )
     integer(SI) <in> :: comm
     real(DR)    <io> :: buff(:,:,:)
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
@@ -825,11 +825,11 @@ contains
                         comm,                                     &
                         ierr )
 
-  end subroutine allreduce_sum3d_rd
+  end subroutine allreduce_sum3d_dr
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine allreduce_sum3d_rs( comm, buff )
+  subroutine allreduce_sum3d_sr( comm, buff )
     integer(SI) <in> :: comm
     real(SR)    <io> :: buff(:,:,:)
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
@@ -865,7 +865,7 @@ contains
                         comm,                                     &
                         ierr )
 
-  end subroutine allreduce_sum3d_rs
+  end subroutine allreduce_sum3d_sr
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
@@ -892,7 +892,7 @@ contains
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine bcast0d_is( comm, source, buff, tag )
+  subroutine bcast0d_si( comm, source, buff, tag )
     integer(SI) <in> :: comm
     integer(SI) <in> :: source   ! rank
     integer(SI) <io> :: buff
@@ -913,12 +913,12 @@ contains
 
     call MPI_BCAST(buff, 1, MPI_INTEGER, source, comm, ierr)
 
-  end subroutine bcast0d_is
+  end subroutine bcast0d_si
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine bcast0d_id( comm, source, buff, tag )
+  subroutine bcast0d_di( comm, source, buff, tag )
     integer(SI) <in> :: comm
     integer(SI) <in> :: source   ! rank
     integer(DI) <io> :: buff
@@ -939,12 +939,12 @@ contains
 
     call MPI_BCAST( buff, 1, MPI_INTEGER8, source, comm, ierr )
 
-  end subroutine bcast0d_id
+  end subroutine bcast0d_di
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine bcast0d_rs( comm, source, buff, tag )
+  subroutine bcast0d_sr( comm, source, buff, tag )
     integer(SI) <in> :: comm
     integer(SI) <in> :: source   ! rank
     real(SR)    <io> :: buff
@@ -960,12 +960,12 @@ contains
 
     call MPI_BCAST( buff, 1, MPI_REAL, source, comm, ierr )
 
-  end subroutine bcast0d_rs
+  end subroutine bcast0d_sr
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine bcast0d_rd( comm, source, buff, tag )
+  subroutine bcast0d_dr( comm, source, buff, tag )
     integer(SI) <in> :: comm
     integer(SI) <in> :: source   ! rank
     real(DR)    <io> :: buff
@@ -981,12 +981,12 @@ contains
 
     call MPI_BCAST( buff, 1, MPI_DOUBLE_PRECISION, source, comm, ierr )
 
-  end subroutine bcast0d_rd
+  end subroutine bcast0d_dr
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine bcast1d_rs( comm, source, buff, tag )
+  subroutine bcast1d_sr( comm, source, buff, tag )
     integer(SI) <in> :: comm
     integer(SI) <in> :: source   ! rank
     real(SR)    <io> :: buff(:)
@@ -1005,12 +1005,12 @@ contains
     call MPI_BCAST( buff, n1, MPI_REAL,  &
                     source, comm, ierr )
 
-  end subroutine bcast1d_rs
+  end subroutine bcast1d_sr
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine bcast3d_rd( comm, source, buff, tag )
+  subroutine bcast3d_dr( comm, source, buff, tag )
     integer(SI) <in> :: comm
     integer(SI) <in> :: source   ! rank
     real(DR)    <io> :: buff(:,:,:)
@@ -1031,12 +1031,12 @@ contains
     call MPI_BCAST( buff, n1*n2*n3, MPI_DOUBLE_PRECISION,  &
                     source, comm, ierr )
 
-  end subroutine bcast3d_rd
+  end subroutine bcast3d_dr
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine bcast3d_rs( comm, source, buff, tag )
+  subroutine bcast3d_sr( comm, source, buff, tag )
     integer(SI) <in> :: comm
     integer(SI) <in> :: source   ! rank
     real(SR)    <io> :: buff(:,:,:)
@@ -1057,12 +1057,12 @@ contains
     call MPI_BCAST( buff, n1*n2*n3, MPI_REAL,  &
                     source, comm, ierr )
 
-  end subroutine bcast3d_rs
+  end subroutine bcast3d_sr
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine bcast3d_is( comm, source, buff, tag )
+  subroutine bcast3d_si( comm, source, buff, tag )
     integer(SI) <in> :: comm
     integer(SI) <in> :: source   ! rank
     integer(SI) <io> :: buff(:,:,:)
@@ -1083,12 +1083,12 @@ contains
     call MPI_BCAST( buff, n1*n2*n3, MPI_INTEGER,  &
                     source, comm, ierr )
 
-  end subroutine bcast3d_is
+  end subroutine bcast3d_si
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine copy_p2p_3d_rd( comm, tag, source, dest, buff )
+  subroutine copy_p2p_3d_dr( comm, tag, source, dest, buff )
     integer(SI) <in> :: comm
     integer(SI) <in> :: tag
     integer(SI) <in> :: source, dest   ! ranks
@@ -1117,12 +1117,12 @@ contains
 
     call MPI_WAIT( request, status, ierr )
 
-  end subroutine copy_p2p_3d_rd
+  end subroutine copy_p2p_3d_dr
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine copy_p2p_3d_rs( comm, tag, source, dest, buff )
+  subroutine copy_p2p_3d_sr( comm, tag, source, dest, buff )
     integer(SI) <in> :: comm
     integer(SI) <in> :: tag
     integer(SI) <in> :: source, dest   ! ranks
@@ -1151,12 +1151,12 @@ contains
 
     call MPI_WAIT( request, status, ierr )
 
-  end subroutine copy_p2p_3d_rs
+  end subroutine copy_p2p_3d_sr
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine copy_p_to_p_3d_rs( comm, tag, source, dest, buff )
+  subroutine copy_p_to_p_3d_sr( comm, tag, source, dest, buff )
     integer(SI) <in> :: comm
     integer(SI) <in> :: tag
     integer(SI) <in> :: source, dest   ! ranks
@@ -1369,7 +1369,7 @@ contains
                               f01 )
     integer(SI)        <in> :: comm
     type(rank_next_t)  <in> :: rank_next
-    type(array3d_rd_t) <io> :: f01
+    type(array3d_dr_t) <io> :: f01
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     real(DR), dimension(0:NYPP1,0:NZPP1,1) :: send_buff_ip1, send_buff_im1, &
@@ -1546,7 +1546,7 @@ contains
                               f01, f02 )
     integer(SI)        <in> :: comm
     type(rank_next_t)  <in> :: rank_next
-    type(array3d_rd_t) <io> :: f01,f02
+    type(array3d_dr_t) <io> :: f01,f02
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     real(DR), dimension(0:NYPP1,0:NZPP1,2) :: send_buff_ip1, send_buff_im1, &
@@ -1735,7 +1735,7 @@ contains
                               f01, f02, f03)
     integer(SI)        <in> :: comm
     type(rank_next_t)  <in> :: rank_next
-    type(array3d_rd_t) <io> :: f01,f02,f03
+    type(array3d_dr_t) <io> :: f01,f02,f03
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     real(DR), dimension(0:NYPP1,0:NZPP1,3) :: send_buff_ip1, send_buff_im1, &
@@ -1936,7 +1936,7 @@ contains
                               f01, f02, f03, f04 )
     integer(SI)        <in> :: comm
     type(rank_next_t)  <in> :: rank_next
-    type(array3d_rd_t) <io> :: f01,f02,f03,f04
+    type(array3d_dr_t) <io> :: f01,f02,f03,f04
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     real(DR), dimension(0:NYPP1,0:NZPP1,4) :: send_buff_ip1, send_buff_im1, &
@@ -2149,7 +2149,7 @@ contains
                               f01, f02, f03, f04, f05)
     integer(SI)        <in> :: comm
     type(rank_next_t)  <in> :: rank_next
-    type(array3d_rd_t) <io> :: f01,f02,f03,f04,f05
+    type(array3d_dr_t) <io> :: f01,f02,f03,f04,f05
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     real(DR), dimension(0:NYPP1,0:NZPP1,5) :: send_buff_ip1, send_buff_im1, &
@@ -2374,7 +2374,7 @@ contains
                               f01, f02, f03, f04, f05, f06, f07, f08)
     integer(SI)        <in> :: comm
     type(rank_next_t)  <in> :: rank_next
-    type(array3d_rd_t) <io> :: f01,f02,f03,f04,f05,f06,f07,f08
+    type(array3d_dr_t) <io> :: f01,f02,f03,f04,f05,f06,f07,f08
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     real(DR), dimension(0:NYPP1,0:NZPP1,8) :: send_buff_ip1, send_buff_im1, &
@@ -2631,7 +2631,7 @@ contains
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine maxval_0d_is( comm, i, max_i )
+  subroutine maxval_0d_si( comm, i, max_i )
     integer(SI) <in>  :: comm
     integer(SI) <in>  :: i
     integer(SI) <out> :: max_i
@@ -2649,12 +2649,12 @@ contains
     max_i = maxval(sgks_array)
     deallocate(sgks_array)
 
-  end subroutine maxval_0d_is
+  end subroutine maxval_0d_si
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine maxval_0d_id(comm,i,max_i)
+  subroutine maxval_0d_di(comm,i,max_i)
     integer(SI) <in>  :: comm
     integer(DI) <in>  :: i
     integer(DI) <out> :: max_i
@@ -2672,12 +2672,12 @@ contains
     max_i = maxval(sgks_array)
     deallocate(sgks_array)
 
-  end subroutine maxval_0d_id
+  end subroutine maxval_0d_di
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine maxval_0d_rd( comm, r, max_r )
+  subroutine maxval_0d_dr( comm, r, max_r )
     integer(SI) <in>  :: comm
     real(DR) <in>     :: r
     real(DR) <out>    :: max_r
@@ -2695,7 +2695,7 @@ contains
     max_r = maxval(sgks_array)
     deallocate(sgks_array)
 
-  end subroutine maxval_0d_rd
+  end subroutine maxval_0d_dr
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
@@ -2724,7 +2724,7 @@ contains
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine message_decorated_str_is( comm, mark, string, int )
+  subroutine message_decorated_str_si( comm, mark, string, int )
     integer(SI) <in> :: comm
     char(len=1) <in> :: mark
     char(len=*) <in> :: string
@@ -2741,12 +2741,12 @@ contains
 
     call ut__deco_message( mark, string, int )
 
-  end subroutine message_decorated_str_is
+  end subroutine message_decorated_str_si
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine message_decorated_str_id( comm, mark, string, int )
+  subroutine message_decorated_str_di( comm, mark, string, int )
     integer(SI) <in> :: comm
     char(len=1) <in> :: mark
     char(len=*) <in> :: string
@@ -2763,12 +2763,12 @@ contains
 
     call ut__deco_message( mark, string, int )
 
-  end subroutine message_decorated_str_id
+  end subroutine message_decorated_str_di
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine message_leader_rd( comm, string, double )
+  subroutine message_leader_dr( comm, string, double )
     integer(SI) <in> :: comm
     char(len=*) <in> :: string
     real(DR)    <in> :: double
@@ -2779,12 +2779,12 @@ contains
 
     call ut__message_leader( string, double )
 
-  end subroutine message_leader_rd
+  end subroutine message_leader_dr
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine message_leader_rs( comm, string, float )
+  subroutine message_leader_sr( comm, string, float )
     integer(SI) <in> :: comm
     char(len=*) <in> :: string
     real(SR)    <in> :: float
@@ -2795,7 +2795,7 @@ contains
 
     call ut__message_leader( string, float )
 
-  end subroutine message_leader_rs
+  end subroutine message_leader_sr
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
@@ -2816,7 +2816,7 @@ contains
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine message_leader_is( comm, string, int )
+  subroutine message_leader_si( comm, string, int )
     integer(SI) <in> :: comm
     char(len=*) <in> :: string
     integer(SI) <in> :: int
@@ -2827,12 +2827,12 @@ contains
 
     call ut__message_leader( string, int )
 
-  end subroutine message_leader_is
+  end subroutine message_leader_si
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine message_leader_id( comm, string, int )
+  subroutine message_leader_di( comm, string, int )
     integer(SI) <in> :: comm
     char(len=*) <in> :: string
     integer(DI) <in> :: int
@@ -2843,7 +2843,7 @@ contains
 
     call ut__message_leader( string, int )
 
-  end subroutine message_leader_id
+  end subroutine message_leader_di
 
 
 
@@ -2864,7 +2864,7 @@ contains
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine message_str_rd( comm, string, double )
+  subroutine message_str_dr( comm, string, double )
     integer(SI) <in> :: comm
     char(len=*) <in> :: string
     real(DR)    <in> :: double
@@ -2875,12 +2875,12 @@ contains
 
     call ut__message( string, double )
 
-  end subroutine message_str_rd
+  end subroutine message_str_dr
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine message_str_rd_str( comm, str1, double, str2 )
+  subroutine message_str_dr_str( comm, str1, double, str2 )
     integer(SI) <in> :: comm
     char(len=*) <in> :: str1, str2
     real(DR)    <in> :: double
@@ -2891,7 +2891,7 @@ contains
 
     call ut__message( str1, double, str2 )
 
-  end subroutine message_str_rd_str
+  end subroutine message_str_dr_str
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
@@ -2944,7 +2944,7 @@ contains
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine message_str_is( comm, string, int )
+  subroutine message_str_si( comm, string, int )
     integer(SI) <in> :: comm
     char(len=*) <in> :: string
     integer(SI) <in> :: int
@@ -2955,12 +2955,12 @@ contains
 
     call ut__message( string, int )
 
-  end subroutine message_str_is
+  end subroutine message_str_si
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine message_str_id( comm, string, int )
+  subroutine message_str_di( comm, string, int )
     integer(SI) <in> :: comm
     char(len=*) <in> :: string
     integer(DI) <in> :: int
@@ -2971,12 +2971,12 @@ contains
 
     call ut__message( string, int )
 
-  end subroutine message_str_id
+  end subroutine message_str_di
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine message_str_is_is( comm, string, i1, i2 )
+  subroutine message_str_si_si( comm, string, i1, i2 )
     integer(SI) <in> :: comm
     char(len=*) <in> :: string
     integer(SI) <in> :: i1, i2
@@ -2987,12 +2987,12 @@ contains
 
     call ut__message( string, i1, i2 )
 
-  end subroutine message_str_is_is
+  end subroutine message_str_si_si
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine message_str_is_id( comm, string, i1, i2 )
+  subroutine message_str_si_di( comm, string, i1, i2 )
     integer(SI) <in> :: comm
     char(len=*) <in> :: string
     integer(SI) <in> :: i1
@@ -3004,12 +3004,12 @@ contains
 
     call ut__message( string, i1, i2 )
 
-  end subroutine message_str_is_id
+  end subroutine message_str_si_di
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine message_str_id_is( comm, string, i1, i2 )
+  subroutine message_str_di_si( comm, string, i1, i2 )
     integer(SI) <in> :: comm
     char(len=*) <in> :: string
     integer(DI) <in> :: i1
@@ -3021,12 +3021,12 @@ contains
 
     call ut__message( string, i1, i2 )
 
-  end subroutine message_str_id_is
+  end subroutine message_str_di_si
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine message_str_id_id( comm, string, i1, i2 )
+  subroutine message_str_di_di( comm, string, i1, i2 )
     integer(SI) <in> :: comm
     char(len=*) <in> :: string
     integer(DI) <in> :: i1, i2
@@ -3037,12 +3037,12 @@ contains
 
     call ut__message( string, i1, i2 )
 
-  end subroutine message_str_id_id
+  end subroutine message_str_di_di
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine message_str_is_is_is( comm, string, i1, i2, i3 )
+  subroutine message_str_si_si_si( comm, string, i1, i2, i3 )
     integer(SI) <in> :: comm
     char(len=*) <in> :: string
     integer(SI) <in> :: i1, i2, i3
@@ -3053,12 +3053,12 @@ contains
 
     call ut__message( string, i1, i2, i3 )
 
-  end subroutine message_str_is_is_is
+  end subroutine message_str_si_si_si
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine message_str_is_is_rd( comm, string, i1, i2, d1 )
+  subroutine message_str_si_si_dr( comm, string, i1, i2, d1 )
     integer(SI) <in> :: comm
     char(len=*) <in> :: string
     integer(SI) <in> :: i1, i2
@@ -3070,12 +3070,12 @@ contains
 
     call ut__message( string, i1, i2, d1 )
 
-  end subroutine message_str_is_is_rd
+  end subroutine message_str_si_si_dr
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine message_str_id_is_rd( comm, string, i1, i2, d1 )
+  subroutine message_str_di_si_dr( comm, string, i1, i2, d1 )
     integer(SI) <in> :: comm
     char(len=*) <in> :: string
     integer(DI) <in> :: i1
@@ -3088,12 +3088,12 @@ contains
 
     call ut__message( string, i1, i2, d1 )
 
-  end subroutine message_str_id_is_rd
+  end subroutine message_str_di_si_dr
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine message_str_is_rd( comm, string, i1, d1 )
+  subroutine message_str_si_dr( comm, string, i1, d1 )
     integer(SI) <in> :: comm
     char(len=*) <in> :: string
     integer(SI) <in> :: i1
@@ -3105,12 +3105,12 @@ contains
 
     call ut__message( string, i1, d1 )
 
-  end subroutine message_str_is_rd
+  end subroutine message_str_si_dr
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine message_str_id_rd( comm, string, i1, d1 )
+  subroutine message_str_di_dr( comm, string, i1, d1 )
     integer(SI) <in> :: comm
     char(len=*) <in> :: string
     integer(DI) <in> :: i1
@@ -3122,12 +3122,12 @@ contains
 
     call ut__message( string, i1, d1 )
 
-  end subroutine message_str_id_rd
+  end subroutine message_str_di_dr
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine message_str_is_rd_rd( comm, string, i1, d1, d2 )
+  subroutine message_str_si_dr_dr( comm, string, i1, d1, d2 )
     integer(SI) <in> :: comm
     char(len=*) <in> :: string
     integer(SI) <in> :: i1
@@ -3139,12 +3139,12 @@ contains
 
     call ut__message( string, i1, d1, d2 )
 
-  end subroutine message_str_is_rd_rd
+  end subroutine message_str_si_dr_dr
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine message_str_id_rd_rd( comm, string, i1, d1, d2 )
+  subroutine message_str_di_dr_dr( comm, string, i1, d1, d2 )
     integer(SI) <in> :: comm
     char(len=*) <in> :: string
     integer(DI) <in> :: i1
@@ -3156,12 +3156,12 @@ contains
 
     call ut__message( string, i1, d1, d2 )
 
-  end subroutine message_str_id_rd_rd
+  end subroutine message_str_di_dr_dr
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine message_str_is_rs_rs( comm, string, i1, f1, f2 )
+  subroutine message_str_si_sr_sr( comm, string, i1, f1, f2 )
     integer(SI) <in> :: comm
     char(len=*) <in> :: string
     integer(SI) <in> :: i1
@@ -3173,12 +3173,12 @@ contains
 
     call ut__message( string, i1, f1, f2 )
 
-  end subroutine message_str_is_rs_rs
+  end subroutine message_str_si_sr_sr
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine message_str_id_rs_rs( comm, string, i1, f1, f2 )
+  subroutine message_str_di_sr_sr( comm, string, i1, f1, f2 )
     integer(SI) <in> :: comm
     char(len=*) <in> :: string
     integer(DI) <in> :: i1
@@ -3190,12 +3190,12 @@ contains
 
     call ut__message( string, i1, f1, f2 )
 
-  end subroutine message_str_id_rs_rs
+  end subroutine message_str_di_sr_sr
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine message_str_is_str( comm, str1, i1, str2 )
+  subroutine message_str_si_str( comm, str1, i1, str2 )
     integer(SI) <in> :: comm
     char(len=*) <in> :: str1, str2
     integer(SI) <in> :: i1
@@ -3206,12 +3206,12 @@ contains
 
     call ut__message( str1, i1, str2 )
 
-  end subroutine message_str_is_str
+  end subroutine message_str_si_str
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine message_str_is_str_is( comm, str1, i1, str2, i2 )
+  subroutine message_str_si_str_si( comm, str1, i1, str2, i2 )
     integer(SI) <in> :: comm
     char(len=*) <in> :: str1, str2
     integer(SI) <in> :: i1, i2
@@ -3222,12 +3222,12 @@ contains
 
     call ut__message( str1, i1, str2, i2 )
 
-  end subroutine message_str_is_str_is
+  end subroutine message_str_si_str_si
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine message_str_id_str_is( comm, str1, i1, str2, i2 )
+  subroutine message_str_di_str_si( comm, str1, i1, str2, i2 )
     integer(SI) <in> :: comm
     char(len=*) <in> :: str1, str2
     integer(DI) <in> :: i1
@@ -3239,12 +3239,12 @@ contains
 
     call ut__message( str1, i1, str2, i2 )
 
-  end subroutine message_str_id_str_is
+  end subroutine message_str_di_str_si
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine message_str_is_str_rd( comm, str1, i1, str2, d1 )
+  subroutine message_str_si_str_dr( comm, str1, i1, str2, d1 )
     integer(SI) <in> :: comm
     char(len=*) <in> :: str1, str2
     integer(SI) <in> :: i1
@@ -3256,13 +3256,13 @@ contains
 
     call ut__message( str1, i1, str2, d1 )
 
-  end subroutine message_str_is_str_rd
+  end subroutine message_str_si_str_dr
 
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine message_str_id_str_rd( comm, str1, i1, str2, d1 )
+  subroutine message_str_di_str_dr( comm, str1, i1, str2, d1 )
     integer(SI) <in> :: comm
     char(len=*) <in> :: str1, str2
     integer(DI) <in> :: i1
@@ -3274,12 +3274,12 @@ contains
 
     call ut__message( str1, i1, str2, d1 )
 
-  end subroutine message_str_id_str_rd
+  end subroutine message_str_di_str_dr
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine minval_0d_is( comm, i, min_i )
+  subroutine minval_0d_si( comm, i, min_i )
     integer(SI) <in>  :: comm
     integer(SI) <in>  :: i
     integer(SI) <out> :: min_i
@@ -3299,12 +3299,12 @@ contains
     min_i = minval(sgks_array)
     deallocate(sgks_array)
 
-  end subroutine minval_0d_is
+  end subroutine minval_0d_si
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine minval_0d_id( comm, i, min_i )
+  subroutine minval_0d_di( comm, i, min_i )
     integer(SI) <in>  :: comm
     integer(DI) <in>  :: i
     integer(DI) <out> :: min_i
@@ -3324,12 +3324,12 @@ contains
     min_i = minval(sgks_array)
     deallocate(sgks_array)
 
-  end subroutine minval_0d_id
+  end subroutine minval_0d_di
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine minval_0d_rd( comm, r, min_r )
+  subroutine minval_0d_dr( comm, r, min_r )
     integer(SI) <in>  :: comm
     real(DR) <in>     :: r
     real(DR) <out>    :: min_r
@@ -3349,12 +3349,12 @@ contains
     min_r = minval(sgks_array)
     deallocate(sgks_array)
 
-  end subroutine minval_0d_rd
+  end subroutine minval_0d_dr
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine recv_0d_id( comm, source, i, tag_ )
+  subroutine recv_0d_di( comm, source, i, tag_ )
     integer(SI) <in>    :: comm
     integer(SI) <in>    :: source
     integer(DI) <out>   :: i
@@ -3381,7 +3381,7 @@ contains
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine recv_0d_is( comm, source, i, tag_ )
+  subroutine recv_0d_si( comm, source, i, tag_ )
     integer(SI) <in>    :: comm
     integer(SI) <in>    :: source
     integer(SI) <out>   :: i
@@ -3408,7 +3408,7 @@ contains
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine recv_0d_rd( comm, source, r, tag_ )
+  subroutine recv_0d_dr( comm, source, r, tag_ )
     integer(SI) <in>    :: comm
     integer(SI) <in>    :: source
     real(DR)    <out>   :: r
@@ -3437,7 +3437,7 @@ contains
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine recv_1d_rd( comm, source, buff, tag_ )
+  subroutine recv_1d_dr( comm, source, buff, tag_ )
     integer(SI) <in>    :: comm
     integer(SI) <in>    :: source
     real(DR)    <out>   :: buff(:)
@@ -3464,7 +3464,7 @@ contains
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine recv_1d_rs( comm, source, buff, tag_ )
+  subroutine recv_1d_sr( comm, source, buff, tag_ )
     integer(SI) <in>    :: comm
     integer(SI) <in>    :: source
     real(SR)    <out>   :: buff(:)
@@ -3491,7 +3491,7 @@ contains
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine recv_3d_rd( comm, source, buff, tag_ )
+  subroutine recv_3d_dr( comm, source, buff, tag_ )
     integer(SI) <in>    :: comm
     integer(SI) <in>    :: source
     real(DR)    <out>   :: buff(:,:,:)
@@ -3518,7 +3518,7 @@ contains
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine recv_3d_rs( comm, source, buff, tag_ )
+  subroutine recv_3d_sr( comm, source, buff, tag_ )
     integer(SI) <in>    :: comm
     integer(SI) <in>    :: source
     real(SR)    <out>   :: buff(:,:,:)
@@ -3587,7 +3587,7 @@ contains
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine reduce_sum0d_rd( comm, root, buff )
+  subroutine reduce_sum0d_dr( comm, root, buff )
     integer(SI) <in> :: comm, root
     real(DR)    <io> :: buff
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
@@ -3606,12 +3606,12 @@ contains
                      comm,                  &
                      ierr )
 
-  end subroutine reduce_sum0d_rd
+  end subroutine reduce_sum0d_dr
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine reduce_sum3d_rd( comm, root, buff )
+  subroutine reduce_sum3d_dr( comm, root, buff )
     integer(SI) <in> :: comm, root
     real(DR)    <io> :: buff(:,:,:)
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
@@ -3630,12 +3630,12 @@ contains
                      comm,                                     &
                      ierr )
 
-  end subroutine reduce_sum3d_rd
+  end subroutine reduce_sum3d_dr
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine send_0d_id( comm, target, i, tag_ )
+  subroutine send_0d_di( comm, target, i, tag_ )
     integer(SI) <in>    :: comm
     integer(SI) <in>    :: target
     integer(DI) <in>    :: i
@@ -3660,7 +3660,7 @@ contains
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine send_0d_is( comm, target, i, tag_ )
+  subroutine send_0d_si( comm, target, i, tag_ )
     integer(SI) <in>    :: comm
     integer(SI) <in>    :: target
     integer(SI) <in>    :: i
@@ -3685,7 +3685,7 @@ contains
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine send_0d_rd( comm, target, r, tag_ )
+  subroutine send_0d_dr( comm, target, r, tag_ )
     integer(SI) <in>    :: comm
     integer(SI) <in>    :: target
     real(DR)    <in>    :: r
@@ -3712,7 +3712,7 @@ contains
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine send_1d_rd( comm, target, buff, tag_ )
+  subroutine send_1d_dr( comm, target, buff, tag_ )
     integer(SI) <in>    :: comm
     integer(SI) <in>    :: target
     real(DR)    <in>    :: buff(:)
@@ -3738,7 +3738,7 @@ contains
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine send_1d_rs( comm, target, buff, tag_ )
+  subroutine send_1d_sr( comm, target, buff, tag_ )
     integer(SI) <in>    :: comm
     integer(SI) <in>    :: target
     real(SR)    <in>    :: buff(:)
@@ -3764,7 +3764,7 @@ contains
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine send_3d_rd( comm, target, buff, tag_ )
+  subroutine send_3d_dr( comm, target, buff, tag_ )
     integer(SI) <in>    :: comm
     integer(SI) <in>    :: target
     real(DR)    <in>    :: buff(:,:,:)
@@ -3790,7 +3790,7 @@ contains
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine send_3d_rs( comm, target, buff, tag_ )
+  subroutine send_3d_sr( comm, target, buff, tag_ )
     integer(SI) <in>    :: comm
     integer(SI) <in>    :: target
     real(SR)    <in>    :: buff(:,:,:)
