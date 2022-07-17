@@ -29,8 +29,8 @@ objlist := $(addsuffix .o, $(filebase)) # => example.o
 
 EFPP = ../bin/efpp.py
 
-# FC = mpifort
-FC = gfortran
+FC = mpifort
+# FC = gfortran
 FFLAGS :=
 # FFLAGS += -fopenmp
 FFLAGS += -fcheck=all
