@@ -44,17 +44,19 @@ FFLAGS += -fcheck=all
 # FFLAGS += -fbacktrace
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # 
-#  this_host := $(shell hostname | cut -c1-3)
-#  
-#  ifeq ($(this_host),alf)  # Alfven
-#          EFPP = ../bin/efpp.py2
-#          FC = mpinfort
-#          FFLAGS = 
-#  endif
-#  ifeq ($(this_host),pi)  # Kobe
-#         FC = mpifrtpx
-#         FFLAGS = -X03 -Free -Kopenmp -NRtrap
-# endif
+
+this_host := $(shell hostname | cut -c1-3)
+
+ifeq ($(this_host),alf)  # Alfven
+        EFPP = ../bin/efpp.py2
+        FC = mpinfort
+        FFLAGS = 
+endif
+ifeq ($(this_host),pif)  # Kobe
+       FC = mpiifort
+       # FFLAGS = -X03 -Free -Kopenmp -NRtrap
+       FFLAGS = 
+endif
 # ifeq ($(this_host),mac)  # Mac
 #         EFPP = ../bin/efpp.py
 #         FC = mpifort
