@@ -1,10 +1,13 @@
 module automaton_m
   use constants_m
+  use parallel_m
+  use mpidd_m
+  use mpiut_m
   implicit none
   private
 
-  integer <const> :: NON_ALIVE = 0
-  integer <const> :: JUST_BORN = 1
+  integer <const> :: NON_ALIVE = 0  ! state value = 0 means dead.
+  integer <const> :: JUST_BORN = 1  ! state value >= 1 means alive.
 
   type :: rule_t
     logical, dimension(0:26) :: to_be_born
@@ -17,16 +20,16 @@ module automaton_m
             !!  state=NUM_STATES-1 ==> ALIVE
   end type rule_t
 
-  type :: cell_t
-    integer, dimension(0:NXPP1) :: x
-    integer, dimension(0:NYPP1) :: y
-    integer, dimension(0:NZPP1) :: z
-  end type cell_t
+  type, private :: cell_global_pos_t
+    integer, dimension(0:NXPP1) :: i
+    integer, dimension(0:NYPP1) :: j
+    integer, dimension(0:NZPP1) :: k
+  end type cell_global_pos_t
 
   type, public :: automaton_t
-    integer :: time_counter
-    type(cell_t) :: cell
-    type(array3d_si_t) :: state
+    integer(DI) :: time_counter
+    type(cell_global_pos_t) :: cell_global_pos
+    type(array3d_si_t) :: state  ! type macro defined by efpp.
     type(rule_t) :: rule
   contains
     procedure :: initialize => automaton__initialize
@@ -38,7 +41,7 @@ module automaton_m
 contains
 
 
-  subroutine boundary_condition( state )
+  subroutine boundary_condition_serial( state )
     type(array3d_si_t) <io> :: state
 
     integer :: i, j, k
@@ -64,7 +67,27 @@ contains
       end do
     end do
 
-  end subroutine boundary_condition
+  end subroutine boundary_condition_serial
+
+
+  subroutine exchange_overlap_cells( state )
+    type(array3d_si_t) <io> :: state
+
+    call mpidd__exchange( parallel.commun,  &
+                          parallel.rank_of_neighbor,  &
+                          state )
+
+  end subroutine exchange_overlap_cells
+
+
+  subroutine periodic_boundary_condition( state )
+    type(array3d_si_t) <io> :: state
+
+    call mpidd__exchange( parallel.commun,  &
+                          parallel.periodic_bc_pair,  &
+                          state )
+
+  end subroutine periodic_boundary_condition
 
 
   function count_alive_neighbors( i, j, k, state ) result(num)
@@ -91,8 +114,8 @@ contains
   end function count_alive_neighbors
 
 
-  subroutine random_states_only_at_center( automaton )
-    type( automaton_t ) <io> :: automaton
+  subroutine random_states_only_near_center( atm )
+    type( automaton_t ) <io> :: atm
 
     integer :: i, j, k, ig, jg, kg
     real :: random_real
@@ -112,12 +135,14 @@ contains
     kmin = NZ_GLOBAL/2 - kwidth/2
     kmax = NZ_GLOBAL/2 + kwidth/2
 
+    call reset_state( atm.state )
+
     do k = 1, NZPP
-      kg = automaton.cell.z(k)
+      kg = atm.cell_global_pos.k(k)
       do j = 1, NYPP
-        jg = automaton.cell.y(j)
+        jg = atm.cell_global_pos.j(j)
         do i = 1, NXPP
-          ig = automaton.cell.x(i)
+          ig = atm.cell_global_pos.i(i)
           if ( kmin <= kg .and. kg <= kmax  &
                           .and.             &
                jmin <= jg .and. jg <= jmax  &
@@ -125,16 +150,17 @@ contains
                imin <= ig .and. ig <= imax ) then
             call random_number( random_real ) ! between 0.0 and 1.0
             if ( mod( nint( random_real*400 ), 4 ) == 0 ) then
-              automaton.state(i,j,k) = JUST_BORN
+              atm.state(i,j,k) = JUST_BORN
             end if
           end if
         end do
       end do
     end do
 
-    call boundary_condition( automaton.state )
+    call exchange_overlap_cells( atm.state )
+    call periodic_boundary_condition( atm.state )
 
-  end subroutine random_states_only_at_center
+  end subroutine random_states_only_near_center
  
 
   subroutine reset_state( state )
@@ -144,14 +170,12 @@ contains
   end subroutine reset_state
 
 
-  subroutine set_cell( cell )
-    type(cell_t) <out> :: cell
+  subroutine set_cell_global_pos( cell_global_pos )
+    type(cell_global_pos_t) <out> :: cell_global_pos
 
     integer :: i, j, k
     integer :: rk_x, rk_y, rk_z ! rk = rank position
-
   !!>
-
     The cell overlap on the boarders between neighbor ranks.
 
        left rank: ... NXPP NXPP1
@@ -169,10 +193,8 @@ contains
     local cell num   0   1   2 ...  NXPP-1 NXPP NXPP1 
                                              0    1    2    3 ... 
                                              |<---------- rank 1 -
-                                
     The above figure indicates that 
       global_cell_number - 2 = NXPP*rank_num
-
   !!<
 
     rk_x = 0 ! just for test
@@ -180,18 +202,18 @@ contains
     rk_z = 0
 
     do i = 0, NXPP1
-      cell.x(i) = NXPP*rk_x + i + 1
+      cell_global_pos.i(i) = NXPP*rk_x + i + 1
     end do
 
     do j = 0, NYPP1
-      cell.y(j) = NYPP*rk_y + j + 1
+      cell_global_pos.j(j) = NYPP*rk_y + j + 1
     end do
 
     do k = 0, NZPP1
-      cell.z(k) = NZPP*rk_z + k + 1
+      cell_global_pos.k(k) = NZPP*rk_z + k + 1
     end do
 
-  end subroutine set_cell
+  end subroutine set_cell_global_pos
 
 
   subroutine set_rule( rule )
@@ -274,54 +296,43 @@ contains
     class( automaton_t ) <out> :: self
 
     call set_rule( self.rule )
-    call set_cell( self.cell )
-    call reset_state( self.state )
-    call random_states_only_at_center( self )
+    call set_cell_global_pos( self.cell_global_pos )
+    call random_states_only_near_center( self )
     self.time_counter = 0
 
   end subroutine automaton__initialize
 
 
   subroutine automaton__diagnosis( self )
-    class( automaton_t ) <in> :: self
+    class(automaton_t) <in> :: self
 
-    integer, dimension(0:self.rule.num_states-1) :: ncell_in_state
+    integer(DI), dimension(0:self.rule.num_states-1) :: count
+    integer :: i, j, k, s
 
-    ! ncell_in_state(0) = sum( self.state, mask=(self.state==NON_ALIVE) )
-    ! ncell_in_state(1) = sum( self.state, mask=(self.state==JUST_BORN) )
-    ! ncell_in_state(2) = sum( self.state, mask=(self.state==2        ) )
-    ! ncell_in_state(3) = sum( self.state, mask=(self.state==3        ) )
-    ! ncell_in_state(4) = sum( self.state, mask=(self.state==3        ) )
+    count(:) = 0  ! reset
 
-    ncell_in_state(0) = iCount( NON_ALIVE )
-    ncell_in_state(1) = iCount( JUST_BORN )
-    ncell_in_state(2) = iCount( 2 )
-    ncell_in_state(3) = iCount( 3 )
-    ncell_in_state(4) = iCount( 4 )
-
-    print *, "time: ", self.time_counter, " states: ", ncell_in_state 
-               
-  contains
-
-    function iCount( state_level )
-      integer <in> :: state_level
-      integer :: iCount
-
-      integer :: i, j, k
-
-      iCount = 0
-      
-      do k = 1, NZPP
-        do j = 1, NYPP
-          do i = 1, NXPP
-            if ( self.state(i,j,k) == state_level ) then
-              iCount += 1
-            end if
+    do k = 1, NZPP
+      do j = 1, NYPP
+        do i = 1, NXPP
+          do s = 0, self.rule.num_states-1
+            if ( self.state(i,j,k) == s ) count(s) += 1
           end do
         end do
       end do
+    end do
 
-    end function iCount
+    call mpiut__allreduce_sum( parallel.commun, count )
+
+    call mpiut__message( parallel.commun,  &
+                         "t=", self.time_counter )
+    call mpiut__message( parallel.commun,  &
+                         "states: ", int(count(0),SI),  &
+                                     int(count(1),SI),  &
+                                     int(count(2),SI),  &
+                                     int(count(3),SI),  &
+                                     int(count(4),SI) )
+
+!    print *, "time: ", self.time_counter, " states: ", count 
             
   end subroutine automaton__diagnosis
                
@@ -384,7 +395,8 @@ contains
       end do
     end do
 
-    call boundary_condition( temp )
+    call exchange_overlap_cells( temp )
+    call periodic_boundary_condition( temp )
     self.state(:,:,:) = temp(:,:,:)
     self.time_counter += 1
 

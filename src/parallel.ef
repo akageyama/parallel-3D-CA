@@ -1,36 +1,21 @@
-module parallel_m
+ module parallel_m
   use constants_m
   use mpi
   use mpiut_m
+  use mpidd_m
   !$use omp_lib
   use ut_m
   implicit none
   private
+  public :: parallel
 
   type, public :: parallel_t
     integer(SI) :: commun
     integer(SI) :: myrank
     integer(SI) :: nprocs
-  contains
-    procedure :: initialize => parallel__initialize
-  end type
-
-  type :: rank_t
-    integer(SI)       :: me   ! The rank number of myself.
-    type(rank_next_t) :: next ! This type is defined in mpiut.
-  end type rank_t
-
-  type :: pos_t
-    type(pos_index_t) :: index
-    char(len=12)      :: string  ! e.g., "p012_035_064"
-  end type pos_t
-
-  type, public :: psim_t
-    integer(SI) :: nprocs
-    integer(SI) :: comm   ! pworld.comm also holds this.
-    type(rank_t) :: rank
-    type(pos_t)  :: pos
-    type(rank_next_t) :: boundary_pair
+    type(mpidd__proc_pos_ijk_t) :: proc_pos_ijk
+    type(mpidd__rank_of_neighbor_t) :: rank_of_neighbor
+    type(mpidd__rank_of_neighbor_t) :: periodic_bc_pair ! bc = bound. cond.
     logical :: i_have_xmax
     logical :: i_have_xmin
     logical :: i_have_ymax
@@ -38,48 +23,212 @@ module parallel_m
     logical :: i_have_zmax
     logical :: i_have_zmin
   contains
-    procedure :: init => psim__init
-    procedure :: io_clerk => psim__io_clerk
-    procedure, nopass :: rank_to_pos_index =>  &
-                         psim__rank_to_pos
-  end type psim_t
+    procedure :: initialize => parallel__initialize
+  end type parallel_t
 
+  type(parallel_t) :: parallel
 
 contains
 
 
-  subroutine print_omp_num_thread( comm )
-    integer(SI) <in> :: comm
+!!>
+    Private
+!!<
 
-    integer(SI) :: omp_get_num_threads
-    integer(SI) :: omp_get_thread_num
+  function get_neighbors( ppijk ) result(ron)
+    type(mpidd__proc_pos_ijk_t) <in> :: ppijk
+    type(mpidd__rank_of_neighbor_t) :: ron
 
-    !$omp parallel
-      if ( omp_get_thread_num()==0 ) then
-        call mpiut__message_leader( wcomm,  &
-                                    'OpenMP thread num',  &
-                                    omp_get_num_threads() )
-      end if
-    !$omp end parallel
+    integer(SI) :: i, j, k
 
-  end subroutine print_omp_num_thread
+    i = ppijk.i
+    j = ppijk.j
+    k = ppijk.k
 
+    ron.ip1 = mpidd__proc_pos_ijk_to_rank( i+1, j  , k   )
+    ron.im1 = mpidd__proc_pos_ijk_to_rank( i-1, j  , k   )
+    ron.jp1 = mpidd__proc_pos_ijk_to_rank( i  , j+1, k   )
+    ron.jm1 = mpidd__proc_pos_ijk_to_rank( i  , j-1, k   )
+    ron.kp1 = mpidd__proc_pos_ijk_to_rank( i  , j  , k+1 )
+    ron.km1 = mpidd__proc_pos_ijk_to_rank( i  , j  , k-1 )
+
+  end function get_neighbors
+
+
+  subroutine prep_for_periodic_boundary_condition( para )
+    type(parallel_t) <io> :: para
+
+    integer :: myrank
+
+    para.periodic_bc_pair.ip1 = MPI_PROC_NULL   ! default
+    para.periodic_bc_pair.im1 = MPI_PROC_NULL
+    para.periodic_bc_pair.jp1 = MPI_PROC_NULL
+    para.periodic_bc_pair.jm1 = MPI_PROC_NULL
+    para.periodic_bc_pair.kp1 = MPI_PROC_NULL
+    para.periodic_bc_pair.km1 = MPI_PROC_NULL  
+
+    para.i_have_xmax = .false.  ! default
+    para.i_have_xmin = .false.
+    para.i_have_ymax = .false.
+    para.i_have_ymin = .false.
+    para.i_have_zmax = .false.
+    para.i_have_zmin = .false.  
+
+    myrank = para.myrank 
+
+    if ( para.proc_pos_ijk.i == NPROC_X-1 ) then
+      para.i_have_xmax = .true.
+      para.periodic_bc_pair.ip1 = myrank - NPROC_X + 1
+    end if
+
+    if ( para.proc_pos_ijk.i == 0 ) then
+      para.i_have_xmin = .true.
+      para.periodic_bc_pair.im1 = myrank + NPROC_X - 1
+    end if
+
+    if ( para.proc_pos_ijk.j == NPROC_Y-1 ) then
+      para.i_have_ymax = .true.
+      para.periodic_bc_pair.jp1 = myrank - NPROC_X*(NPROC_Y-1)
+    end if
+
+    if ( para.proc_pos_ijk.j == 0 ) then
+      para.i_have_ymin = .true.
+      para.periodic_bc_pair.jm1 = myrank + NPROC_X*(NPROC_Y-1)
+    end if
+
+    if ( para.proc_pos_ijk.k == NPROC_Z-1 ) then
+      para.i_have_zmax = .true.
+      para.periodic_bc_pair.kp1 = myrank - NPROC_X*NPROC_Y*(NPROC_Z-1)
+    end if
+
+    if ( para.proc_pos_ijk.k == 0 ) then
+      para.i_have_zmin = .true.  
+      para.periodic_bc_pair.km1 = myrank + NPROC_X*NPROC_Y*(NPROC_Z-1)
+    end if
+
+  end subroutine prep_for_periodic_boundary_condition
+
+
+!  subroutine print_omp_num_thread( comm )
+!    integer(SI) <in> :: comm
+!
+!    integer(SI) :: omp_get_num_threads
+!    integer(SI) :: omp_get_thread_num
+!
+!    !$omp parallel
+!      if ( omp_get_thread_num()==0 ) then
+!        call mpiut__message_leader( w commun,  &
+!                                    'OpenMP thread num',  &
+!                                    omp_get_num_threads() )
+!      end if
+!    !$omp end parallel
+!
+!  end subroutine print_omp_num_thread
+
+!!>
+    Public
+!!<
 
   subroutine parallel__initialize( self, commun )
     class(parallel_t) <out> :: self
     integer(SI) <in> :: commun
 
-    self.myrank = mpiut__comm_rank( commun )
-    self.nprocs = mpiut__comm_size( commun )
+  !!>
+
+    The following is the process allocation map. We
+    do not make use of the automatic allocation
+    with MPI_Carte_create.
+
+               /     /     /     /     /|
+              /  12 / 13  / 14  / 15  / |
+             /-----/-----/-----/-----/  |           k
+            /     /     /     /     /|  /          /
+           /     /     /     /     / | /|         /
+          +-----+-----+-----+-----+  |/ |        +------ i
+    N     |     |     |     |     |  /  |        |
+    P     |  0  |  1  |  2  |  3  | /|  /        |
+    R     |     |     |     |     |/ | /|        |
+    O = 3 +-----+-----+-----+-----+  |/ |        |
+    C     |     |     |     |     |  /  |         j
+    |     |  4  |  5  |  6  |  7  | /|  /
+    Y     |     |     |     |     |/ | /
+          +-----+-----+-----+-----+  |/
+          |     |     |     |     |  /
+          |  8  |  9  | 10  | 11  | /
+          |     |     |     |     |/proc_pos_ijk.k = rank / (mx*my)
+          +-----+-----+-----+-----+ proc_pos_ijk.j = mod(rank,mx*my)/mx
+                                    proc_pos_ijk.i = mod(rank,mx)
+                  NPROC_X = 4
+  !!<
+
+    integer(SI) :: myrank, nprocs
+    type(mpidd__proc_pos_ijk_t) :: ppijk
+
+    myrank = mpiut__comm_rank( commun )
+    nprocs = mpiut__comm_size( commun )
+    ppijk  = mpidd__rank_to_proc_pos_ijk( myrank )
+
+    call mpiut__assert( nprocs == NPROC_X*NPROC_Y*NPROC_Z,  &
+                        '<__FUNC__> Here we assume nprocs==NPROC_X*NPROC_Y*NPROC_Z')
+
     self.commun = commun
+    self.nprocs = nprocs
+    self.myrank = myrank
+    self.proc_pos_ijk = ppijk
+    self.rank_of_neighbor = get_neighbors( ppijk )
 
-    call mpiut__message_leader( commun, '<__MODFUNC__> world size',  &
-                                self.nprocs)
+    call prep_for_periodic_boundary_condition( self )
+    call iPrint
+    call mpiut__barrier( commun )
 
-    call mpiut__assert( self.nprocs==NPROC_X*NPROC_Y*NPROC_Z,  &
-                        '<__MODFUNC__> We assume that nprocs==NPROC_X*NPROC_Y*NPROC_Z')
+  contains
 
-    call print_omp_num_thread( commun )
+    subroutine iPrint
+      char(len=12) :: ppijk_str  ! proces position ijk in string.
+
+!      call print_omp_num_thread( commun )
+
+      call mpiut__message_leader( commun, 'commun',  self.commun )
+      call mpiut__message_leader( commun, 'nprocs',  self.nprocs )
+      call mpiut__message_leader( commun, 'rank.me', self.myrank )
+      call mpiut__message_leader( commun, 'proc_pos_ijk.i',  &
+                                      self.proc_pos_ijk.i)
+      call mpiut__message_leader( commun, 'proc_pos_ijk.j',  &
+                                      self.proc_pos_ijk.j)
+      call mpiut__message_leader( commun, 'proc_pos_ijk.k',  &
+                                      self.proc_pos_ijk.k)
+
+      ppijk_str = mpidd__proc_pos_ijk_to_str( self.proc_pos_ijk )
+
+      call mpiut__message_leader( commun, 'proc_pos_ijk', ppijk_str )
+
+      call mpiut__message_leader( commun, 'rank_of_neighbor ip1',  &
+                                      self.rank_of_neighbor.ip1)
+      call mpiut__message_leader( commun, 'rank_of_neighbor im1',  &
+                                      self.rank_of_neighbor.im1)
+      call mpiut__message_leader( commun, 'rank_of_neighbor jp1',  &
+                                      self.rank_of_neighbor.jp1)
+      call mpiut__message_leader( commun, 'rank_of_neighbor jm1',  &
+                                      self.rank_of_neighbor.jm1)
+      call mpiut__message_leader( commun, 'rank_of_neighbor kp1',  &
+                                      self.rank_of_neighbor.kp1)
+      call mpiut__message_leader( commun, 'rank_of_neighbor km1',  &
+                                      self.rank_of_neighbor.km1)
+
+      call mpiut__message_leader( commun, 'periodic_bc_pair ip1',  &
+                                      self.periodic_bc_pair.ip1)
+      call mpiut__message_leader( commun, 'periodic_bc_pair im1',  &
+                                      self.periodic_bc_pair.im1)
+      call mpiut__message_leader( commun, 'periodic_bc_pair jp1',  &
+                                      self.periodic_bc_pair.jp1)
+      call mpiut__message_leader( commun, 'periodic_bc_pair jm1',  &
+                                      self.periodic_bc_pair.jm1)
+      call mpiut__message_leader( commun, 'periodic_bc_pair kp1',  &
+                                      self.periodic_bc_pair.kp1)
+      call mpiut__message_leader( commun, 'periodic_bc_pair km1',  &
+                                      self.periodic_bc_pair.km1)
+    end subroutine iPrint
 
   end subroutine parallel__initialize
 
+end module parallel_m

@@ -73,6 +73,8 @@
     2022.07.17: This was ut.e03.  -kage
     2022.07.17: Remove ut__plusplus.
     2022.07.17: write(FILE_NUM.standard_out,*)  --> print *
+    2022.07.18: Add ut__sizeof.
+    2022.07.18: Add message_str_si_si_si_si_si.
 
 !!<
 
@@ -104,6 +106,7 @@ module ut_m                                    ! Utility Routines
             ut__positive_int_to_str9,     &
             ut__positive_real_to_str9,    &
             ut__real_to_str10,            &
+            ut__sizeof,                   &
             ut__sleep,                    &
             ut__smooth_step,              &
             ut__step,                     &
@@ -120,6 +123,8 @@ module ut_m                                    ! Utility Routines
                       message_str_di_si,          &
                       message_str_di_di,          &
                       message_str_si_si_si,       &
+                      message_str_si_si_si_si,    &
+                      message_str_si_si_si_si_si, &
                       message_str_si_si_dr,       &
                       message_str_di_si_dr,       &
                       message_str_si_dr,          &
@@ -196,6 +201,13 @@ module ut_m                                    ! Utility Routines
     module procedure positive_di_to_str9,  &
                      positive_si_to_str9
   end interface
+
+  interface ut__sizeof
+    module procedure sizeof_0d_di,    &
+                     sizeof_0d_si,    &
+                     sizeof_0d_dr,    &
+                     sizeof_0d_sr
+  end interface                 
 
   interface ut__zeroset
      module procedure zeroset_dr01,        &
@@ -704,6 +716,24 @@ contains
   end subroutine message_str_si_si_si
 
 
+  subroutine message_str_si_si_si_si( string,  &
+                                      i1, i2, i3, i4 )
+    char(len=*) <in> :: string
+    integer(SI) <in> :: i1, i2, i3, i4
+
+    print *,  string, i1, i2, i3, i4
+  end subroutine message_str_si_si_si_si
+
+
+  subroutine message_str_si_si_si_si_si( string,  &
+                                         i1, i2, i3, i4, i5 )
+    char(len=*) <in> :: string
+    integer(SI) <in> :: i1, i2, i3, i4, i5
+
+    print *,  string, i1, i2, i3, i4, i5
+  end subroutine message_str_si_si_si_si_si
+
+
   subroutine message_str_si_si_dr( string, i1, i2, d1 )
     char(len=*) <in> :: string
     integer(SI) <in> :: i1, i2
@@ -920,6 +950,46 @@ contains
     write(str,'(1pe10.3)') f
     if(str(1:1)==' ') str(1:1)='+'
   end function real_to_str10_sr
+
+
+  function sizeof_0d_di( i ) result(size)
+    integer(DI) <in> :: i
+    integer(SI) :: size
+
+    integer(SI) <const> :: BIT_PER_BYTE = 8 ! assumption
+
+    size = storage_size(i) / BIT_PER_BYTE
+  end function sizeof_0d_di
+
+
+  function sizeof_0d_si( i ) result(size)
+    integer(SI) <in> :: i
+    integer(SI) :: size
+
+    integer(SI) <const> :: BIT_PER_BYTE = 8 ! assumption
+
+    size = storage_size(i) / BIT_PER_BYTE
+  end function sizeof_0d_si
+
+
+  function sizeof_0d_dr( r ) result(size)
+    real(DR) <in> :: r
+    integer(SI) :: size
+
+    integer(SI) <const> :: BIT_PER_BYTE = 8 ! assumption
+
+    size = storage_size(r) / BIT_PER_BYTE
+  end function sizeof_0d_dr
+
+
+  function sizeof_0d_sr( r ) result(size)
+    real(SR) <in> :: r
+    integer(SI) :: size
+
+    integer(SI) <const> :: BIT_PER_BYTE = 8 ! assumption
+
+    size = storage_size(r) / BIT_PER_BYTE
+  end function sizeof_0d_sr
 
 
   subroutine zeroset_dr01( d01 )

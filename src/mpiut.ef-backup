@@ -75,9 +75,6 @@
     2022.07.18: Add mpiut__rank_of_neighbor_t.
     2022.07.18: Add mpiut__proc_pos_ijk_to_rank.
     2022.07.18: Add mpiut__proc_pos_ijk_to_str.
-    2022.07.18: Separate the above funcs and exchange to mpidd_m.
-    2022.07.18: Add allreduce_sum1d_di.
-    2022.07.18: Add message_str_si_si_si_si_si.
 
 !!<
 
@@ -111,6 +108,7 @@ module mpiut_m
             mpiut__copy_p_to_p,              &
             mpiut__deco_message,             &
             mpiut__decomp1d,                 &
+            mpiut__exchange,                 &
             mpiut__fatal,                    &
             mpiut__finalize,                 &
             mpiut__init,                     &
@@ -118,6 +116,9 @@ module mpiut_m
             mpiut__message,                  &
             mpiut__message_leader,           &
             mpiut__minval,                   &
+            mpiut__proc_pos_ijk_to_rank,     &
+            mpiut__proc_pos_ijk_to_str,      &
+            mpiut__rank_to_proc_pos_ijk,     &
             mpiut__recv,                     &
             mpiut__reduce_sum,               &
             mpiut__send,                     &
@@ -162,7 +163,6 @@ module mpiut_m
   interface mpiut__allreduce_sum
      module procedure  allreduce_sum0d_si,    &
                        allreduce_sum0d_dr,    &
-                       allreduce_sum1d_di,    &
                        allreduce_sum1d_si,    &
                        allreduce_sum1d_dr,    &
                        allreduce_sum2d_si,    &
@@ -199,6 +199,17 @@ module mpiut_m
                       copy_p2p_3d_sr
   end interface mpiut__copy_p2p
 
+  interface mpiut__exchange
+     module procedure exchange3d_dr_1,     &
+                      exchange3d_dr_2,     &
+                      exchange3d_dr_3,     &
+                      exchange3d_dr_4,     &
+                      exchange3d_dr_5,     &
+                      exchange3d_dr_8,     &
+                      exchange3d_si_1
+
+  end interface
+
   interface mpiut__message
      module procedure message_str,                &
                       message_str_dr,             &
@@ -210,8 +221,6 @@ module mpiut_m
                       message_str_di_si,          &
                       message_str_si_di,          &
                       message_str_si_si_si,       &
-                      message_str_si_si_si_si,    &
-                      message_str_si_si_si_si_si, &
                       message_str_si_si_dr,       &
                       message_str_di_si_dr,       &
                       message_str_si_dr,          &
@@ -253,6 +262,11 @@ module mpiut_m
      module procedure minval_0d_si,      &
                       minval_0d_di,      &
                       minval_0d_dr
+  end interface
+
+  interface mpiut__proc_pos_ijk_to_rank
+    module procedure proc_pos_ijk_int_to_rank,     &
+                     proc_pos_ijk_type_to_rank
   end interface
 
   interface mpiut__recv
@@ -507,31 +521,6 @@ contains
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine allreduce_sum1d_di( comm, buff )
-    integer(SI) <in> :: comm
-    integer(DI) <io> :: buff(:)
-!__________  _________  ________ _______ ______ _____ ____ ___ __ _
-!
-    integer(SI) :: ierr, sizeof_int8, sizeof_buff1
-
-    call MPI_TYPE_SIZE( MPI_INTEGER8, sizeof_int8,       ierr )
-    sizeof_buff1 = ut__sizeof( buff(1) )
-    call mpiut__assert( sizeof_int8 == sizeof_buff1,        &
-                        "Size of MPI_INTEGER8 differs from integer(DI)." )
-
-    call MPI_ALLREDUCE( MPI_IN_PLACE,       &
-                        buff,               &
-                        size(buff,1),       &
-                        MPI_INTEGER8,       & 
-                        MPI_SUM,            &
-                        comm,               &
-                        ierr )
-
-  end subroutine allreduce_sum1d_di
-
-
-!__________  _________  ________ _______ ______ _____ ____ ___ __ _
-!
   subroutine allreduce_sum1d_si( comm, buff )
     integer(SI) <in> :: comm
     integer(SI) <io> :: buff(:)
@@ -548,6 +537,7 @@ contains
                         ierr )
 
   end subroutine allreduce_sum1d_si
+
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
@@ -712,32 +702,6 @@ contains
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine bcast0d_di( comm, source, buff, tag )
-    integer(SI) <in> :: comm
-    integer(SI) <in> :: source   ! rank
-    integer(DI) <io> :: buff
-    integer(SI) <optin> :: tag
-!__________  _________  ________ _______ ______ _____ ____ ___ __ _
-!
-    integer(SI) :: ierr, sizeof_int8, sizeof_buff
-
-    if ( present(tag) ) then
-      call mpiut__assert( mpiut__tag_check( comm, tag ),  &
-                          '<__FUNC__> tag unmatch.' )
-    end if
-      
-    call MPI_TYPE_SIZE( MPI_INTEGER8, sizeof_int8, ierr )
-    sizeof_buff = ut__sizeof( buff )
-    call mpiut__assert( sizeof_int8 == sizeof_buff,        &
-                        "Size of MPI_INTEGER8 differs from integer(DI)." )
-
-    call MPI_BCAST( buff, 1, MPI_INTEGER8, source, comm, ierr )
-
-  end subroutine bcast0d_di
-
-
-!__________  _________  ________ _______ ______ _____ ____ ___ __ _
-!
   subroutine bcast0d_si( comm, source, buff, tag )
     integer(SI) <in> :: comm
     integer(SI) <in> :: source   ! rank
@@ -752,9 +716,40 @@ contains
                           '<__FUNC__> tag unmatch.' )
     end if
       
+    call MPI_TYPE_SIZE( MPI_INTEGER, size_of_int,  ierr )
+    call MPI_TYPE_SIZE( MPI_INTEGER, size_of_buff, ierr )
+    call mpiut__assert( size_of_int == size_of_buff,        &
+                        "Size of MPI_INTEGER differs from integer(SI)." )
+
     call MPI_BCAST(buff, 1, MPI_INTEGER, source, comm, ierr)
 
   end subroutine bcast0d_si
+
+
+!__________  _________  ________ _______ ______ _____ ____ ___ __ _
+!
+  subroutine bcast0d_di( comm, source, buff, tag )
+    integer(SI) <in> :: comm
+    integer(SI) <in> :: source   ! rank
+    integer(DI) <io> :: buff
+    integer(SI) <optin> :: tag
+!__________  _________  ________ _______ ______ _____ ____ ___ __ _
+!
+    integer(SI) :: ierr, size_of_int8, size_of_buff
+
+    if ( present(tag) ) then
+      call mpiut__assert( mpiut__tag_check( comm, tag ),  &
+                          '<__FUNC__> tag unmatch.' )
+    end if
+      
+    call MPI_TYPE_SIZE( MPI_INTEGER8, size_of_int8, ierr )
+    call MPI_TYPE_SIZE( MPI_INTEGER8, size_of_buff, ierr )
+    call mpiut__assert( size_of_int8 == size_of_buff,        &
+                        "Size of MPI_INTEGER8 differs from integer(DI)." )
+
+    call MPI_BCAST( buff, 1, MPI_INTEGER8, source, comm, ierr )
+
+  end subroutine bcast0d_di
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
@@ -2453,16 +2448,16 @@ contains
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     integer(SI) :: ierr
-    integer(SI), allocatable :: work_array(:)
+    integer(SI), allocatable :: sgks_array(:)
 
-    allocate(work_array(mpiut__comm_size(comm)))
+    allocate(sgks_array(mpiut__comm_size(comm)))
 
     call MPI_ALLGATHER( i, 1, MPI_INTEGER,              &
-                        work_array, 1, MPI_INTEGER,   &
+                        sgks_array, 1, MPI_INTEGER,   &
                         comm, ierr )
 
-    max_i = maxval(work_array)
-    deallocate(work_array)
+    max_i = maxval(sgks_array)
+    deallocate(sgks_array)
 
   end subroutine maxval_0d_si
 
@@ -2476,16 +2471,16 @@ contains
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     integer(SI) :: ierr
-    integer(DI), allocatable :: work_array(:)
+    integer(DI), allocatable :: sgks_array(:)
 
-    allocate(work_array(mpiut__comm_size(comm)))
+    allocate(sgks_array(mpiut__comm_size(comm)))
 
     call MPI_ALLGATHER(i, 1, MPI_INTEGER8,            &
-                       work_array, 1, MPI_INTEGER8,   &
+                       sgks_array, 1, MPI_INTEGER8,   &
                        comm, ierr)
 
-    max_i = maxval(work_array)
-    deallocate(work_array)
+    max_i = maxval(sgks_array)
+    deallocate(sgks_array)
 
   end subroutine maxval_0d_di
 
@@ -2499,16 +2494,16 @@ contains
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     integer(SI) :: ierr
-    real(DR), allocatable :: work_array(:)
+    real(DR), allocatable :: sgks_array(:)
 
-    allocate(work_array(mpiut__comm_size(comm)))
+    allocate(sgks_array(mpiut__comm_size(comm)))
 
     call MPI_ALLGATHER(r, 1, MPI_DOUBLE_PRECISION,            &
-                       work_array, 1, MPI_DOUBLE_PRECISION,   &
+                       sgks_array, 1, MPI_DOUBLE_PRECISION,   &
                        comm, ierr)
 
-    max_r = maxval(work_array)
-    deallocate(work_array)
+    max_r = maxval(sgks_array)
+    deallocate(sgks_array)
 
   end subroutine maxval_0d_dr
 
@@ -2873,40 +2868,6 @@ contains
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
-  subroutine message_str_si_si_si_si( comm, string,  &
-                                      i1, i2, i3, i4 )
-    integer(SI) <in> :: comm
-    char(len=*) <in> :: string
-    integer(SI) <in> :: i1, i2, i3, i4
-!__________  _________  ________ _______ ______ _____ ____ ___ __ _
-!
-    ! << only the root process speaks >>
-    if ( mpiut__comm_rank( comm ) /= 0 ) return
-
-    call ut__message( string, i1, i2, i3, i4 )
-
-  end subroutine message_str_si_si_si_si
-
-
-!__________  _________  ________ _______ ______ _____ ____ ___ __ _
-!
-  subroutine message_str_si_si_si_si_si( comm, string,  &
-                                         i1, i2, i3, i4, i5 )
-    integer(SI) <in> :: comm
-    char(len=*) <in> :: string
-    integer(SI) <in> :: i1, i2, i3, i4, i5
-!__________  _________  ________ _______ ______ _____ ____ ___ __ _
-!
-    ! << only the root process speaks >>
-    if ( mpiut__comm_rank( comm ) /= 0 ) return
-
-    call ut__message( string, i1, i2, i3, i4, i5 )
-
-  end subroutine message_str_si_si_si_si_si
-
-
-!__________  _________  ________ _______ ______ _____ ____ ___ __ _
-!
   subroutine message_str_si_si_dr( comm, string, i1, i2, d1 )
     integer(SI) <in> :: comm
     char(len=*) <in> :: string
@@ -3135,18 +3096,18 @@ contains
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     integer(SI) :: ierr
-    integer(SI), allocatable :: work_array(:)
+    integer(SI), allocatable :: sgks_array(:)
 
-    allocate(work_array(mpiut__comm_size(comm)))
+    allocate(sgks_array(mpiut__comm_size(comm)))
 
     call MPI_ALLGATHER( i, 1, MPI_INTEGER,            &
-                        work_array, 1, MPI_INTEGER,   &
+                        sgks_array, 1, MPI_INTEGER,   &
                         comm, ierr )
 
     ! You can use allreduce_min, too. I don't know which is faster.
 
-    min_i = minval(work_array)
-    deallocate(work_array)
+    min_i = minval(sgks_array)
+    deallocate(sgks_array)
 
   end subroutine minval_0d_si
 
@@ -3160,18 +3121,18 @@ contains
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     integer(SI) :: ierr
-    integer(DI), allocatable :: work_array(:)
+    integer(DI), allocatable :: sgks_array(:)
 
-    allocate(work_array(mpiut__comm_size(comm)))
+    allocate(sgks_array(mpiut__comm_size(comm)))
 
     call MPI_ALLGATHER( i, 1, MPI_INTEGER8,            &
-                        work_array, 1, MPI_INTEGER8,   &
+                        sgks_array, 1, MPI_INTEGER8,   &
                         comm, ierr )
 
     ! You can use allreduce_min, too. I don't know which is faster.
 
-    min_i = minval(work_array)
-    deallocate(work_array)
+    min_i = minval(sgks_array)
+    deallocate(sgks_array)
 
   end subroutine minval_0d_di
 
@@ -3185,18 +3146,18 @@ contains
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     integer(SI) :: ierr
-    real(DR), allocatable :: work_array(:)
+    real(DR), allocatable :: sgks_array(:)
 
-    allocate(work_array(mpiut__comm_size(comm)))
+    allocate(sgks_array(mpiut__comm_size(comm)))
 
     call MPI_ALLGATHER( r, 1, MPI_DOUBLE_PRECISION,            &
-                        work_array, 1, MPI_DOUBLE_PRECISION,   &
+                        sgks_array, 1, MPI_DOUBLE_PRECISION,   &
                         comm, ierr )
 
     ! You can use allreduce_min, too. I don't know which is faster.
 
-    min_r = minval(work_array)
-    deallocate(work_array)
+    min_r = minval(sgks_array)
+    deallocate(sgks_array)
 
   end subroutine minval_0d_dr
 
@@ -3433,6 +3394,44 @@ contains
 
   end function mpi_init_already_called
 
+
+!__________  _________  ________ _______ ______ _____ ____ ___ __ _
+!
+  function proc_pos_ijk_int_to_rank( i, j, k ) result(rank)
+    integer(SI) <in> :: i, j, k
+    integer(SI) :: rank
+!__________  _________  ________ _______ ______ _____ ____ ___ __ _
+!
+    !!>
+      Purpose: Returns rank number for the subdomain at i,j,k.
+       Author: Akira Kageyama
+         Date: 2013.06.13 (revised)
+    !!<
+
+    if ( i < 0 .or. i >= NPROC_X  &
+               .or.               &
+         j < 0 .or. j >= NPROC_Y  &
+               .or.               &
+         k < 0 .or. k >= NPROC_Z ) then
+      rank = MPI_PROC_NULL
+    else
+      rank = i + j*NPROC_X + k*NPROC_X*NPROC_Y
+    end if
+                        
+  end function proc_pos_ijk_int_to_rank
+
+
+!__________  _________  ________ _______ ______ _____ ____ ___ __ _
+!
+  function proc_pos_ijk_type_to_rank( ppijk ) result(rank)
+    type(mpiut__proc_pos_ijk_t) <in> :: ppijk
+    integer(SI) :: rank
+!__________  _________  ________ _______ ______ _____ ____ ___ __ _
+!
+    rank = proc_pos_ijk_int_to_rank( ppijk.i, ppijk.j, ppijk.k )
+                        
+  end function proc_pos_ijk_type_to_rank  
+  
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
@@ -4230,6 +4229,46 @@ contains
     end function
 
   end subroutine
+
+
+
+  function mpiut__rank_to_proc_pos_ijk( rank ) result(ppijk)
+    integer(SI) <in> :: rank
+    type(mpiut__proc_pos_ijk_t) :: ppijk
+
+    !!>
+      Purpose: Returns the process position (i,j,k) for the rank.
+       Author: Akira Kageyama
+         Date: 2022.07.18 (Revised)
+    !!<
+
+    call mpiut__assert( rank >= 0,  &
+                        '<__FUNC__> negative rank!?' )
+    call mpiut__assert( rank < NPROC_X*NPROC_Y*NPROC_Z,  &
+                        '<__FUNC__> rank out of range.' )
+
+    ppijk.k = rank / (NPROC_X*NPROC_Y)
+    ppijk.j = mod( rank, NPROC_X*NPROC_Y ) / NPROC_X
+    ppijk.i = mod( rank, NPROC_X )
+
+  end function mpiut__rank_to_proc_pos_ijk
+
+
+!__________  _________  ________ _______ ______ _____ ____ ___ __ _
+!
+  function mpiut__proc_pos_ijk_to_str( ppijk ) result(str)
+    type(mpiut__proc_pos_ijk_t) <in> :: ppijk
+    char(len=12) :: str ! e.g., "p012_035_064"
+!__________  _________  ________ _______ ______ _____ ____ ___ __ _
+!
+    str = "p"                 & ! 1 letter
+        // ut__i2c3( ppijk.i ) & ! 3 letters
+        // '_'                & ! 1 letter
+        // ut__i2c3( ppijk.j ) & ! 3
+        // '_'                & ! 1
+        // ut__i2c3( ppijk.k )   ! 3
+
+  end function mpiut__proc_pos_ijk_to_str
 
 
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _

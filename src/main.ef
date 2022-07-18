@@ -8,22 +8,25 @@ program main
   implicit none
 
   type(automaton_t) :: automaton
-  type(parallel_t) :: parallel
 
-  integer :: update
-  integer <const> :: UPDATE_MAX = 10000
+  integer(DI) :: loop
+  integer(DI) <const> :: LOOP_MAX = 10000_DI
+  integer <const> :: W = MPI_COMM_WORLD
 
+  call mpiut__init
+  call mpiut__barrier( W, tag=1 ) 
 
-  associate( W => MPI_COMM_WORLD,  &
-             scomm => pworld.comm.simula )
-    call automaton.initialize
+  call parallel.initialize( W )
+  call automaton.initialize
+  call automaton.diagnosis
+  call mpiut__barrier( W, tag=2 ) 
+
+  do loop = 1, LOOP_MAX
+    call automaton.update
     call automaton.diagnosis
-  
-    do update = 1, UPDATE_MAX
-      call automaton.update
-      call automaton.diagnosis
-    end do
-  
-  end associate
+    call mpiut__barrier( W, tag=3 ) 
+  end do
 
+  call mpiut__finalize
+  
 end program main
