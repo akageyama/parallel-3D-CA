@@ -5,25 +5,15 @@ program main
   use mpiut_m
 !$use omp_lib
   use parallel_m
-  use vismo
+  use vis_m
   implicit none
 
   type(automaton_t) :: automaton
+  type(vis_t) :: vis
 
   integer(DI) :: loop
   integer(DI) <const> :: LOOP_MAX = 10000_DI
   integer <const> :: W = MPI_COMM_WORLD
-
-  real(DR), dimension(0:NXPP1,0:NYPP1,0:NZPP1) :: vismo_scalar
-  real(DR), dimension(3) :: vismo_coords_global_origin
-  real(DR), dimension(3) :: vismo_coords_local_origin
-  integer, dimension(3) :: vismo_coords_global_grid_num
-  integer, dimension(3) :: vismo_coords_local_grid_num
-  real(DR), dimension(3) :: vismo_coords_dgrid
-  real(DR), dimension(3) :: vismo_coords_global_corner_pos
-  real(DR), dimension(3) :: vismo_coords_local_corner_pos
-  integer, dimension(3) :: vismo_coords_local_left_most_grid_used_in_vismo
-  integer, dimension(3) :: vismo_coords_local_grid_num_used_in_vismo
 
   call mpiut__init
   call mpiut__barrier( W, tag=1 ) 
@@ -31,74 +21,19 @@ program main
   call parallel.initialize( W )
   call automaton.initialize
   call automaton.diagnosis
+  call vis.initialize( automaton )
   call mpiut__barrier( W, tag=2 ) 
 
-  vismo_coords_global_grid_num(1) = NX_GLOBAL
-  vismo_coords_global_grid_num(2) = NY_GLOBAL
-  vismo_coords_global_grid_num(3) = NZ_GLOBAL
-  vismo_coords_dgrid(1) = 1.0_DR
-  vismo_coords_dgrid(2) = 1.0_DR
-  vismo_coords_dgrid(3) = 1.0_DR
-  vismo_coords_global_corner_pos(1) = 0.0_DR  ! the corner cell is 
-  vismo_coords_global_corner_pos(2) = 0.0_DR  ! just on the origin.
-  vismo_coords_global_corner_pos(3) = 0.0_DR
-  vismo_coords_local_grid_num(1) = NXPP + 2  ! from 0 to NXPP1
-  vismo_coords_local_grid_num(2) = NYPP + 2
-  vismo_coords_local_grid_num(3) = NZPP + 2
+  call vis.set_field( automaton.state )
+  call vis.visualize
 
-  call vismo__init( W, parallel.myrank,  &
-                    parallel.nprocs, "vismo.config" )
-  call vismo__addScalar( vismo_scalar, NXPP+2,  NYPP+2,  NZPP+2 )
-  call vismo__initCoords( vismo__uniform )
-  call vismo__setUniCoord( vismo_coords_global_grid_num,  &
-                           vismo_coords_global_corner_pos,  &
-                           vismo_coords_dgrid )
-
-  if ( parallel.i_have_xmin ) then
-     vismo_coords_local_left_most_grid_used_in_vismo(1) = automaton.cell_global_pos.i(2)
-     vismo_coords_local_grid_num_used_in_vismo(1) = NXPP
-     vismo_coords_local_corner_pos(1) = automaton.cell_global_pos.i(2)
-  else
-     vismo_coords_local_left_most_grid_used_in_vismo(1) = automaton.cell_global_pos.i(1)
-     vismo_coords_local_grid_num_used_in_vismo(1) = NXPP1
-     vismo_coords_local_corner_pos(1) = automaton.cell_global_pos.i(1)
-  end if
-  if ( parallel.i_have_ymin ) then
-     vismo_coords_local_left_most_grid_used_in_vismo(2) = automaton.cell_global_pos.j(2)
-     vismo_coords_local_grid_num_used_in_vismo(2) = NYPP
-     vismo_coords_local_corner_pos(2) = automaton.cell_global_pos.j(2)
-  else
-     vismo_coords_local_left_most_grid_used_in_vismo(2) = automaton.cell_global_pos.j(1)
-     vismo_coords_local_grid_num_used_in_vismo(2) = NYPP1
-     vismo_coords_local_corner_pos(2) = automaton.cell_global_pos.j(1)
-  end if
-  if ( parallel.i_have_zmin ) then
-     vismo_coords_local_left_most_grid_used_in_vismo(3) = automaton.cell_global_pos.k(2)
-     vismo_coords_local_grid_num_used_in_vismo(3) = NZPP
-     vismo_coords_local_corner_pos(3) = automaton.cell_global_pos.k(2)
-  else
-     vismo_coords_local_left_most_grid_used_in_vismo(3) = automaton.cell_global_pos.k(1)
-     vismo_coords_local_grid_num_used_in_vismo(3) = NZPP1
-     vismo_coords_local_corner_pos(3) = automaton.cell_global_pos.k(1)
-  end if  
-
-  call vismo__setLocalUniCoord( vismo_coords_local_grid_num,  &
-                                vismo_coords_local_left_most_grid_used_in_vismo,  &
-                                vismo_coords_local_grid_num_used_in_vismo,  &
-                                vismo_coords_local_corner_pos,  &
-                                vismo_coords_dgrid )
-
-  call vismo__prepareVis
-
-  vismo_scalar(:,:,:) = automaton.state(:,:,:)
-
-  call vismo__visualization(1)
   do loop = 1, LOOP_MAX
     call automaton.update
     call automaton.diagnosis
     call mpiut__barrier( W, tag=3 ) 
   end do
 
+  call vis.finalize
   call mpiut__finalize
   
 end program main
