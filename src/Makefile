@@ -29,12 +29,13 @@ objlist := $(addsuffix .o, $(filebase)) # => example.o
 
 EFPP = ../bin/efpp.py
 
+LIB = ../lib/libvismo.a
 FC = mpifort
 # FC = gfortran
 FFLAGS :=
 # FFLAGS += -fopenmp
 FFLAGS += -fcheck=all
-FFLAGS += -I../lib
+FFLAGS += -I../lib 
 # FFLAGS += -Wall
 # FFLAGS += -fbounds-check
 # FFLAGS += -fcheck-array-temporaries
@@ -106,7 +107,7 @@ endif
 # default target
 
 p3ca: $(objlist)
-	$(FC) $(FFLAGS) -o p3ca $(objlist)
+	$(FC) $(FFLAGS) -o p3ca $(objlist) $(LIB)
 
 
 -include depend_list.mk
