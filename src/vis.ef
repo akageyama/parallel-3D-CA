@@ -1,0 +1,164 @@
+module vis_m
+  use automaton_m
+  use constants_m
+  use parallel_m
+  use mpi
+  use vismo
+  implicit none
+  private
+
+  type vismo_params_common_to_all_processes_t
+    integer, dimension(3) :: grid_num
+    real(DR), dimension(3) :: corner_pos
+    real(DR), dimension(3) :: dgrid
+  end type vismo_params_common_to_all_processes_t
+
+  type vismo_params_local_to_each_process_t
+    integer, dimension(3) :: grid_num
+    integer, dimension(3) :: grid_num_used_in_vismo
+    integer, dimension(3) :: left_most_grid_used_in_vismo
+    real(DR), dimension(3) :: corner_pos
+  end type vismo_params_local_to_each_process_t
+
+  type, public :: vis_t
+    real(DR), dimension(0:NXPP1,0:NYPP1,0:NZPP1) :: sfield
+  contains
+    procedure :: initialize => vis__initialize
+    procedure :: set_field => vis__set_field
+    procedure :: visualize => vis__visualize
+    procedure :: finalize => vis__finalize
+  end type vis_t
+
+
+contains
+
+
+  subroutine set_vismo_params_common_to_all_processes( global )
+    type(vismo_params_common_to_all_processes_t) <out> :: global
+
+    global.grid_num(1) = NX_GLOBAL  
+    global.grid_num(2) = NY_GLOBAL  
+    global.grid_num(3) = NZ_GLOBAL  
+    global.dgrid(1) = 1.0_DR  ! A cell's edge length = 1.0
+    global.dgrid(2) = 1.0_DR  
+    global.dgrid(3) = 1.0_DR  
+    global.corner_pos(1) = 0.0_DR  ! Set the coordinates
+    global.corner_pos(2) = 0.0_DR  !   origin at the corner
+    global.corner_pos(3) = 0.0_DR  !   of the simulation region.
+
+  end subroutine set_vismo_params_common_to_all_processes
+
+
+  subroutine set_vismo_params_local_to_each_process( local, automaton )
+    type(vismo_params_local_to_each_process_t) <out> :: local
+    type(automaton_t) <in> :: automaton
+
+    local.grid_num(1) = NXPP + 2  ! array(0:NXPP1)
+    local.grid_num(2) = NYPP + 2  
+    local.grid_num(3) = NZPP + 2  
+   
+    if ( parallel.i_have_xmin ) then
+       local.left_most_grid_used_in_vismo(1) = automaton.cell_global_pos.i(2)
+       local.grid_num_used_in_vismo(1) = NXPP
+       local.corner_pos(1) = automaton.cell_global_pos.i(2)
+    else
+       local.left_most_grid_used_in_vismo(1) = automaton.cell_global_pos.i(1)
+       local.grid_num_used_in_vismo(1) = NXPP1
+       local.corner_pos(1) = automaton.cell_global_pos.i(1)
+    end if
+
+    if ( parallel.i_have_ymin ) then
+       local.left_most_grid_used_in_vismo(2) = automaton.cell_global_pos.j(2)
+       local.grid_num_used_in_vismo(2) = NYPP
+       local.corner_pos(2) = automaton.cell_global_pos.j(2)
+    else
+       local.left_most_grid_used_in_vismo(2) = automaton.cell_global_pos.j(1)
+       local.grid_num_used_in_vismo(2) = NYPP1
+       local.corner_pos(2) = automaton.cell_global_pos.j(1)
+    end if
+
+    if ( parallel.i_have_zmin ) then
+       local.left_most_grid_used_in_vismo(3) = automaton.cell_global_pos.k(2)
+       local.grid_num_used_in_vismo(3) = NZPP
+       local.corner_pos(3) = automaton.cell_global_pos.k(2)
+    else
+       local.left_most_grid_used_in_vismo(3) = automaton.cell_global_pos.k(1)
+       local.grid_num_used_in_vismo(3) = NZPP1
+       local.corner_pos(3) = automaton.cell_global_pos.k(1)
+    end if  
+
+  end subroutine set_vismo_params_local_to_each_process
+
+
+  subroutine vis__initialize( self, automaton )
+    class(vis_t) <out> :: self
+    type(automaton_t) <in> :: automaton
+
+    type(vismo_params_common_to_all_processes_t) :: global_param
+    type(vismo_params_local_to_each_process_t) :: local_param
+
+    call set_vismo_params_common_to_all_processes( global_param )
+    call set_vismo_params_local_to_each_process( local_param, automaton )
+
+    call vismo__init( MPI_COMM_WORLD,  &
+                      parallel.myrank,  &
+                      parallel.nprocs,  &
+                      "vismo.config" )
+
+    call vismo__addScalar( self.sfield,  &
+                           NXPP+2,  NYPP+2,  NZPP+2 )
+
+    call vismo__initCoords( vismo__uniform )
+
+    call vismo__setUniCoord( global_param.grid_num,  &
+                             global_param.corner_pos,  &
+                             global_param.dgrid )
+
+    call vismo__setLocalUniCoord( local_param.grid_num,  &
+                                  local_param.left_most_grid_used_in_vismo,  &
+                                  local_param.grid_num_used_in_vismo,  &
+                                  local_param.corner_pos,  &
+                                  global_param.dgrid )
+
+    call vismo__prepareVis
+
+  end subroutine vis__initialize
+
+
+  subroutine vis__set_field( self, cell_state )
+    class(vis_t) <io> :: self
+    type(array3d_si_t) <in> :: cell_state
+
+    integer :: i, j, k
+
+    self.sfield(:,:,:) = 0.0_DR
+
+    do k = 1, NXPP
+      do j = 1, NYPP
+        do i = 1, NXPP
+          if ( cell_state(i,j,k) >= 1 ) then
+            self.sfield(i,j,k) = 1.0_DR
+          end if
+        end do
+      end do
+    end do
+
+  end subroutine vis__set_field
+
+
+  subroutine vis__visualize( self )
+    class(vis_t) <in> :: self
+
+    call vismo__visualization( 1 )
+
+  end subroutine vis__visualize
+
+
+  subroutine vis__finalize( self )
+    class(vis_t) <in> :: self
+
+    call vismo__finalize
+
+  end subroutine vis__finalize
+
+end module vis_m
