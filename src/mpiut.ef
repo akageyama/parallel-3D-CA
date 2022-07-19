@@ -84,7 +84,6 @@
 module mpiut_m
   use mpi
   use constants_m, only : SI, DI, SR, DR, NXPP, NYPP, NZPP, NXPP1, NYPP1, NZPP1
-  use constants_m, only : NPROC_X, NPROC_Y, NPROC_Z
   use ut_m
   implicit none
   private

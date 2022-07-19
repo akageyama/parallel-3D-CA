@@ -46,7 +46,7 @@ module constants_m
   !<< MPI constants >>!
   integer <const> :: NPROC_X = 1
   integer <const> :: NPROC_Y = 2
-  integer <const> :: NPROC_Z = 2
+  integer <const> :: NPROC_Z = 1
 
   !<< Simulation constants >>!
   integer <const> :: NXPP = 200
