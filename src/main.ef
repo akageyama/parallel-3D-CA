@@ -5,6 +5,7 @@ program main
   use mpiut_m
 !$use omp_lib
   use parallel_m
+  use vismo
   implicit none
 
   type(automaton_t) :: automaton
@@ -13,6 +14,17 @@ program main
   integer(DI) <const> :: LOOP_MAX = 10000_DI
   integer <const> :: W = MPI_COMM_WORLD
 
+  real(DR), dimension(0:NXPP1,0:NYPP1,0:NZPP1) :: vismo_scalar
+  real(DR), dimension(3) :: vismo_coords_global_origin
+  real(DR), dimension(3) :: vismo_coords_local_origin
+  integer, dimension(3) :: vismo_coords_global_grid_num
+  integer, dimension(3) :: vismo_coords_local_grid_num
+  real(DR), dimension(3) :: visomo_coords_dgrid
+  real(DR), dimension(3) :: vismo_coords_global_corner_pos
+  real(DR), dimension(3) :: vismo_coords_local_corner_pos
+  integer, dimension(3) :: vismo_coords_local_left_most_grid_used_in_vismo
+  integer, dimension(3) :: vismo_coords_local_grid_num_used_in_vismo
+
   call mpiut__init
   call mpiut__barrier( W, tag=1 ) 
 
@@ -20,6 +32,52 @@ program main
   call automaton.initialize
   call automaton.diagnosis
   call mpiut__barrier( W, tag=2 ) 
+
+  vismo_coords_global_grid_num(1) = NX_GLOBAL
+  vismo_coords_global_grid_num(2) = NY_GLOBAL
+  vismo_coords_global_grid_num(3) = NZ_GLOBAL
+  visomo_coords_dgrid(1) = 1.0_DR
+  visomo_coords_dgrid(2) = 1.0_DR
+  visomo_coords_dgrid(3) = 1.0_DR
+  vismo_coords_global_corner_pos(1) = -(NX_GLOBAL-1)/2.0_DR
+  vismo_coords_global_corner_pos(2) = -(NY_GLOBAL-1)/2.0_DR
+  vismo_coords_global_corner_pos(3) = -(NZ_GLOBAL-1)/2.0_DR
+  vismo_coords_local_grid_num(1) = NXPP + 2  ! from 0 to NXPP1
+  vismo_coords_local_grid_num(2) = NYPP + 2
+  vismo_coords_local_grid_num(3) = NZPP + 2
+
+  call vismo__init( W, parallel.myrank,  &
+                    parallel.nprocs, "configtest.vsm" )
+  call vismo__addScalar( vismo_scalar, NXPP+2,  NYPP+2,  NZPP+2 )
+  call vismo__initCoords( vismo__uniform )
+  call vismo__setUniCoord( vismo_coords_global_grid_num, vismo_coords_global_corner_pos, visomo_coords_dgrid )
+
+  if ( parallel.i_have_xmin ) then
+     vismo_coords_local_left_most_grid_used_in_vismo(1) = automaton.cell_global_pos.i(2)
+     vismo_coords_local_grid_num_used_in_vismo(1) = NXPP
+  else
+     vismo_coords_local_left_most_grid_used_in_vismo(1) = automaton.cell_global_pos.i(1)
+     vismo_coords_local_grid_num_used_in_vismo(1) = NXPP1
+  end if
+  if ( parallel.i_have_ymin ) then
+     vismo_coords_local_left_most_grid_used_in_vismo(2) = automaton.cell_global_pos.j(2)
+     vismo_coords_local_grid_num_used_in_vismo(2) = NYPP
+  else
+     vismo_coords_local_left_most_grid_used_in_vismo(2) = automaton.cell_global_pos.j(1)
+     vismo_coords_local_grid_num_used_in_vismo(2) = NYPP1
+  end if
+  if ( parallel.i_have_zmin ) then
+     vismo_coords_local_left_most_grid_used_in_vismo(3) = automaton.cell_global_pos.k(2)
+     vismo_coords_local_grid_num_used_in_vismo(3) = NZPP
+  else
+     vismo_coords_local_left_most_grid_used_in_vismo(3) = automaton.cell_global_pos.k(1)
+     vismo_coords_local_grid_num_used_in_vismo(3) = NZPP1
+  end if  
+
+  call vismo__setLocalUniCoord( vismo_coords_local_grid_num,  &
+                                vismo_coords_local_left_most_grid_used_in_vismo,  &
+                                vismo_coords_local_grid_num_used_in_vismo,  &
+                                loccorner, dx)
 
   do loop = 1, LOOP_MAX
     call automaton.update

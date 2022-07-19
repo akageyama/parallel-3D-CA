@@ -34,6 +34,7 @@ FC = mpifort
 FFLAGS :=
 # FFLAGS += -fopenmp
 FFLAGS += -fcheck=all
+FFLAGS += -I../lib
 # FFLAGS += -Wall
 # FFLAGS += -fbounds-check
 # FFLAGS += -fcheck-array-temporaries
