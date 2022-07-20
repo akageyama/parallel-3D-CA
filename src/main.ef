@@ -24,12 +24,12 @@ program main
   call vis.initialize( automaton )
   call mpiut__barrier( W, tag=2 ) 
 
-  call vis.set_field( automaton.state )
-  call vis.visualize
+  call vis.visualize( 0_DI, automaton.state )
 
   do loop = 1, LOOP_MAX
     call automaton.update
     call automaton.diagnosis
+    call vis.visualize( loop, automaton.state )
     call mpiut__barrier( W, tag=3 ) 
   end do
 

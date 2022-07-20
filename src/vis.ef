@@ -24,13 +24,33 @@ module vis_m
     real(DR), dimension(0:NXPP1,0:NYPP1,0:NZPP1) :: sfield
   contains
     procedure :: initialize => vis__initialize
-    procedure :: set_field => vis__set_field
     procedure :: visualize => vis__visualize
     procedure :: finalize => vis__finalize
   end type vis_t
 
 
 contains
+
+
+  subroutine set_field( vis, cell_state )
+    type(vis_t) <io> :: vis
+    type(array3d_si_t) <in> :: cell_state
+
+    integer :: i, j, k
+
+    vis.sfield(:,:,:) = 0.0_DR
+
+    do k = 1, NXPP
+      do j = 1, NYPP
+        do i = 1, NXPP
+          if ( cell_state(i,j,k) >= 1 ) then
+            vis.sfield(i,j,k) = 1.0_DR
+          end if
+        end do
+      end do
+    end do
+
+  end subroutine set_field
 
 
   subroutine set_vismo_params_common_to_all_processes( global )
@@ -125,31 +145,14 @@ contains
   end subroutine vis__initialize
 
 
-  subroutine vis__set_field( self, cell_state )
-    class(vis_t) <io> :: self
+
+  subroutine vis__visualize( self, loop_count, cell_state )
+    class(vis_t) :: self
+    integer(DI) <in> :: loop_count
     type(array3d_si_t) <in> :: cell_state
 
-    integer :: i, j, k
-
-    self.sfield(:,:,:) = 0.0_DR
-
-    do k = 1, NXPP
-      do j = 1, NYPP
-        do i = 1, NXPP
-          if ( cell_state(i,j,k) >= 1 ) then
-            self.sfield(i,j,k) = 1.0_DR
-          end if
-        end do
-      end do
-    end do
-
-  end subroutine vis__set_field
-
-
-  subroutine vis__visualize( self )
-    class(vis_t) <in> :: self
-
-    call vismo__visualization( 1 )
+    call set_field( self, cell_state )
+    call vismo__visualization( int(loop_count,Si) )
 
   end subroutine vis__visualize
 
