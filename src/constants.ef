@@ -50,7 +50,7 @@ module constants_m
 
   !<< Simulation constants >>!
   integer <const> :: NXPP = 100
-  integer <const> :: NYPP = 100
+  integer <const> :: NYPP =  50
   integer <const> :: NZPP = 100
 
   integer <const> :: NXPP1 = NXPP + 1
