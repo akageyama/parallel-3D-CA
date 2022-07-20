@@ -43,7 +43,7 @@ contains
     do k = 1, NXPP
       do j = 1, NYPP
         do i = 1, NXPP
-          if ( cell_state(i,j,k) >= 1 ) then
+          if ( cell_state(i,j,k) == 1 ) then
             vis.sfield(i,j,k) = 1.0_DR
           end if
         end do
