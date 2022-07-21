@@ -111,7 +111,7 @@ contains
 
 
   subroutine vis__initialize( self, automaton )
-    class(vis_t) <out> :: self
+    class(vis_t) <in> :: self
     type(automaton_t) <in> :: automaton
 
     type(vismo_params_common_to_all_processes_t) :: global_param
@@ -165,3 +165,4 @@ contains
   end subroutine vis__finalize
 
 end module vis_m
+
