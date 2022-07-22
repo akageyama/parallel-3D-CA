@@ -80,31 +80,31 @@ contains
     if ( parallel.i_have_xmin ) then
        local.left_most_grid_used_in_vismo(1) = 2
        local.grid_num_used_in_vismo(1) = NXPP
-       local.corner_pos(1) = automaton.cell_global_pos.i(2)
+       local.corner_pos(1) = automaton.cell_global_pos.i(1)
     else
        local.left_most_grid_used_in_vismo(1) = 1
        local.grid_num_used_in_vismo(1) = NXPP1
-       local.corner_pos(1) = automaton.cell_global_pos.i(1)
+       local.corner_pos(1) = automaton.cell_global_pos.i(0)
     end if
 
     if ( parallel.i_have_ymin ) then
        local.left_most_grid_used_in_vismo(2) = 2
        local.grid_num_used_in_vismo(2) = NYPP
-       local.corner_pos(2) = automaton.cell_global_pos.j(2) 
+       local.corner_pos(2) = automaton.cell_global_pos.j(1)
     else
        local.left_most_grid_used_in_vismo(2) = 1
        local.grid_num_used_in_vismo(2) = NYPP1
-       local.corner_pos(2) = automaton.cell_global_pos.j(1)
+       local.corner_pos(2) = automaton.cell_global_pos.j(0)
     end if
 
     if ( parallel.i_have_zmin ) then
        local.left_most_grid_used_in_vismo(3) = 2
        local.grid_num_used_in_vismo(3) = NZPP
-       local.corner_pos(3) = automaton.cell_global_pos.k(2)
+       local.corner_pos(3) = automaton.cell_global_pos.k(1)
     else
        local.left_most_grid_used_in_vismo(3) = 1
        local.grid_num_used_in_vismo(3) = NZPP1
-       local.corner_pos(3) = automaton.cell_global_pos.k(1)
+       local.corner_pos(3) = automaton.cell_global_pos.k(0)
     end if  
 
   end subroutine set_vismo_params_local_to_each_process
