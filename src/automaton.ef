@@ -104,8 +104,8 @@ contains
           if ( ii==0 .and. jj==0 .and. kk==0 ) then
             !! Skip myself. Do nothing.
           else
-            if ( state(i+ii,j+jj,k+kk) > NON_ALIVE ) num += 1
-            !! if ( state(i+ii,j+jj,k+kk) == JUST_BORN ) num += 1
+            !! if ( state(i+ii,j+jj,k+kk) > NON_ALIVE ) num += 1
+            if ( state(i+ii,j+jj,k+kk) == JUST_BORN ) num += 1
           end if
         end do
       end do
@@ -195,15 +195,15 @@ contains
     integer :: i, j, k
 
     do i = 0, NXPP1
-      cell_global_pos.i(i) = NXPP*parallel.proc_pos_ijk.i + i + 1
+      cell_global_pos.i(i) = NXPP*parallel.proc_pos_ijk.i + i
     end do
 
     do j = 0, NYPP1
-      cell_global_pos.j(j) = NYPP*parallel.proc_pos_ijk.j + j + 1
+      cell_global_pos.j(j) = NYPP*parallel.proc_pos_ijk.j + j
     end do
 
     do k = 0, NZPP1
-      cell_global_pos.k(k) = NZPP*parallel.proc_pos_ijk.k + k + 1
+      cell_global_pos.k(k) = NZPP*parallel.proc_pos_ijk.k + k
     end do
 
   end subroutine set_cell_global_pos
