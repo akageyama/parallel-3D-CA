@@ -78,6 +78,8 @@
     2022.07.18: Separate the above funcs and exchange to mpidd_m.
     2022.07.18: Add allreduce_sum1d_di.
     2022.07.18: Add message_str_si_si_si_si_si.
+    2022.07.24: Optin mode on in mpiut__barrier.
+    2022.07.24: Add message_str_logical in ut__message.
 
 !!<
 
@@ -224,6 +226,7 @@ module mpiut_m
                       message_str_di_str_si,      &
                       message_str_si_str_dr,      &
                       message_str_di_str_dr,      &
+                      message_str_logical,        &
                       message_str_logical_str,    &
                       message_str_str
   end interface
@@ -2352,15 +2355,13 @@ contains
 !
   subroutine mpiut__barrier( comm, tag )
     integer(SI) <in>    :: comm
-    integer(SI) <optin> :: tag ! for debug. careful but slow.
+    integer(SI) <optin> :: tag ! for debug mode. careful but slow.
 !__________  _________  ________ _______ ______ _____ ____ ___ __ _
 !
     integer(SI) :: ierr
-
-    !!>
-      ! Un-comment, in the debug time.
     integer(SI) :: tag_min, tag_max
-    if (present(tag)) then
+
+    if ( present(tag) ) then
       tag_min = tag; tag_max = tag
       call mpiut__allreduce_min( comm, tag_min )
       call mpiut__allreduce_max( comm, tag_max )
@@ -2371,7 +2372,6 @@ contains
       end if
       call mpiut__message_leader( comm, '__FUNC__: tag', tag )
     end if
-    !!<
 
     call MPI_BARRIER( comm, ierr )
 
