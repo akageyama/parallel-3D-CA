@@ -117,13 +117,13 @@ contains
       call MPI_IRECV( recv_buff_im1, ncount,        &
                       MPI_INTEGER,                  &
                       rank_of_neighbor.im1,         &
-                      0, comm, requests(2), ierr )
+                      1, comm, requests(2), ierr )
       call MPI_BARRIER( comm, ierr )
 
       call MPI_SEND( send_buff_ip1, ncount,         &
                      MPI_INTEGER,                   &
                      rank_of_neighbor.ip1,          &
-                     0, comm, ierr )
+                     1, comm, ierr )
       call MPI_SEND( send_buff_im1, ncount,         &
                      MPI_INTEGER,                   &
                      rank_of_neighbor.im1,          &
@@ -168,13 +168,13 @@ contains
       call MPI_IRECV( recv_buff_jm1, ncount,          &
                       MPI_INTEGER,                    &
                       rank_of_neighbor.jm1,           &
-                      0, comm, requests(2), ierr )
+                      1, comm, requests(2), ierr )
       call MPI_BARRIER( comm, ierr )
 
       call MPI_SEND( send_buff_jp1, ncount,           &
                      MPI_INTEGER,                     &
                      rank_of_neighbor.jp1,            &
-                     0, comm, ierr )
+                     1, comm, ierr )
       call MPI_SEND( send_buff_jm1, ncount,           &
                      MPI_INTEGER,                     &
                      rank_of_neighbor.jm1,            &
@@ -219,13 +219,13 @@ contains
       call MPI_IRECV( recv_buff_km1, ncount,          &
                       MPI_INTEGER,                    &
                       rank_of_neighbor.km1,           &
-                      0, comm, requests(2), ierr )
+                      1, comm, requests(2), ierr )
       call MPI_BARRIER( comm, ierr )
 
       call MPI_SEND( send_buff_kp1, ncount,           &
                      MPI_INTEGER,                     &
                      rank_of_neighbor.kp1,            &
-                     0, comm, ierr )
+                     1, comm, ierr )
       call MPI_SEND( send_buff_km1, ncount,           &
                      MPI_INTEGER,                     &
                      rank_of_neighbor.km1,            &
@@ -294,13 +294,13 @@ contains
       call MPI_IRECV( recv_buff_im1, ncount,          &
                       MPI_DOUBLE_PRECISION,           &
                       rank_of_neighbor.im1,           &
-                      0, comm, requests(2), ierr )
+                      1, comm, requests(2), ierr )
       call MPI_BARRIER( comm, ierr )
 
       call MPI_SEND( send_buff_ip1, ncount,           &
                      MPI_DOUBLE_PRECISION,            &
                      rank_of_neighbor.ip1,            &
-                     0, comm, ierr )
+                     1, comm, ierr )
       call MPI_SEND( send_buff_im1, ncount,           &
                      MPI_DOUBLE_PRECISION,            &
                      rank_of_neighbor.im1,            &
@@ -345,13 +345,13 @@ contains
       call MPI_IRECV( recv_buff_jm1, ncount,          &
                       MPI_DOUBLE_PRECISION,           &
                       rank_of_neighbor.jm1,           &
-                      0, comm, requests(2), ierr )
+                      1, comm, requests(2), ierr )
       call MPI_BARRIER( comm, ierr )
 
       call MPI_SEND( send_buff_jp1, ncount,           &
                      MPI_DOUBLE_PRECISION,            &
                      rank_of_neighbor.jp1,            &
-                     0, comm, ierr )
+                     1, comm, ierr )
       call MPI_SEND( send_buff_jm1, ncount,           &
                      MPI_DOUBLE_PRECISION,            &
                      rank_of_neighbor.jm1,            &
@@ -396,13 +396,13 @@ contains
       call MPI_IRECV( recv_buff_km1, ncount,          &
                       MPI_DOUBLE_PRECISION,           &
                       rank_of_neighbor.km1,           &
-                      0, comm, requests(2), ierr )
+                      1, comm, requests(2), ierr )
       call MPI_BARRIER( comm, ierr )
 
       call MPI_SEND( send_buff_kp1, ncount,           &
                      MPI_DOUBLE_PRECISION,            &
                      rank_of_neighbor.kp1,            &
-                     0, comm, ierr )
+                     1, comm, ierr )
       call MPI_SEND( send_buff_km1, ncount,           &
                      MPI_DOUBLE_PRECISION,            &
                      rank_of_neighbor.km1,            &
@@ -473,13 +473,13 @@ contains
       call MPI_IRECV( recv_buff_im1, ncount,          &
                       MPI_DOUBLE_PRECISION,           &
                       rank_of_neighbor.im1,           &
-                      0, comm, requests(2), ierr )
+                      1, comm, requests(2), ierr )
       call MPI_BARRIER( comm, ierr )
 
       call MPI_SEND( send_buff_ip1, ncount,           &
                      MPI_DOUBLE_PRECISION,            &
                      rank_of_neighbor.ip1,            &
-                     0, comm, ierr )
+                     1, comm, ierr )
       call MPI_SEND( send_buff_im1, ncount,           &
                      MPI_DOUBLE_PRECISION,            &
                      rank_of_neighbor.im1,            &
@@ -528,13 +528,13 @@ contains
       call MPI_IRECV( recv_buff_jm1, ncount,          &
                       MPI_DOUBLE_PRECISION,           &
                       rank_of_neighbor.jm1,           &
-                      0, comm, requests(2), ierr )
+                      1, comm, requests(2), ierr )
       call MPI_BARRIER( comm, ierr )
 
       call MPI_SEND( send_buff_jp1, ncount,           &
                      MPI_DOUBLE_PRECISION,            &
                      rank_of_neighbor.jp1,            &
-                     0, comm, ierr )
+                     1, comm, ierr )
       call MPI_SEND( send_buff_jm1, ncount,           &
                      MPI_DOUBLE_PRECISION,            &
                      rank_of_neighbor.jm1,            &
@@ -583,13 +583,13 @@ contains
       call MPI_IRECV( recv_buff_km1, ncount,          &
                       MPI_DOUBLE_PRECISION,           &
                       rank_of_neighbor.km1,           &
-                      0, comm, requests(2), ierr )
+                      1, comm, requests(2), ierr )
       call MPI_BARRIER( comm, ierr )
 
       call MPI_SEND( send_buff_kp1, ncount,           &
                      MPI_DOUBLE_PRECISION,            &
                      rank_of_neighbor.kp1,            &
-                     0, comm, ierr )
+                     1, comm, ierr )
       call MPI_SEND( send_buff_km1, ncount,           &
                      MPI_DOUBLE_PRECISION,            &
                      rank_of_neighbor.km1,            &
@@ -664,13 +664,13 @@ contains
       call MPI_IRECV( recv_buff_im1, ncount,          &
                       MPI_DOUBLE_PRECISION,           &
                       rank_of_neighbor.im1,           &
-                      0, comm, requests(2), ierr )
+                      1, comm, requests(2), ierr )
       call MPI_BARRIER( comm, ierr )
 
       call MPI_SEND( send_buff_ip1, ncount,           &
                      MPI_DOUBLE_PRECISION,            &
                      rank_of_neighbor.ip1,            &
-                     0, comm, ierr )
+                     1, comm, ierr )
       call MPI_SEND( send_buff_im1, ncount,           &
                      MPI_DOUBLE_PRECISION,            &
                      rank_of_neighbor.im1,            &
@@ -723,13 +723,13 @@ contains
       call MPI_IRECV( recv_buff_jm1, ncount,          &
                       MPI_DOUBLE_PRECISION,           &
                       rank_of_neighbor.jm1,           &
-                      0, comm, requests(2), ierr )
+                      1, comm, requests(2), ierr )
       call MPI_BARRIER( comm, ierr )
 
       call MPI_SEND( send_buff_jp1, ncount,           &
                      MPI_DOUBLE_PRECISION,            &
                      rank_of_neighbor.jp1,            &
-                     0, comm, ierr )
+                     1, comm, ierr )
       call MPI_SEND( send_buff_jm1, ncount,           &
                      MPI_DOUBLE_PRECISION,            &
                      rank_of_neighbor.jm1,            &
@@ -782,13 +782,13 @@ contains
       call MPI_IRECV( recv_buff_km1, ncount,          &
                       MPI_DOUBLE_PRECISION,           &
                       rank_of_neighbor.km1,           &
-                      0, comm, requests(2), ierr )
+                      1, comm, requests(2), ierr )
       call MPI_BARRIER( comm, ierr )
 
       call MPI_SEND( send_buff_kp1, ncount,           &
                      MPI_DOUBLE_PRECISION,            &
                      rank_of_neighbor.kp1,            &
-                     0, comm, ierr )
+                     1, comm, ierr )
       call MPI_SEND( send_buff_km1, ncount,           &
                      MPI_DOUBLE_PRECISION,            &
                      rank_of_neighbor.km1,            &
@@ -867,13 +867,13 @@ contains
       call MPI_IRECV( recv_buff_im1, ncount,          &
                       MPI_DOUBLE_PRECISION,           &
                       rank_of_neighbor.im1,           &
-                      0, comm, requests(2), ierr )
+                      1, comm, requests(2), ierr )
       call MPI_BARRIER( comm, ierr )
 
       call MPI_SEND( send_buff_ip1, ncount,           &
                      MPI_DOUBLE_PRECISION,            &
                      rank_of_neighbor.ip1,            &
-                     0, comm, ierr )
+                     1, comm, ierr )
       call MPI_SEND( send_buff_im1, ncount,           &
                      MPI_DOUBLE_PRECISION,            &
                      rank_of_neighbor.im1,            &
@@ -930,13 +930,13 @@ contains
       call MPI_IRECV( recv_buff_jm1, ncount,          &
                       MPI_DOUBLE_PRECISION,           &
                       rank_of_neighbor.jm1,           &
-                      0, comm, requests(2), ierr )
+                      1, comm, requests(2), ierr )
       call MPI_BARRIER( comm, ierr )
 
       call MPI_SEND( send_buff_jp1, ncount,           &
                      MPI_DOUBLE_PRECISION,            &
                      rank_of_neighbor.jp1,            &
-                     0, comm, ierr )
+                     1, comm, ierr )
       call MPI_SEND( send_buff_jm1, ncount,           &
                      MPI_DOUBLE_PRECISION,            &
                      rank_of_neighbor.jm1,            &
@@ -993,13 +993,13 @@ contains
       call MPI_IRECV( recv_buff_km1, ncount,          &
                       MPI_DOUBLE_PRECISION,           &
                       rank_of_neighbor.km1,           &
-                      0, comm, requests(2), ierr )
+                      1, comm, requests(2), ierr )
       call MPI_BARRIER( comm, ierr )
 
       call MPI_SEND( send_buff_kp1, ncount,           &
                      MPI_DOUBLE_PRECISION,            &
                      rank_of_neighbor.kp1,            &
-                     0, comm, ierr )
+                     1, comm, ierr )
       call MPI_SEND( send_buff_km1, ncount,           &
                      MPI_DOUBLE_PRECISION,            &
                      rank_of_neighbor.km1,            &
@@ -1082,13 +1082,13 @@ contains
       call MPI_IRECV( recv_buff_im1, ncount,          &
                       MPI_DOUBLE_PRECISION,           &
                       rank_of_neighbor.im1,           &
-                      0, comm, requests(2), ierr )
+                      1, comm, requests(2), ierr )
       call MPI_BARRIER( comm, ierr )
 
       call MPI_SEND( send_buff_ip1, ncount,           &
                      MPI_DOUBLE_PRECISION,            &
                      rank_of_neighbor.ip1,            &
-                     0, comm, ierr )
+                     1, comm, ierr )
       call MPI_SEND( send_buff_im1, ncount,           &
                      MPI_DOUBLE_PRECISION,            &
                      rank_of_neighbor.im1,            &
@@ -1149,13 +1149,13 @@ contains
       call MPI_IRECV( recv_buff_jm1, ncount,          &
                       MPI_DOUBLE_PRECISION,           &
                       rank_of_neighbor.jm1,           &
-                      0, comm, requests(2), ierr )
+                      1, comm, requests(2), ierr )
       call MPI_BARRIER( comm, ierr )
 
       call MPI_SEND( send_buff_jp1, ncount,           &
                      MPI_DOUBLE_PRECISION,            &
                      rank_of_neighbor.jp1,            &
-                     0, comm, ierr )
+                     1, comm, ierr )
       call MPI_SEND( send_buff_jm1, ncount,           &
                      MPI_DOUBLE_PRECISION,            &
                      rank_of_neighbor.jm1,            &
@@ -1216,13 +1216,13 @@ contains
       call MPI_IRECV( recv_buff_km1, ncount,          &
                       MPI_DOUBLE_PRECISION,           &
                       rank_of_neighbor.km1,           &
-                      0, comm, requests(2), ierr )
+                      1, comm, requests(2), ierr )
       call MPI_BARRIER( comm, ierr )
 
       call MPI_SEND( send_buff_kp1, ncount,           &
                      MPI_DOUBLE_PRECISION,            &
                      rank_of_neighbor.kp1,            &
-                     0, comm, ierr )
+                     1, comm, ierr )
       call MPI_SEND( send_buff_km1, ncount,           &
                      MPI_DOUBLE_PRECISION,            &
                      rank_of_neighbor.km1,            &
@@ -1313,13 +1313,13 @@ contains
       call MPI_IRECV( recv_buff_im1, ncount,          &
                       MPI_DOUBLE_PRECISION,           &
                       rank_of_neighbor.im1,           &
-                      0, comm, requests(2), ierr )
+                      1, comm, requests(2), ierr )
       call MPI_BARRIER( comm, ierr )
 
       call MPI_SEND( send_buff_ip1, ncount,           &
                      MPI_DOUBLE_PRECISION,            &
                      rank_of_neighbor.ip1,            &
-                     0, comm, ierr )
+                     1, comm, ierr )
       call MPI_SEND( send_buff_im1, ncount,           &
                      MPI_DOUBLE_PRECISION,            &
                      rank_of_neighbor.im1,            &
@@ -1392,13 +1392,13 @@ contains
       call MPI_IRECV( recv_buff_jm1, ncount,          &
                       MPI_DOUBLE_PRECISION,           &
                       rank_of_neighbor.jm1,           &
-                      0, comm, requests(2), ierr )
+                      1, comm, requests(2), ierr )
       call MPI_BARRIER( comm, ierr )
 
       call MPI_SEND( send_buff_jp1, ncount,           &
                      MPI_DOUBLE_PRECISION,            &
                      rank_of_neighbor.jp1,            &
-                     0, comm, ierr )
+                     1, comm, ierr )
       call MPI_SEND( send_buff_jm1, ncount,           &
                      MPI_DOUBLE_PRECISION,            &
                      rank_of_neighbor.jm1,            &
@@ -1471,13 +1471,13 @@ contains
       call MPI_IRECV( recv_buff_km1, ncount,          &
                       MPI_DOUBLE_PRECISION,           &
                       rank_of_neighbor.km1,           &
-                      0, comm, requests(2), ierr )
+                      1, comm, requests(2), ierr )
       call MPI_BARRIER( comm, ierr )
 
       call MPI_SEND( send_buff_kp1, ncount,           &
                      MPI_DOUBLE_PRECISION,            &
                      rank_of_neighbor.kp1,            &
-                     0, comm, ierr )
+                     1, comm, ierr )
       call MPI_SEND( send_buff_km1, ncount,           &
                      MPI_DOUBLE_PRECISION,            &
                      rank_of_neighbor.km1,            &
