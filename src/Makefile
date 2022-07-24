@@ -38,7 +38,7 @@ FFLAGS += -fcheck=all
 FFLAGS += -Wall
 FFLAGS += -fbounds-check
 FFLAGS += -fcheck-array-temporaries
-FFLAGS += -O0
+FFLAGS += -O3
 # FFLAGS += -Wuninitialized
 # FFLAGS += -ffpe-trap=invalid,zero,overflow
 # FFLAGS += -g

@@ -20,7 +20,7 @@ module automaton_m
             !!  state=NUM_STATES-1 ==> ALIVE
   end type rule_t
 
-  type, private :: cell_global_pos_t
+  type cell_global_pos_t
     integer, dimension(0:NXPP1) :: i
     integer, dimension(0:NYPP1) :: j
     integer, dimension(0:NZPP1) :: k
@@ -41,6 +41,7 @@ module automaton_m
 contains
 
 
+!!> For non-parallel version
   subroutine boundary_condition_serial( state )
     type(array3d_si_t) <io> :: state
 
@@ -68,6 +69,7 @@ contains
     end do
 
   end subroutine boundary_condition_serial
+!!<
 
 
   subroutine exchange_overlap_cells( state )
@@ -291,6 +293,7 @@ contains
     call set_rule( self.rule )
     call set_cell_global_pos( self.cell_global_pos )
     call random_states_only_near_center( self )
+
     self.time_counter = 0
 
   end subroutine automaton__initialize
@@ -368,11 +371,14 @@ contains
     integer :: mystate
     integer :: i, j, k
 
+    temp = 0
+
     do k = 1, NZPP
       do j = 1, NYPP
         do i = 1, NXPP
           num = count_alive_neighbors( i, j, k, self.state );
           mystate = self.state(i,j,k)
+
           if ( mystate==NON_ALIVE .and. self.rule.to_be_born( num ) ) then
             temp(i,j,k) = JUST_BORN !! JUST_BORM=1 
           else if ( mystate == JUST_BORN .and. self.rule.to_survive( num ) ) then
@@ -382,8 +388,10 @@ contains
           else if ( mystate == NON_ALIVE ) then
             temp(i,j,k) = NON_ALIVE
           else 
-            print *, " ??? Something is strange... ???"
+            print *, "__FUNC__ ??? Unexpected mystate."
+            call mpiut__finalize
           end if
+
         end do
       end do
     end do

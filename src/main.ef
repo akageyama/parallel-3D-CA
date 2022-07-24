@@ -16,24 +16,24 @@ program main
   integer <const> :: W = MPI_COMM_WORLD
 
   call mpiut__init
-  call mpiut__barrier( W, tag=1 ) 
+  call mpiut__barrier( W )
 
   call parallel.initialize( W )
   call automaton.initialize
   call automaton.diagnosis
   call vis.initialize( automaton )
-  call mpiut__barrier( W, tag=2 ) 
+  call mpiut__barrier( W )
 
-  call vis.visualize( 0_DI, automaton.state )
+  call vis.visualize( automaton )
 
   do loop = 1, LOOP_MAX
     call automaton.update
     call automaton.diagnosis
-    call vis.visualize( loop, automaton.state )
-    call mpiut__barrier( W, tag=3 ) 
+    call vis.visualize( automaton )
+    call mpiut__barrier( W )
   end do
 
-  call vis.finalize
+  call vis__finalize
   call mpiut__finalize
   
 end program main
