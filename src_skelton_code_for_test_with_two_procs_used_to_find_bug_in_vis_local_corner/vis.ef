@@ -1,0 +1,124 @@
+module vis_m
+  use constants_m
+  use vismo
+  use mpi
+  use testfield_m
+  implicit none
+  private
+  public :: vis__initialize
+
+  type vismo_params_common_to_all_processes_t
+    integer, dimension(3) :: grid_num
+    real(DR), dimension(3) :: corner_pos
+    real(DR), dimension(3) :: dgrid
+  end type vismo_params_common_to_all_processes_t
+
+  type vismo_params_local_to_each_process_t
+    integer, dimension(3) :: grid_num
+    integer, dimension(3) :: grid_num_used_in_vismo
+    integer, dimension(3) :: left_most_grid_used_in_vismo
+    real(DR), dimension(3) :: corner_pos
+  end type vismo_params_local_to_each_process_t
+
+
+contains
+
+
+  subroutine set_vismo_params_common_to_all_processes( global )
+    type(vismo_params_common_to_all_processes_t) <out> :: global
+
+    global.grid_num(1) = NX_GLOBAL  
+    global.grid_num(2) = NY_GLOBAL  
+    global.grid_num(3) = NZ_GLOBAL  
+    global.dgrid(1) = 1.0_DR  ! A cell's edge length = 1.0
+    global.dgrid(2) = 1.0_DR  
+    global.dgrid(3) = 1.0_DR  
+    global.corner_pos(1) = 0.0_DR  ! Set the coordinates
+    global.corner_pos(2) = 0.0_DR  !   origin at the corner
+    global.corner_pos(3) = 0.0_DR  !   of the simulation region.
+
+  end subroutine set_vismo_params_common_to_all_processes
+
+
+  subroutine set_vismo_params_local_to_each_process( local )
+    type(vismo_params_local_to_each_process_t) <out> :: local
+
+    integer :: myrank, ierr 
+
+    local.grid_num(1) = NXPP + 2  ! array(0:NXPP1)
+    local.grid_num(2) = NYPP + 2  
+    local.grid_num(3) = NZPP + 2  
+
+    ! for x   
+    local.left_most_grid_used_in_vismo(1) = 2
+    local.grid_num_used_in_vismo(1) = NXPP
+    local.corner_pos(1) = testfield.grid_global_pos_i(1)
+
+    ! for z
+    local.left_most_grid_used_in_vismo(3) = 2
+    local.grid_num_used_in_vismo(3) = NZPP
+    local.corner_pos(3) = testfield.grid_global_pos_k(1)
+
+    ! for y
+    call MPI_COMM_RANK( MPI_COMM_WORLD, myrank, ierr )
+
+    if ( myrank == 0 ) then
+       local.left_most_grid_used_in_vismo(2) = 2
+       local.grid_num_used_in_vismo(2) = NYPP
+       local.corner_pos(2) = testfield.grid_global_pos_j(1) 
+    else if ( myrank == 1 ) then 
+       local.left_most_grid_used_in_vismo(2) = 1
+       local.grid_num_used_in_vismo(2) = NYPP1
+       local.corner_pos(2) = testfield.grid_global_pos_j(0)
+    else
+       stop 'myrank >= 2'
+    end if
+
+  end subroutine set_vismo_params_local_to_each_process
+
+
+  subroutine vis__initialize
+
+    integer(SI) :: myrank, nprocs, ierr
+
+    type(vismo_params_common_to_all_processes_t) :: global_param
+    type(vismo_params_local_to_each_process_t) :: local_param
+
+    call set_vismo_params_common_to_all_processes( global_param )
+    call set_vismo_params_local_to_each_process( local_param )
+
+    call MPI_COMM_RANK( MPI_COMM_WORLD, myrank, ierr )
+    call MPI_COMM_SIZE( MPI_COMM_WORLD, nprocs, ierr )
+
+    call vismo__init( MPI_COMM_WORLD,  &
+                      myrank,  &
+                      nprocs,  &
+                      "vismo.config" )
+
+    call vismo__addScalar( testfield.scalar,  &
+                           NXPP+2, NYPP+2, NZPP+2 )
+
+    call vismo__initCoords( vismo__uniform )
+
+    call vismo__setUniCoord( global_param.grid_num,  &
+                             global_param.corner_pos,  &
+                             global_param.dgrid )
+
+    call vismo__setLocalUniCoord( local_param.grid_num,  &
+                                  local_param.left_most_grid_used_in_vismo,  &
+                                  local_param.grid_num_used_in_vismo,  &
+                                  local_param.corner_pos,  &
+                                  global_param.dgrid )
+!debugp 'local_param.grid_num=', local_param.grid_num
+!debugp 'local_param.left_most_grid_used_in_vismo=', local_param.left_most_grid_used_in_vismo
+!debugp 'local_param.grid_num_used_in_vismo=', local_param.grid_num_used_in_vismo
+!debugp 'local_param.corner_pos=', local_param.corner_pos
+!debugp 'global_param.dgrid=',global_param.dgrid
+
+    call vismo__prepareVis
+
+  end subroutine vis__initialize
+
+
+end module vis_m
+

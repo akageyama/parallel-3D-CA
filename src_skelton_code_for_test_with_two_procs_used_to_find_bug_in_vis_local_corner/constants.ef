@@ -1,0 +1,34 @@
+module constants_m
+  use iso_fortran_env
+  implicit none
+  private
+  public :: SI, DI, SR, DR
+  public :: NPROC_X, NXPP, NXPP1, NX_GLOBAL
+  public :: NPROC_Y, NYPP, NYPP1, NY_GLOBAL
+  public :: NPROC_Z, NZPP, NZPP1, NZ_GLOBAL
+
+  !<< Fortran constants >>!
+  integer <const> :: SI = int32
+  integer <const> :: DI = int64
+  integer <const> :: SR = real32
+  integer <const> :: DR = real64
+
+  !<< MPI constants >>!
+  integer <const> :: NPROC_X = 1
+  integer <const> :: NPROC_Y = 2
+  integer <const> :: NPROC_Z = 1
+
+  !<< Simulation constants >>!
+  integer <const> :: NXPP = 20
+  integer <const> :: NYPP = 10
+  integer <const> :: NZPP = 20
+
+  integer <const> :: NXPP1 = NXPP + 1
+  integer <const> :: NYPP1 = NYPP + 1
+  integer <const> :: NZPP1 = NZPP + 1
+
+  integer <const> :: NX_GLOBAL = NPROC_X * NXPP + 2
+  integer <const> :: NY_GLOBAL = NPROC_Y * NYPP + 2
+  integer <const> :: NZ_GLOBAL = NPROC_Z * NZPP + 2
+
+end module constants_m

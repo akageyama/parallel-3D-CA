@@ -1,0 +1,18 @@
+program main
+  use constants_m
+  use mpi
+  use testfield_m
+  use vis_m
+  use vismo
+  implicit none
+
+  integer :: ierr
+
+  call MPI_INIT( ierr )
+  call testfield__initialize
+  call vis__initialize
+  call vismo__visualization( 0 )
+  call vismo__finalize
+  call MPI_FINALIZE( ierr )
+  
+end program main
