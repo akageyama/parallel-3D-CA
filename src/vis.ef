@@ -6,6 +6,7 @@ module vis_m
   use vismo
   implicit none
   private
+  public :: vis__finalize
 
   type vismo_params_common_to_all_processes_t
     integer, dimension(3) :: grid_num
@@ -25,7 +26,6 @@ module vis_m
   contains
     procedure :: initialize => vis__initialize
     procedure :: visualize => vis__visualize
-    procedure :: finalize => vis__finalize
   end type vis_t
 
 
@@ -80,7 +80,7 @@ contains
     if ( parallel.i_have_xmin ) then
        local.left_most_grid_used_in_vismo(1) = 2
        local.grid_num_used_in_vismo(1) = NXPP
-       local.corner_pos(1) = automaton.cell_global_pos.i(1)
+       local.corner_pos(1) = automaton.cell_global_pos.i(0)
     else
        local.left_most_grid_used_in_vismo(1) = 1
        local.grid_num_used_in_vismo(1) = NXPP1
@@ -90,7 +90,7 @@ contains
     if ( parallel.i_have_ymin ) then
        local.left_most_grid_used_in_vismo(2) = 2
        local.grid_num_used_in_vismo(2) = NYPP
-       local.corner_pos(2) = automaton.cell_global_pos.j(1)
+       local.corner_pos(2) = automaton.cell_global_pos.j(0)
     else
        local.left_most_grid_used_in_vismo(2) = 1
        local.grid_num_used_in_vismo(2) = NYPP1
@@ -100,7 +100,7 @@ contains
     if ( parallel.i_have_zmin ) then
        local.left_most_grid_used_in_vismo(3) = 2
        local.grid_num_used_in_vismo(3) = NZPP
-       local.corner_pos(3) = automaton.cell_global_pos.k(1)
+       local.corner_pos(3) = automaton.cell_global_pos.k(0)
     else
        local.left_most_grid_used_in_vismo(3) = 1
        local.grid_num_used_in_vismo(3) = NZPP1
@@ -146,19 +146,17 @@ contains
 
 
 
-  subroutine vis__visualize( self, loop_count, cell_state )
+  subroutine vis__visualize( self, automaton )
     class(vis_t) :: self
-    integer(DI) <in> :: loop_count
-    type(array3d_si_t) <in> :: cell_state
+    type(automaton_t) <in> :: automaton
 
-    call set_field( self, cell_state )
-    call vismo__visualization( int(loop_count,Si) )
+    call set_field( self, automaton.state )
+    call vismo__visualization( int(automaton.time_counter,Si) )
 
   end subroutine vis__visualize
 
 
-  subroutine vis__finalize( self )
-    class(vis_t) <in> :: self
+  subroutine vis__finalize
 
     call vismo__finalize
 
