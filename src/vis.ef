@@ -24,15 +24,15 @@ module vis_m
     real(DR), dimension(3) :: corner_pos
   end type vismo_params_local_to_each_process_t
 
-! type vismo_particles_t
-!   real(DR), dimension(MAX_NPRTCL_PP) :: pos_x, pos_y, pos_z
-!   real(DR), dimension(MAX_NPRTCL_PP) :: color
-!   integer,  dimension(MAX_NPRTCL_PP) :: visibility
-! end type vismo_particles_t
+  type vismo_particles_t
+    real(DR), dimension(MAX_NPRTCL_PP) :: pos_x, pos_y, pos_z
+    real(DR), dimension(MAX_NPRTCL_PP) :: color
+    integer,  dimension(MAX_NPRTCL_PP) :: visibility
+  end type vismo_particles_t
 
   type, public :: vis_t
     real(DR), dimension(0:NXPP1,0:NYPP1,0:NZPP1) :: sfield
-!   type(vismo_particles_t) :: particles
+    type(vismo_particles_t) :: particles
   contains
     procedure :: initialize => vis__initialize
     procedure :: visualize => vis__visualize
@@ -63,7 +63,6 @@ contains
   end subroutine set_field
 
 
-!!>
   subroutine set_particles( vis, automaton )
     type(vis_t) <io> :: vis
     type(automaton_t) <in> :: automaton
@@ -82,7 +81,7 @@ contains
       do j bulk
         do i bulk
           ijk += 1
-          if ( automaton.state(i,j,k) /= 0 ) then
+          if ( automaton.state(i,j,k) == 1 ) then
             vis.particles.visibility(ijk) = VISIBILITY_ON
             vis.particles.color(ijk) = automaton.state(i,j,k)
           else
@@ -118,7 +117,6 @@ contains
     end subroutine iSet_positions
 
   end subroutine set_particles
-!!<
 
 
   subroutine set_vismo_params_common_to_all_processes( global )
@@ -185,48 +183,36 @@ contains
     type(vismo_params_common_to_all_processes_t) :: global_param
     type(vismo_params_local_to_each_process_t) :: local_param
 
-!debugp "<8>"
     call set_vismo_params_common_to_all_processes( global_param )
-!debugp "<9>"
     call set_vismo_params_local_to_each_process( local_param, automaton )
-
-!debugp "<10>"
-!debugp " parallel.myrank = ", parallel.myrank
-!debugp " parallel.nprocs = ", parallel.nprocs
 
     call vismo__init( MPI_COMM_WORLD,  &
                       parallel.myrank,  &
                       parallel.nprocs,  &
                       "vismo.config" )
 
-
-!debugp "<11>"
     call vismo__addScalar( self.sfield,  &
                            NXPP+2,  NYPP+2,  NZPP+2 )
 
-!debugp "<12>"
-!    call vismo__addPtclCol( self.particles.pos_x,  &
-!                            self.particles.pos_y,  &
-!                            self.particles.pos_z,  &
-!                            self.particles.visibility,  &
-!                            self.particles.color,  &
-!                            MAX_NPRTCL_PP )
+    call vismo__addPtclCol( self.particles.pos_x,  &
+                            self.particles.pos_y,  &
+                            self.particles.pos_z,  &
+                            self.particles.visibility,  &
+                            self.particles.color,  &
+                            MAX_NPRTCL_PP )
 
     call vismo__initCoords( vismo__uniform )
 
-!debugp "<13>"
     call vismo__setUniCoord( global_param.grid_num,  &
                              global_param.corner_pos,  &
                              global_param.dgrid )
 
-!debugp "<14>"
     call vismo__setLocalUniCoord( local_param.grid_num,  &
                                   local_param.left_most_grid_used_in_vismo,  &
                                   local_param.grid_num_used_in_vismo,  &
                                   local_param.corner_pos,  &
                                   global_param.dgrid )
 
-!debugp "<15>"
     call vismo__prepareVis
 
   end subroutine vis__initialize
@@ -237,8 +223,8 @@ contains
     class(vis_t) :: self
     type(automaton_t) <in> :: automaton
 
-    call set_field( self, automaton.state )
-!   call set_particles( self, automaton )
+!   call set_field( self, automaton.state )
+    call set_particles( self, automaton )
     call vismo__visualization( int(automaton.time_counter,Si) )
 
   end subroutine vis__visualize

@@ -39,10 +39,9 @@ FFLAGS += -Wall
 FFLAGS += -fbounds-check
 FFLAGS += -fcheck-array-temporaries
 FFLAGS += -O3
-# FFLAGS += -O0
-FFLAGS += -Wuninitialized
-FFLAGS += -ffpe-trap=invalid,zero,overflow
-FFLAGS += -g
+# FFLAGS += -Wuninitialized
+# FFLAGS += -ffpe-trap=invalid,zero,overflow
+# FFLAGS += -g
 # FFLAGS += -fbacktrace
 FFLAGS += -I../lib 
 
