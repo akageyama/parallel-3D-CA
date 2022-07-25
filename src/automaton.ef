@@ -196,6 +196,7 @@ contains
 
     integer :: i, j, k
 
+!debugp "<1>"
     do i = 0, NXPP1
       cell_global_pos.i(i) = NXPP*parallel.proc_pos_ijk.i + i
     end do
@@ -292,8 +293,10 @@ contains
 
     call set_rule( self.rule )
     call set_cell_global_pos( self.cell_global_pos )
+!debugp "<2>"
     call random_states_only_near_center( self )
 
+!debugp "<3>"
     self.time_counter = 0
 
   end subroutine automaton__initialize
@@ -307,6 +310,7 @@ contains
 
     count(:) = 0  ! reset
 
+!debugp "<4>"
     do k = 1, NZPP
       do j = 1, NYPP
         do i = 1, NXPP
@@ -317,8 +321,10 @@ contains
       end do
     end do
 
+!debugp "<5>"
     call mpiut__allreduce_sum( parallel.commun, count )
 
+!debugp "<6>"
     call mpiut__message( parallel.commun,  &
                          "t=", self.time_counter )
     call mpiut__message( parallel.commun,  &
@@ -330,6 +336,7 @@ contains
 
 !    print *, "time: ", self.time_counter, " states: ", count 
             
+!debugp "<7>"
   end subroutine automaton__diagnosis
                
                

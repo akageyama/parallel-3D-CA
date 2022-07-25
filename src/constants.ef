@@ -49,9 +49,13 @@ module constants_m
   integer <const> :: NPROC_Z = 1
 
   !<< Simulation constants >>!
-  integer <const> :: NXPP = 100
-  integer <const> :: NYPP = 50
-  integer <const> :: NZPP = 100
+!  integer <const> :: NXPP = 100
+!  integer <const> :: NYPP = 50
+!  integer <const> :: NZPP = 100
+  !<< Simulation constants >>!
+  integer <const> :: NXPP = 40
+  integer <const> :: NYPP = 20
+  integer <const> :: NZPP = 40
 
   integer <const> :: NXPP1 = NXPP + 1
   integer <const> :: NYPP1 = NYPP + 1
