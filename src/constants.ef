@@ -44,14 +44,14 @@ module constants_m
   real(DR) <const> :: TWOPI = PI*2
 
   !<< MPI constants >>!
-  integer <const> :: NPROC_X = 1
+  integer <const> :: NPROC_X = 2
   integer <const> :: NPROC_Y = 2
-  integer <const> :: NPROC_Z = 1
+  integer <const> :: NPROC_Z = 2
 
   !<< Simulation constants >>!
-  integer <const> :: NXPP = 100
+  integer <const> :: NXPP = 50
   integer <const> :: NYPP = 50
-  integer <const> :: NZPP = 100
+  integer <const> :: NZPP = 50
 
   integer <const> :: NXPP1 = NXPP + 1
   integer <const> :: NYPP1 = NYPP + 1
